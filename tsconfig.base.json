@@ -1,0 +1,14 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "target": "ES2019",
+    "module": "esNext",
+    "lib": ["dom", "ESNext"],
+    "baseUrl": "./src"
+  },
+  "exclude": ["dist", "node_modules"]
+}

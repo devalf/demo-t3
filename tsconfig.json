@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "types": ["react", "node", "webpack-env"],
+    "removeComments": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "strict": true,
+    "outDir": "dist",
+    "typeRoots": ["./types", "node_modules/@types"],
+    "strictNullChecks": true,
+    "allowJs": true
+  },
+  "extends": "./tsconfig.base.json"
+}
