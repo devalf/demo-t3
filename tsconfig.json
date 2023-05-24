@@ -3,7 +3,7 @@
     "noImplicitAny": false,
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
-    "types": ["react", "node", "webpack-env"],
+    "types": ["react", "node"],
     "removeComments": true,
     "noImplicitReturns": true,
     "noUnusedLocals": false,

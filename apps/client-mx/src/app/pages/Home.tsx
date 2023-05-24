@@ -20,6 +20,7 @@ export const Home: React.FC = () => {
   return (
     <Box>
       <ProductsList products={products} />
+      <Box>www</Box>
     </Box>
   );
 };
