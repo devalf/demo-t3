@@ -1,5 +1,14 @@
 # Demo t3
 
+### Sample to build apps with Nx (monorepo).
+
+``` Note - still is under active development ```
+
+#### To run locally in development mode:
+
+- `npm i` - initial dependencies installation
+- `nx serve client-mx` - running specific application locally
+
 **Most usable commands:**
 
 _Note:_ Run all commands from root folder, no need to enter any directory.
