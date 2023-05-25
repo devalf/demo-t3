@@ -1,4 +1,5 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "noImplicitAny": false,
     "allowSyntheticDefaultImports": true,
@@ -12,6 +13,5 @@
     "typeRoots": ["./types", "node_modules/@types"],
     "strictNullChecks": true,
     "allowJs": true
-  },
-  "extends": "./tsconfig.base.json"
+  }
 }

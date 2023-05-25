@@ -1,7 +1,7 @@
 import { useQuery } from 'react-query';
+import { Post } from '@demo-t3/models';
 
 import { fetchPosts } from '../../repository/fetchPosts';
-import { Post } from '../../types';
 
 export const usePosts = () => {
   const { isLoading, error, data } = useQuery<Post[], Error>('repoData', () =>

@@ -1,7 +1,6 @@
 import React from 'react';
 import Box from '@mui/material/Box';
-
-import { Post } from '../../types';
+import { Post } from '@demo-t3/models';
 
 type PostListProps = {
   posts?: Post[];

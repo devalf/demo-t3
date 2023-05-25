@@ -1,4 +1,4 @@
-import { Post } from '../../types';
+import { Post } from '@demo-t3/models';
 
 export const parsePost = (post: Post): Post => {
   return {

@@ -1,8 +1,7 @@
 import { AxiosResponse } from 'axios';
+import { Post } from '@demo-t3/models';
 
-import { axiosClient } from '../http';
-import { Post } from '../types';
-import { parsePosts } from '../http/parsers/post';
+import { axiosClient, parsePosts } from '../http';
 
 export const fetchPosts = async (): Promise<Post[]> => {
   const { data }: AxiosResponse<Post[]> = await axiosClient.get('/posts');
