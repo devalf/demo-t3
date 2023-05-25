@@ -1,1 +1,1 @@
-export * from './parseProducts';
+export * from './post';
