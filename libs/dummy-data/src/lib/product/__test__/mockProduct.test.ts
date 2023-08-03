@@ -1,4 +1,8 @@
-import { mockProduct, mockProductWithTags } from '../mockProduct';
+import {
+  mockProduct,
+  mockProductList,
+  mockProductWithTags,
+} from '../mockProduct';
 
 describe('Testing `mockProduct`', () => {
   test('should return correct minimal object', () => {
@@ -6,7 +10,7 @@ describe('Testing `mockProduct`', () => {
       id: '1',
       name: 'Product 1',
       price: 100,
-      timestamp: new Date('2023-08-01'),
+      timestamp: '2023-08-01T00:00:00.000Z',
     });
   });
 
@@ -16,7 +20,7 @@ describe('Testing `mockProduct`', () => {
       name: 'Product 1',
       price: 100,
       tags: ['tag1', 'tag2'],
-      timestamp: new Date('2023-08-01'),
+      timestamp: '2023-08-01T00:00:00.000Z',
     });
   });
 
@@ -25,7 +29,7 @@ describe('Testing `mockProduct`', () => {
       id: '2',
       name: 'Product 1',
       price: 100,
-      timestamp: new Date('2023-08-01'),
+      timestamp: '2023-08-01T00:00:00.000Z',
     });
   });
 
@@ -35,7 +39,19 @@ describe('Testing `mockProduct`', () => {
       name: 'Product 1',
       price: 100,
       tags: ['tag3'],
-      timestamp: new Date('2023-08-01'),
+      timestamp: '2023-08-01T00:00:00.000Z',
     });
+  });
+
+  test('should return correct list of objects', () => {
+    const mockProductListResult = mockProductList(3);
+
+    expect(mockProductListResult.length).toEqual(3);
+
+    const [first, second, third] = mockProductListResult;
+
+    expect(first).not.toHaveProperty('tags');
+    expect(second).toHaveProperty('tags');
+    expect(third).not.toHaveProperty('tags');
   });
 });

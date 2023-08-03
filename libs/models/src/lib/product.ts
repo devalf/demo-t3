@@ -5,5 +5,7 @@ export type Product = {
   name: string;
   price: number;
   tags?: string[];
-  timestamp: Date;
+  timestamp: string;
 };
+
+export type DBProduct = Record<string, unknown> & Product;
