@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+// this test does not work from the initial setup, skipped for now
 describe.skip('AppController', () => {
   let app: TestingModule;
 

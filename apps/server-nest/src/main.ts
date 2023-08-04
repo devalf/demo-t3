@@ -14,7 +14,9 @@ async function bootstrap() {
 
   app.setGlobalPrefix(globalPrefix);
 
-  const port = process.env.PORT || 3000;
+  app.enableCors();
+
+  const port = process.env.SERVER_NEST_PORT || 8083;
   await app.listen(port);
 
   Logger.log(

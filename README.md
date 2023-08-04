@@ -4,10 +4,18 @@
 
 ``` Note - still is under active development ```
 
+To run this demo on a local machine you need to install npm packages and execute the next command.
+
+```
+npm run start:demo
+```
+
 #### To run locally in development mode:
 
 - `npm i` - initial dependencies installation
-- `nx serve client-mx` - running specific application locally
+- `npm run start:demo` - running all applications locally
+- `nx serve client-mx` - running client application locally
+- `nx serve server-nest` - running server application locally
 
 **Most usable commands:**
 

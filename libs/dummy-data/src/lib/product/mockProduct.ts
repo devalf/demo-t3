@@ -21,7 +21,7 @@ export const mockProductList = (count = 1): Product[] => {
     const isEven = i % 2 === 0;
 
     const uuid = crypto.randomUUID();
-    const name = `Product name: item ${i} ${crypto.randomUUID()}}`;
+    const name = `Product name: item ${i}`;
 
     const product = isEven
       ? mockProduct({ id: uuid, name })

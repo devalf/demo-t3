@@ -1,11 +1,11 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 
-import { PostList } from '../components';
-import { usePosts } from '../state';
+import { useProducts } from '../state';
+import { ProductList } from '../components';
 
 export const Home: React.FC = () => {
-  const { data: posts, error, isLoading } = usePosts();
+  const { data: products, error, isLoading } = useProducts();
 
   if (isLoading) {
     return <>Loading...</>;
@@ -19,7 +19,7 @@ export const Home: React.FC = () => {
 
   return (
     <Box>
-      <PostList posts={posts} />
+      <ProductList products={products} />
     </Box>
   );
 };

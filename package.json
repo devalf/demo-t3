@@ -12,7 +12,8 @@
     "build:all": "nx run-many --all --target=build",
     "test:all": "nx run-many --all --target=test --coverage",
     "lint:all": "nx run-many --all --target=lint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "start:demo": "npx nx run-many --parallel --target=serve --projects=client-mx,server-nest"
   },
   "author": "Oleksiy Petrychko",
   "license": "MIT",
