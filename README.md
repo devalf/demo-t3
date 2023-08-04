@@ -10,6 +10,8 @@ To run this demo on a local machine you need to install npm packages and execute
 npm run start:demo
 ```
 
+then open in the browser http://localhost:8082/
+
 #### To run locally in development mode:
 
 - `npm i` - initial dependencies installation
