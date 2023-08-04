@@ -6,6 +6,9 @@ export const parseProduct = (DBProductDocument: DBProduct): Product => ({
   price: DBProductDocument.price,
   tags: DBProductDocument.tags,
   timestamp: DBProductDocument.timestamp, // unfortunately, recommended by NestJS `rxdb-utils` package is outdated is not working with newer versions of RxDB, so timestamp represented here as a string
+  picture: DBProductDocument.picture,
+  company: DBProductDocument.company,
+  about: DBProductDocument.about,
 });
 
 export const parseProducts = (DBProductDocuments: DBProduct[]): Product[] =>

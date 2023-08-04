@@ -1,10 +1,14 @@
 import { Product } from '@demo-t3/models';
+import { faker } from '@faker-js/faker';
 
 export const mockProduct = (overrides?: Partial<Product>): Product => ({
   id: '1',
   name: 'Product 1',
   price: 100,
   timestamp: '2023-08-01T00:00:00.000Z',
+  picture: 'https://picsum.photos/250/250',
+  company: 'Company 1',
+  about: 'About 1',
   ...overrides,
 });
 
@@ -21,11 +25,14 @@ export const mockProductList = (count = 1): Product[] => {
     const isEven = i % 2 === 0;
 
     const uuid = crypto.randomUUID();
-    const name = `Product name: item ${i}`;
+    const name = faker.commerce.product();
+    const price = Number(faker.commerce.price({ min: 100, max: 1000 }));
+    const company = faker.company.name();
+    const about = faker.lorem.sentence({ min: 5, max: 20 });
 
     const product = isEven
-      ? mockProduct({ id: uuid, name })
-      : mockProductWithTags({ id: uuid, name });
+      ? mockProduct({ id: uuid, name, price, company, about })
+      : mockProductWithTags({ id: uuid, name, price, company, about });
 
     list.push(product);
   }

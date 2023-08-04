@@ -6,6 +6,9 @@ export type Product = {
   price: number;
   tags?: string[];
   timestamp: string;
+  picture: string;
+  company: string;
+  about?: string;
 };
 
 export type DBProduct = Record<string, unknown> & Product;

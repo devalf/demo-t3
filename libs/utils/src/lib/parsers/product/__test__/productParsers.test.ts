@@ -13,7 +13,10 @@ describe('Testing productParsers', () => {
       price: 1,
       tags: ['A'],
       timestamp: timestampDate1,
-      q: 2,
+      picture: 'p',
+      company: 'c',
+      about: 'a',
+      extraProperty: 'X',
     };
 
     expect(parseProduct(obj)).toEqual({
@@ -22,6 +25,9 @@ describe('Testing productParsers', () => {
       price: 1,
       tags: ['A'],
       timestamp: '2023-08-01T00:00:00.000Z',
+      picture: 'p',
+      company: 'c',
+      about: 'a',
     });
   });
 
@@ -33,7 +39,10 @@ describe('Testing productParsers', () => {
         price: 1,
         tags: ['A'],
         timestamp: timestampDate1,
-        q: 2,
+        picture: 'p',
+        company: 'c',
+        about: 'a',
+        extraProperty: 'X',
       },
       {
         id: '2',
@@ -41,7 +50,10 @@ describe('Testing productParsers', () => {
         price: 2,
         tags: ['B'],
         timestamp: timestampDate2,
-        q: 2,
+        picture: 'p',
+        company: 'c',
+        about: 'a',
+        extraProperty: 'X',
       },
     ];
 
@@ -51,6 +63,9 @@ describe('Testing productParsers', () => {
       price: 1,
       tags: ['A'],
       timestamp: '2023-08-01T00:00:00.000Z',
+      picture: 'p',
+      company: 'c',
+      about: 'a',
     });
     expect(parseProduct(collection[1])).toEqual({
       id: '2',
@@ -58,6 +73,9 @@ describe('Testing productParsers', () => {
       price: 2,
       tags: ['B'],
       timestamp: '2023-08-02T00:00:00.000Z',
+      picture: 'p',
+      company: 'c',
+      about: 'a',
     });
   });
 });

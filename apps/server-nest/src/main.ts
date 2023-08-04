@@ -20,7 +20,7 @@ async function bootstrap() {
   // I don't provide any authorized access to the Swagger API, because it's not the point of this demo
   const config = new DocumentBuilder()
     .setTitle('Demo-t3 Swagger API')
-    .setDescription('API documentation for demo-t3')
+    .setDescription('API documentation for demo-t3, without any authorization')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);

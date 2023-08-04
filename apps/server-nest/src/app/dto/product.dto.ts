@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Product } from '@demo-t3/models';
 
-export class ProductDTO {
+export class ProductDTO implements Product {
   @ApiProperty()
   id: string;
 
@@ -15,4 +16,13 @@ export class ProductDTO {
 
   @ApiProperty()
   timestamp: string;
+
+  @ApiProperty()
+  company: string;
+
+  @ApiProperty()
+  picture: string;
+
+  @ApiPropertyOptional()
+  about: string;
 }

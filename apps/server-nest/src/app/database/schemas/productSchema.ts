@@ -28,6 +28,17 @@ export const productSchema = {
     timestamp: {
       type: 'date-time',
     },
+    picture: {
+      type: 'string',
+    },
+    company: {
+      type: 'string',
+      maxLength: 100,
+    },
+    about: {
+      type: 'string',
+      maxLength: 500,
+    },
   },
-  required: ['id', 'name', 'price', 'timestamp'],
+  required: ['id', 'name', 'price', 'timestamp', 'picture', 'company'],
 };

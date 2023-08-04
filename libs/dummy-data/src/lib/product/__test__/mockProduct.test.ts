@@ -11,6 +11,9 @@ describe('Testing `mockProduct`', () => {
       name: 'Product 1',
       price: 100,
       timestamp: '2023-08-01T00:00:00.000Z',
+      picture: 'https://picsum.photos/250/250',
+      company: 'Company 1',
+      about: 'About 1',
     });
   });
 
@@ -21,6 +24,9 @@ describe('Testing `mockProduct`', () => {
       price: 100,
       tags: ['tag1', 'tag2'],
       timestamp: '2023-08-01T00:00:00.000Z',
+      picture: 'https://picsum.photos/250/250',
+      company: 'Company 1',
+      about: 'About 1',
     });
   });
 
@@ -30,6 +36,9 @@ describe('Testing `mockProduct`', () => {
       name: 'Product 1',
       price: 100,
       timestamp: '2023-08-01T00:00:00.000Z',
+      picture: 'https://picsum.photos/250/250',
+      company: 'Company 1',
+      about: 'About 1',
     });
   });
 
@@ -40,6 +49,9 @@ describe('Testing `mockProduct`', () => {
       price: 100,
       tags: ['tag3'],
       timestamp: '2023-08-01T00:00:00.000Z',
+      picture: 'https://picsum.photos/250/250',
+      company: 'Company 1',
+      about: 'About 1',
     });
   });
 

@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@babel/preset-react": "^7.22.5",
+    "@faker-js/faker": "^8.0.2",
     "@nestjs/schematics": "^10.0.1",
     "@nestjs/testing": "^10.0.2",
     "@nrwl/react": "16.6.0",
