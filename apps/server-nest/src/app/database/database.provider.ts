@@ -25,7 +25,7 @@ export const databaseProviders = [
           },
         });
 
-        await db.products.bulkInsert(mockProductList(5));
+        await db.products.bulkInsert(mockProductList(27));
 
         return db;
       } catch (err) {

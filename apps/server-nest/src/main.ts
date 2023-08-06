@@ -1,9 +1,4 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -14,7 +9,7 @@ async function bootstrap() {
   const globalPrefix = 'api';
 
   app.setGlobalPrefix(globalPrefix);
-
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.enableCors();
 
   // I don't provide any authorized access to the Swagger API, because it's not the point of this demo
