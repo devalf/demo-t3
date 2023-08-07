@@ -10,7 +10,7 @@ export class ApiListMetaDTO implements ApiListMeta {
 
 export class ApiProductListDTO implements ApiEntryList<ProductDTO> {
   @ApiProperty()
-  meta: ApiListMetaDTO;
+  metadata: ApiListMetaDTO;
 
   @ApiProperty({
     type: [ProductDTO],

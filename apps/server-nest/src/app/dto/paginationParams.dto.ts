@@ -11,7 +11,7 @@ export class PaginationParamsDto {
   offset?: number;
 
   @ApiPropertyOptional({
-    description: 'Amount of records. Min value is 1, Max value is 10',
+    description: 'Amount of records. Min value is 1, Max value is 10 (default)',
   })
   @IsOptional()
   @Type(() => Number)

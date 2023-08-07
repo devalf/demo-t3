@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { parseProducts } from '@demo-t3/utils';
 import { ApiEntryList, Product } from '@demo-t3/models';
 
@@ -13,6 +13,17 @@ export class ProductsService {
     offset = OFFSET_ITEMS,
     limit = LIMIT_ITEMS,
   }: PaginationParamsDto): Promise<ApiEntryList<Product>> {
+    const total = await this.db.products.count().exec();
+
+    const requestedOffsetToBig = offset >= total;
+
+    if (requestedOffsetToBig) {
+      throw new HttpException(
+        'Offset is bigger than total documents amount',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
     const products = await this.db.products
       .find({
         skip: offset,
@@ -20,10 +31,8 @@ export class ProductsService {
       })
       .exec();
 
-    const total = await this.db.products.count().exec();
-
     return {
-      meta: {
+      metadata: {
         total,
       },
       entries: parseProducts(products),
