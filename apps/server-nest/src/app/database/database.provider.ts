@@ -25,6 +25,11 @@ export const databaseProviders = [
           },
         });
 
+        // ! important notice, I don't implement TypeORM or another ORM in this project,
+        // since I need to use RxDB as simple `in-memory` database,
+        // and I can be really sure that these tools are compatible with each other.
+        // and for the same reason I do not use `nestjs-seeder` here as well
+
         await db.products.bulkInsert(mockProductList(27));
 
         return db;

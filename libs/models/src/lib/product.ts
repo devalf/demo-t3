@@ -1,4 +1,4 @@
-import { ID } from './general';
+import { ID, ProductCondition } from './general';
 
 export type Product = {
   id: ID;
@@ -12,3 +12,13 @@ export type Product = {
 };
 
 export type DBProduct = Record<string, unknown> & Product;
+
+export type ProductDetailed = Product & {
+  specification?: string;
+  condition: ProductCondition;
+  seller?: string;
+  warranty?: string;
+  color?: string;
+};
+
+export type DBProductDetailed = Record<string, unknown> & ProductDetailed;

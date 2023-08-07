@@ -1,4 +1,4 @@
-import { Product } from '@demo-t3/models';
+import { Product, ProductDetailed } from '@demo-t3/models';
 import { faker } from '@faker-js/faker';
 
 export const mockProduct = (overrides?: Partial<Product>): Product => ({
@@ -30,12 +30,32 @@ export const mockProductList = (count = 1): Product[] => {
     const company = faker.company.name();
     const about = faker.lorem.sentence({ min: 5, max: 20 });
 
-    const product = isEven
-      ? mockProduct({ id: uuid, name, price, company, about })
-      : mockProductWithTags({ id: uuid, name, price, company, about });
+    const product = mockProductDetailed(!isEven, {
+      id: uuid,
+      name,
+      price,
+      company,
+      about,
+    });
 
     list.push(product);
   }
 
   return list;
+};
+
+export const mockProductDetailed = (
+  withTags = false,
+  overrides?: Partial<ProductDetailed>
+): ProductDetailed => {
+  const productGenerator = withTags ? mockProductWithTags : mockProduct;
+
+  return {
+    ...productGenerator(),
+    specification: faker.lorem.sentence({ min: 5, max: 10 }),
+    condition: 'new',
+    seller: faker.company.name(),
+    color: faker.color.human(),
+    ...overrides,
+  };
 };

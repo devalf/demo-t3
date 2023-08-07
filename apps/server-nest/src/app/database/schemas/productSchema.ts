@@ -39,6 +39,34 @@ export const productSchema = {
       type: 'string',
       maxLength: 500,
     },
+    specification: {
+      type: 'string',
+      maxLength: 200,
+    },
+    condition: {
+      type: 'string',
+      maxLength: 10,
+    },
+    seller: {
+      type: 'string',
+      maxLength: 100,
+    },
+    warranty: {
+      type: 'string',
+      maxLength: 100,
+    },
+    color: {
+      type: 'string',
+      maxLength: 15,
+    },
   },
-  required: ['id', 'name', 'price', 'timestamp', 'picture', 'company'],
+  required: [
+    'id',
+    'name',
+    'price',
+    'timestamp',
+    'picture',
+    'company',
+    'condition',
+  ],
 };

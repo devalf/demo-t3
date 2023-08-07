@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { parseProducts } from '@demo-t3/utils';
-import { ApiEntryList, Product } from '@demo-t3/models';
+import { parseProductDetailed, parseProducts } from '@demo-t3/utils';
+import { ApiEntryList, Product, ProductDetailed } from '@demo-t3/models';
 
 import { LIMIT_ITEMS, OFFSET_ITEMS, providers } from '../../constants';
 import { ProductQueryParamsDto } from '../dto';
@@ -52,5 +52,21 @@ export class ProductsService {
       },
       entries: parseProducts(products),
     };
+  }
+
+  async getProduct(id: string): Promise<ProductDetailed> {
+    const productDocument = await this.db.products
+      .findOne({
+        selector: {
+          id: id,
+        },
+      })
+      .exec();
+
+    if (productDocument === null) {
+      throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
+    }
+
+    return parseProductDetailed(productDocument);
   }
 }

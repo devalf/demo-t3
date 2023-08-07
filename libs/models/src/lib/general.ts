@@ -5,3 +5,5 @@ export type ApiListMeta = {
   limit: number;
   offset: number;
 };
+
+export type ProductCondition = 'new' | 'used' | 'refurbished';

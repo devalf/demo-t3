@@ -1,7 +1,11 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { ApiProductListDTO, ProductQueryParamsDto } from '../dto';
+import {
+  ApiProductListDTO,
+  ProductDetailedDTO,
+  ProductQueryParamsDto,
+} from '../dto';
 
 import { ProductsService } from './products.service';
 
@@ -19,5 +23,15 @@ export class ProductsController {
   @Get()
   getProducts(@Query() params: ProductQueryParamsDto) {
     return this.productsService.getProducts(params);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'The detailed product has been successfully retrieved.',
+    type: ProductDetailedDTO,
+  })
+  @Get(':id')
+  getProduct(@Param('id') id: string) {
+    return this.productsService.getProduct(id);
   }
 }
