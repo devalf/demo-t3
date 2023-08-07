@@ -4,8 +4,14 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ProductDTO } from './product.dto';
 
 export class ApiListMetaDTO implements ApiListMeta {
-  @ApiProperty()
+  @ApiProperty({})
   total: number;
+
+  @ApiProperty()
+  offset: number;
+
+  @ApiProperty()
+  limit: number;
 }
 
 export class ApiProductListDTO implements ApiEntryList<ProductDTO> {

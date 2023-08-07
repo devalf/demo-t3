@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { ApiProductListDTO, PaginationParamsDto } from '../dto';
+import { ApiProductListDTO, ProductQueryParamsDto } from '../dto';
 
 import { ProductsService } from './products.service';
 
@@ -17,7 +17,7 @@ export class ProductsController {
     type: ApiProductListDTO,
   })
   @Get()
-  getProducts(@Query() params: PaginationParamsDto) {
+  getProducts(@Query() params: ProductQueryParamsDto) {
     return this.productsService.getProducts(params);
   }
 }
