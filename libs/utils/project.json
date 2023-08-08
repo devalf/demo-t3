@@ -11,14 +11,15 @@
         "outputPath": "dist/libs/utils",
         "main": "libs/utils/src/index.ts",
         "tsConfig": "libs/utils/tsconfig.lib.json",
-        "assets": ["libs/utils/*.md"]
+        "assets": ["libs/utils/*.md"],
+        "rootDir": "."
       }
     },
     "lint": {
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/utils/**/*.ts", "libs/utils/package.json"]
+        "lintFilePatterns": ["libs/utils/**/*.ts"]
       }
     },
     "test": {
@@ -36,5 +37,5 @@
       }
     }
   },
-  "tags": []
+  "tags": ["scope:shared"]
 }

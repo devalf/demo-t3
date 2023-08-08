@@ -21,13 +21,11 @@ export const parseProducts = (dbProductDocuments: DBProduct[]): Product[] =>
 
 export const parseProductDetailed = (
   dbProductDetailedDocument: DBProductDetailed
-): ProductDetailed => {
-  return {
-    ...parseProduct(dbProductDetailedDocument),
-    specification: dbProductDetailedDocument.specification,
-    condition: dbProductDetailedDocument.condition,
-    seller: dbProductDetailedDocument.seller,
-    warranty: dbProductDetailedDocument.warranty,
-    color: dbProductDetailedDocument.color,
-  };
-};
+): ProductDetailed => ({
+  ...parseProduct(dbProductDetailedDocument),
+  specification: dbProductDetailedDocument.specification,
+  condition: dbProductDetailedDocument.condition,
+  seller: dbProductDetailedDocument.seller,
+  warranty: dbProductDetailedDocument.warranty,
+  color: dbProductDetailedDocument.color,
+});

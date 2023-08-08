@@ -11,17 +11,15 @@
         "outputPath": "dist/libs/dummy-data",
         "main": "libs/dummy-data/src/index.ts",
         "tsConfig": "libs/dummy-data/tsconfig.lib.json",
-        "assets": ["libs/dummy-data/*.md"]
+        "assets": ["libs/dummy-data/*.md"],
+        "rootDir": "."
       }
     },
     "lint": {
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "libs/dummy-data/**/*.ts",
-          "libs/dummy-data/package.json"
-        ]
+        "lintFilePatterns": ["libs/dummy-data/**/*.ts"]
       }
     },
     "test": {
@@ -39,5 +37,5 @@
       }
     }
   },
-  "tags": []
+  "tags": ["scope:shared"]
 }

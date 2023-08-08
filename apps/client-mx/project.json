@@ -102,5 +102,5 @@
       }
     }
   },
-  "tags": []
+  "tags": ["scope:client-mx"]
 }

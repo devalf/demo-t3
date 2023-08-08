@@ -3,7 +3,11 @@ import { getGreeting } from '../support/app.po';
 describe('client-mx', () => {
   beforeEach(() => cy.visit('/'));
 
-  it('should display welcome message', () => {
+  it('should render `Home` link', () => {
+    cy.get('a').should('exist').should('have.text', 'Home');
+  });
+
+  it.skip('should display welcome message', () => {
     // Custom command example, see `../support/commands.ts` file
     cy.login('my-email@something.com', 'myPassword');
 

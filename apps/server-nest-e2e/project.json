@@ -18,5 +18,6 @@
         "lintFilePatterns": ["apps/server-nest-e2e/**/*.{js,ts}"]
       }
     }
-  }
+  },
+  "tags": ["scope:server-nest"]
 }

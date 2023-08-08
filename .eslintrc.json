@@ -13,8 +13,19 @@
             "allow": [],
             "depConstraints": [
               {
-                "sourceTag": "*",
-                "onlyDependOnLibsWithTags": ["*"]
+                "sourceTag": "scope:shared",
+                "onlyDependOnLibsWithTags": ["scope:shared"]
+              },
+              {
+                "sourceTag": "scope:client-mx",
+                "onlyDependOnLibsWithTags": ["scope:client-mx", "scope:shared"]
+              },
+              {
+                "sourceTag": "scope:server-nest",
+                "onlyDependOnLibsWithTags": [
+                  "scope:server-nest",
+                  "scope:shared"
+                ]
               }
             ]
           }
@@ -28,11 +39,6 @@
                 "pattern": "./*.css",
                 "group": "builtin",
                 "position": "before"
-              },
-              {
-                "pattern": "@esurance/**",
-                "group": "external",
-                "position": "after"
               }
             ],
             "newlines-between": "always",
@@ -58,5 +64,8 @@
       },
       "rules": {}
     }
-  ]
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2020
+  }
 }
