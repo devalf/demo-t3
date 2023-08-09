@@ -18,7 +18,7 @@ export const Home: React.FC = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ mt: 2 }}>
       <ProductList products={products} />
     </Box>
   );
