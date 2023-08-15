@@ -7,7 +7,7 @@ import { ProductList } from '../components';
 export const Home: React.FC = () => {
   const { data: products, error, isLoading } = useProducts();
 
-  if (isLoading) {
+  if (isLoading && !products) {
     return <>Loading...</>;
   }
 

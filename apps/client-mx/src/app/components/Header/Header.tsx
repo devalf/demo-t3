@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link as ReactRouterLink } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
@@ -9,6 +10,7 @@ import { Link } from '@mui/material';
 import { useInjection } from '../../bootstrap/ioc/useInjection';
 import { IStoreExampleTwo } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/DependencyType';
+import { routes } from '../../constants';
 
 export const Header: React.FC = () => {
   const storeExampleTwo = useInjection<IStoreExampleTwo>(
@@ -27,7 +29,11 @@ export const Header: React.FC = () => {
         <Toolbar disableGutters>
           <AccountBalanceIcon />
           <Box sx={{ pl: 1 }}>
-            <Link href="/" sx={{ color: 'white' }}>
+            <Link
+              component={ReactRouterLink}
+              to={routes.home}
+              sx={{ color: 'white' }}
+            >
               Home
             </Link>
           </Box>

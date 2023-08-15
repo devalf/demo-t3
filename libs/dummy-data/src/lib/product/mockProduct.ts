@@ -6,7 +6,7 @@ export const mockProduct = (overrides?: Partial<Product>): Product => ({
   name: 'Product 1',
   price: 100,
   timestamp: '2023-08-01T00:00:00.000Z',
-  picture: 'https://picsum.photos/250/250',
+  picture: `https://picsum.photos/seed/${faker.lorem.word()}/500/500`,
   company: 'Company 1',
   about: 'About 1',
   ...overrides,

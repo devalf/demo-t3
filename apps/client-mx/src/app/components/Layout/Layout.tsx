@@ -1,15 +1,17 @@
 import React from 'react';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
-import { Home } from '../../pages';
+import { Home, ProductPage } from '../../pages';
 import { Header } from '../Header/Header';
+import { routes } from '../../constants';
 
 export const Layout: React.FC = () => {
   return (
     <Router>
       <Header />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path={routes.home} element={<Home />} />
+        <Route path={routes.product} element={<ProductPage />} />
       </Routes>
     </Router>
   );
