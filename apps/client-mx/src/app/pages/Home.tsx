@@ -1,11 +1,16 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 
-import { useProducts } from '../state';
+import { useProductsInfiniteQuery } from '../state';
 import { ProductList } from '../components';
 
 export const Home: React.FC = () => {
-  const { data: products, error, isLoading } = useProducts();
+  const {
+    data: products,
+    error,
+    isLoading,
+    fetchNextPage,
+  } = useProductsInfiniteQuery();
 
   if (isLoading && !products) {
     return <>Loading...</>;
@@ -19,7 +24,7 @@ export const Home: React.FC = () => {
 
   return (
     <Box sx={{ mt: 2 }}>
-      <ProductList products={products} />
+      <ProductList products={products} fetchNextPage={fetchNextPage} />
     </Box>
   );
 };
