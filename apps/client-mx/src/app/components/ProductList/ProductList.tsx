@@ -3,17 +3,20 @@ import { Product } from '@demo-t3/models';
 import { Grid } from '@mui/material';
 
 import { InfiniteLoader } from '../InfiniteLoader/InfiniteLoader';
+import { FetchNextPage } from '../../types';
 
 import { ProductCard } from './ProductCard';
 
 type ProductListProps = {
   products?: Product[];
-  fetchNextPage: () => void;
+  fetchNextPage: FetchNextPage;
+  isCompleted: boolean;
 };
 
 export const ProductList: React.FC<ProductListProps> = ({
   products,
   fetchNextPage,
+  isCompleted,
 }) => {
   return (
     <>
@@ -25,7 +28,7 @@ export const ProductList: React.FC<ProductListProps> = ({
         ))}
       </Grid>
 
-      <InfiniteLoader fetchNextPage={fetchNextPage} />
+      <InfiniteLoader fetchNextPage={fetchNextPage} isCompleted={isCompleted} />
     </>
   );
 };

@@ -2,12 +2,10 @@ import { QueryFunctionContext, useInfiniteQuery } from 'react-query';
 import { Product, RequestError } from '@demo-t3/models';
 
 import { ENTITIES_LIMIT } from '../../constants';
-import { QueryResult } from '../../types';
+import { UseInfiniteQueryResult } from '../../types';
 import { fetchProducts } from '../../repository';
 
-export const useProductsInfiniteQuery = (): QueryResult<Product[]> & {
-  fetchNextPage: () => void;
-} => {
+export const useProductsInfiniteQuery = (): UseInfiniteQueryResult<Product> => {
   const { data, error, isLoading, fetchNextPage } = useInfiniteQuery({
     queryKey: ['products-infinite-query'],
     queryFn: ({ pageParam = 1 }: QueryFunctionContext) => {
@@ -16,21 +14,39 @@ export const useProductsInfiniteQuery = (): QueryResult<Product[]> & {
       return fetchProducts({ offset });
     },
     getNextPageParam: (lastPage, allPages) => {
-      const totalProductsAmount = allPages.flat().length;
+      const totalLoadedProductsAmount = allPages
+        .map((page) => page.entries)
+        .flat().length;
 
       const isLessThanEntitiesLimit =
-        totalProductsAmount % ENTITIES_LIMIT !== 0;
+        totalLoadedProductsAmount % ENTITIES_LIMIT !== 0;
 
-      if (isLessThanEntitiesLimit) return undefined;
+      const { total, offset } = lastPage.metadata;
+      const allProductsLoaded = totalLoadedProductsAmount === total;
+      const offsetIsGreaterThanTotal = offset > total;
 
-      return totalProductsAmount / ENTITIES_LIMIT + 1;
+      if (
+        isLessThanEntitiesLimit ||
+        allProductsLoaded ||
+        offsetIsGreaterThanTotal
+      ) {
+        return undefined;
+      }
+
+      // next page number
+      return totalLoadedProductsAmount / ENTITIES_LIMIT + 1;
     },
   });
 
+  const aggregatedProductsData = data?.pages.map((page) => page.entries).flat();
+  const lastPage = data?.pages[data.pages.length - 1];
+  const total = lastPage?.metadata.total;
+
   return {
-    data: data?.pages.flat(),
+    data: aggregatedProductsData,
     error: error as RequestError,
     isLoading,
     fetchNextPage,
+    isCompleted: aggregatedProductsData?.length === total,
   };
 };

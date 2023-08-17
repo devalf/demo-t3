@@ -10,6 +10,7 @@ export const Home: React.FC = () => {
     error,
     isLoading,
     fetchNextPage,
+    isCompleted,
   } = useProductsInfiniteQuery();
 
   if (isLoading && !products) {
@@ -24,7 +25,11 @@ export const Home: React.FC = () => {
 
   return (
     <Box sx={{ mt: 2 }}>
-      <ProductList products={products} fetchNextPage={fetchNextPage} />
+      <ProductList
+        products={products}
+        fetchNextPage={fetchNextPage}
+        isCompleted={isCompleted}
+      />
     </Box>
   );
 };
