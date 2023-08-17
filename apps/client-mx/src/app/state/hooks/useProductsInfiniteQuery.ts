@@ -1,5 +1,5 @@
 import { QueryFunctionContext, useInfiniteQuery } from 'react-query';
-import { Product } from '@demo-t3/models';
+import { Product, RequestError } from '@demo-t3/models';
 
 import { ENTITIES_LIMIT } from '../../constants';
 import { QueryResult } from '../../types';
@@ -10,16 +10,10 @@ export const useProductsInfiniteQuery = (): QueryResult<Product[]> & {
 } => {
   const { data, error, isLoading, fetchNextPage } = useInfiniteQuery({
     queryKey: ['products-infinite-query'],
-    queryFn: ({ pageParam }: QueryFunctionContext) => {
-      let offset: number;
+    queryFn: ({ pageParam = 1 }: QueryFunctionContext) => {
+      const offset: string = ((pageParam - 1) * ENTITIES_LIMIT).toString();
 
-      if (pageParam === undefined || pageParam === 1) {
-        offset = 0;
-      } else {
-        offset = (pageParam - 1) * ENTITIES_LIMIT;
-      }
-
-      return fetchProducts({ offset: offset.toString() });
+      return fetchProducts({ offset });
     },
     getNextPageParam: (lastPage, allPages) => {
       const totalProductsAmount = allPages.flat().length;
@@ -35,7 +29,7 @@ export const useProductsInfiniteQuery = (): QueryResult<Product[]> & {
 
   return {
     data: data?.pages.flat(),
-    error: error as Error, // TODO provide a better type
+    error: error as RequestError,
     isLoading,
     fetchNextPage,
   };
