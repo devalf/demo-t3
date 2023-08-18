@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 import { FetchNextPage } from '../../types';
@@ -15,21 +15,28 @@ export const InfiniteLoader: React.FC<InfiniteLoaderProps> = ({
   isCompleted,
 }) => {
   const { ref, inView } = useInView({
-    threshold: 1,
+    threshold: 0.5,
   });
+
+  const fetchNextPageCallback = useCallback(() => {
+    fetchNextPage();
+  }, [isCompleted, inView]);
 
   useEffect(() => {
     if (inView) {
-      fetchNextPage();
+      fetchNextPageCallback();
     }
   }, [inView]);
 
-  if (isCompleted) {
-    return null;
-  }
-
   return (
-    <Box ref={ref} sx={{ p: 2, textAlign: 'center' }}>
+    <Box
+      ref={ref}
+      sx={{
+        p: 2,
+        textAlign: 'center',
+        display: isCompleted ? 'none' : 'block',
+      }}
+    >
       <Box
         component={'img'}
         alt={'loading'}

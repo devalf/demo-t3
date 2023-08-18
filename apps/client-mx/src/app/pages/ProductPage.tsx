@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Container, Typography } from '@mui/material';
 import React, { FC } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -20,16 +20,18 @@ export const ProductPage: FC = () => {
   }
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography variant="h5">Product Single Page</Typography>
+    <Container maxWidth={'xl'}>
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="h5">Product Single Page</Typography>
 
-      {product && (
-        <Box>
-          <Typography variant="h6">{product.name}</Typography>
-          <Typography>{product.about}</Typography>
-          <Typography color="text.secondary">${product.price}</Typography>
-        </Box>
-      )}
-    </Box>
+        {product && (
+          <Box>
+            <Typography variant="h6">{product.name}</Typography>
+            <Typography>{product.about}</Typography>
+            <Typography color="text.secondary">${product.price}</Typography>
+          </Box>
+        )}
+      </Box>
+    </Container>
   );
 };

@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
+import { CssBaseline } from '@mui/material';
 
 import { Provider } from './bootstrap/ioc/InversifyContext';
 import { Layout } from './components';
@@ -16,7 +17,9 @@ const App: FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Provider container={diContainer.inversifyContainer}>
-        <Layout />
+        <CssBaseline>
+          <Layout />
+        </CssBaseline>
       </Provider>
 
       {shouldRenderDevtools && <ReactQueryDevtools initialIsOpen={false} />}
