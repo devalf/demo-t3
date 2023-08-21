@@ -1,13 +1,22 @@
-import { Box, Container, Typography } from '@mui/material';
+import { Box, Button, Card, Container, Grid, Typography } from '@mui/material';
 import React, { FC } from 'react';
 import { useParams } from 'react-router-dom';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart';
+import { observer } from 'mobx-react-lite';
 
 import { useProduct } from '../state';
 import { PathParams } from '../types';
+import { useInjection } from '../bootstrap/ioc/useInjection';
+import { ICartManager } from '../store/interfaces';
+import { DependencyType } from '../bootstrap/ioc/DependencyType';
 
-export const ProductPage: FC = () => {
+export const ProductPage: FC = observer(() => {
   const { id } = useParams() as PathParams;
   const { data: product, isLoading, error } = useProduct(id);
+
+  const { addProductToCart, removeProductFromCart, isProductInCart } =
+    useInjection<ICartManager>(DependencyType.CartManager);
 
   if (isLoading && !product) {
     return <>Loading...</>;
@@ -19,19 +28,85 @@ export const ProductPage: FC = () => {
     return null;
   }
 
-  return (
-    <Container maxWidth={'xl'}>
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="h5">Product Single Page</Typography>
+  if (!product) {
+    return <>Product not found</>;
+  }
 
-        {product && (
-          <Box>
-            <Typography variant="h6">{product.name}</Typography>
-            <Typography>{product.about}</Typography>
-            <Typography color="text.secondary">${product.price}</Typography>
+  return (
+    <Container maxWidth={'xl'} sx={{ my: 2 }}>
+      <Grid container spacing={4}>
+        <Grid item xs={12} sm={6}>
+          <Card variant={'outlined'} sx={{ textAlign: 'center', p: 2 }}>
+            <Box
+              component={'img'}
+              src={product.picture}
+              alt={'product image'}
+              sx={{ maxWidth: 300 }}
+            />
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Typography variant="h4">{product.name}</Typography>
+          <Typography color="text.secondary" sx={{ mt: 1 }}>
+            ${product.price}
+          </Typography>
+          <Typography sx={{ mt: 1 }}>{product.about}</Typography>
+
+          <Box sx={{ mt: 2 }}>
+            <Typography
+              sx={{ display: 'inline-block', minWidth: 125, fontWeight: 600 }}
+            >
+              Company
+            </Typography>
+            <Typography component={'span'}>{product.company}</Typography>
           </Box>
-        )}
-      </Box>
+
+          {product?.tags && (
+            <Box sx={{ mt: 1 }}>
+              <Typography
+                sx={{ display: 'inline-block', minWidth: 125, fontWeight: 600 }}
+              >
+                Tags
+              </Typography>
+              <Typography component={'span'}>
+                {product.tags.map((tag, idx) => {
+                  const tagsLength = product.tags ? product.tags.length : 0;
+                  const suffixComa = idx < tagsLength - 1 ? ', ' : '';
+
+                  return `${tag}${suffixComa}`;
+                })}
+              </Typography>
+            </Box>
+          )}
+
+          <Box sx={{ mt: 5 }}>
+            <Button
+              variant={'contained'}
+              color={'primary'}
+              size={'large'}
+              endIcon={<ShoppingCartIcon />}
+              disabled={isProductInCart(product)}
+              onClick={() => addProductToCart(product)}
+              sx={{ mr: 2, mb: 2 }}
+            >
+              Add to cart
+            </Button>
+
+            {isProductInCart(product) && (
+              <Button
+                variant={'contained'}
+                color={'secondary'}
+                size={'large'}
+                endIcon={<RemoveShoppingCartIcon />}
+                onClick={() => removeProductFromCart(product)}
+                sx={{ mb: 2 }}
+              >
+                Remove from cart
+              </Button>
+            )}
+          </Box>
+        </Grid>
+      </Grid>
     </Container>
   );
-};
+});

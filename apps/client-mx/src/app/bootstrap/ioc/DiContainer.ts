@@ -1,7 +1,11 @@
 import { Container } from 'inversify';
 
-import { StoreExampleOne, StoreExampleTwo } from '../../store';
-import { IStoreExampleOne, IStoreExampleTwo } from '../../store/interfaces';
+import { CartManager, StoreExampleOne, StoreExampleTwo } from '../../store';
+import {
+  ICartManager,
+  IStoreExampleOne,
+  IStoreExampleTwo,
+} from '../../store/interfaces';
 
 import { DependencyType } from './DependencyType';
 
@@ -18,6 +22,10 @@ export class DiContainer {
     this.inversifyContainer
       .bind<IStoreExampleTwo>(DependencyType.StoreExampleTwo)
       .to(StoreExampleTwo);
+
+    this.inversifyContainer
+      .bind<ICartManager>(DependencyType.CartManager)
+      .to(CartManager);
   }
 
   public get storeExampleOne(): IStoreExampleOne {

@@ -26,7 +26,7 @@ export const Home: React.FC = () => {
 
   return (
     <Container maxWidth={'xl'}>
-      <Box sx={{ mt: 2 }}>
+      <Box sx={{ mt: 2, mb: 2 }}>
         <ProductList
           products={products}
           fetchNextPage={fetchNextPage}
