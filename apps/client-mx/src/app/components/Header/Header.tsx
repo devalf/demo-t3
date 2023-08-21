@@ -16,7 +16,7 @@ import { DependencyType } from '../../bootstrap/ioc/DependencyType';
 import { routes } from '../../constants';
 
 export const Header: React.FC = observer(() => {
-  const { getTotalProductsInCart, productsInCart } = useInjection<ICartManager>(
+  const { getTotalProductsInCart, cartItems } = useInjection<ICartManager>(
     DependencyType.CartManager
   );
 
@@ -34,6 +34,7 @@ export const Header: React.FC = observer(() => {
                 component={ReactRouterLink}
                 to={routes.home}
                 sx={{ color: 'white' }}
+                data-testid={'link_to_home'}
               >
                 Home
               </Link>
@@ -46,7 +47,7 @@ export const Header: React.FC = observer(() => {
               color="inherit"
               onClick={() => {
                 console.log('Cart Modal functionality will be defined');
-                console.log(toJS(productsInCart));
+                console.log(toJS(cartItems));
               }}
             >
               <Badge badgeContent={getTotalProductsInCart()} color="error">

@@ -1,7 +1,12 @@
 import { Container } from 'inversify';
 
-import { IStoreExampleOne, IStoreExampleTwo } from '../../store/interfaces';
 import {
+  ICartManager,
+  IStoreExampleOne,
+  IStoreExampleTwo,
+} from '../../store/interfaces';
+import {
+  createCartManagerMock,
   createStoreExampleOneMock,
   createStoreExampleTwoMock,
 } from '../../store/__dummy__';
@@ -18,6 +23,10 @@ export function createTestContainer(): Container {
   inversifyContainer
     .bind<IStoreExampleTwo>(DependencyType.StoreExampleTwo)
     .toConstantValue(createStoreExampleTwoMock());
+
+  inversifyContainer
+    .bind<ICartManager>(DependencyType.CartManager)
+    .toConstantValue(createCartManagerMock());
 
   return inversifyContainer;
 }

@@ -6,7 +6,6 @@ export type CartItem = {
 };
 
 export interface ICartManager {
-  readonly productsInCart: CartItem[];
   cartItems: CartItem[];
   addProductToCart: (item: Product) => void;
   removeProductFromCart: (item: Product) => void;

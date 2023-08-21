@@ -10,8 +10,11 @@ describe('App', () => {
   });
 
   it('should have a greeting as the title', () => {
-    const { getByText } = render(<App />);
+    const { getByTestId } = render(<App />);
 
-    expect(getByText(/Home/gi)).toBeTruthy();
+    const linkToHomeElement = getByTestId('link_to_home');
+
+    expect(linkToHomeElement).toBeTruthy();
+    expect(linkToHomeElement.textContent).toEqual('Home');
   });
 });

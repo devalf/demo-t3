@@ -6,7 +6,7 @@ import { CartItem, ICartManager } from '../interfaces';
 
 @injectable()
 export class CartManager implements ICartManager {
-  readonly productsInCart: CartItem[] = [];
+  private productsInCart: CartItem[] = [];
 
   public constructor() {
     makeAutoObservable(this);
