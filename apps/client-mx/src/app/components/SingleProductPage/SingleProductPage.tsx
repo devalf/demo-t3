@@ -42,6 +42,7 @@ export const SingleProductPage: FC = observer(() => {
               src={product.picture}
               alt={'product image'}
               sx={{ maxWidth: 300 }}
+              data-testid={'product_picture'}
             />
           </Card>
         </Grid>
@@ -49,10 +50,16 @@ export const SingleProductPage: FC = observer(() => {
           <Typography variant="h4" data-testid={'product_name'}>
             {product.name}
           </Typography>
-          <Typography color="text.secondary" sx={{ mt: 1 }}>
+          <Typography
+            color="text.secondary"
+            sx={{ mt: 1 }}
+            data-testid={'product_price'}
+          >
             ${product.price}
           </Typography>
-          <Typography sx={{ mt: 1 }}>{product.about}</Typography>
+          <Typography sx={{ mt: 1 }} data-testid={'product_about'}>
+            {product.about}
+          </Typography>
 
           <Box sx={{ mt: 2 }}>
             <Typography
@@ -60,17 +67,20 @@ export const SingleProductPage: FC = observer(() => {
             >
               Company
             </Typography>
-            <Typography component={'span'}>{product.company}</Typography>
+            <Typography component={'span'} data-testid={'product_company'}>
+              {product.company}
+            </Typography>
           </Box>
 
           {product?.tags && (
             <Box sx={{ mt: 1 }}>
               <Typography
                 sx={{ display: 'inline-block', minWidth: 125, fontWeight: 600 }}
+                data-testid={'product_tags_label'}
               >
                 Tags
               </Typography>
-              <Typography component={'span'}>
+              <Typography component={'span'} data-testid={'product_tags'}>
                 {product.tags.map((tag, idx) => {
                   const tagsLength = product.tags ? product.tags.length : 0;
                   const suffixComa = idx < tagsLength - 1 ? ', ' : '';
@@ -90,6 +100,7 @@ export const SingleProductPage: FC = observer(() => {
               disabled={isProductInCart(product)}
               onClick={() => addProductToCart(product)}
               sx={{ mr: 2, mb: 2 }}
+              data-testid={'add_to_cart_button'}
             >
               Add to cart
             </Button>
@@ -102,6 +113,7 @@ export const SingleProductPage: FC = observer(() => {
                 endIcon={<RemoveShoppingCartIcon />}
                 onClick={() => removeProductFromCart(product)}
                 sx={{ mb: 2 }}
+                data-testid={'remove_from_cart_button'}
               >
                 Remove from cart
               </Button>
