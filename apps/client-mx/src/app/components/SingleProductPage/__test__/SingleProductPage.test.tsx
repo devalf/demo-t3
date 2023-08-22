@@ -1,44 +1,34 @@
-import { render, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { Container } from 'inversify';
 import { mockProduct } from '@demo-t3/dummy-data';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { renderApp } from '@demo-t3/utils-ui';
+import { FC, PropsWithChildren } from 'react';
 
 import { SingleProductPage } from '../SingleProductPage';
 import { createTestContainer } from '../../../bootstrap/ioc/test.helpers';
-import { Provider } from '../../../bootstrap/ioc/InversifyContext';
 import { fetchProduct } from '../../../repository';
+import { Provider } from '../../../bootstrap/ioc/InversifyContext';
 
 jest.mock('../../../repository');
 
 describe('SingleProductPage', () => {
   let inversifyContainer: Container;
-
-  // TODO provide base render util with providers, transfer this definition to appropriate file
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        cacheTime: Infinity,
-        retry: false,
-      },
-    },
-  });
+  let InversifyProviderMock: FC<PropsWithChildren>;
 
   beforeEach(() => {
-    // TODO provide base render util with providers, transfer this definition to appropriate file
     inversifyContainer = createTestContainer();
+
+    InversifyProviderMock = ({ children }) => (
+      <Provider container={inversifyContainer}>{children}</Provider>
+    );
 
     (fetchProduct as jest.Mock).mockResolvedValue(mockProduct());
   });
 
   it('should render successfully', async () => {
-    // TODO provide base render util with providers
-    const { baseElement, getByTestId } = render(
-      <QueryClientProvider client={queryClient}>
-        <Provider container={inversifyContainer}>
-          <SingleProductPage />
-        </Provider>
-      </QueryClientProvider>
-    );
+    const { baseElement, getByTestId } = renderApp(<SingleProductPage />, {
+      wrapper: InversifyProviderMock,
+    });
 
     await waitFor(() => {
       expect(baseElement).toBeTruthy();

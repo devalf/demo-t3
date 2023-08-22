@@ -1,17 +1,17 @@
 {
-  "name": "test-utils",
+  "name": "utils-ui",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/test-utils/src",
+  "sourceRoot": "libs/utils-ui/src",
   "projectType": "library",
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/libs/test-utils",
-        "main": "libs/test-utils/src/index.ts",
-        "tsConfig": "libs/test-utils/tsconfig.lib.json",
-        "assets": ["libs/test-utils/*.md"],
+        "outputPath": "dist/libs/utils-ui",
+        "main": "libs/utils-ui/src/index.ts",
+        "tsConfig": "libs/utils-ui/tsconfig.lib.json",
+        "assets": ["libs/utils-ui/*.md"],
         "rootDir": "."
       }
     },
@@ -19,14 +19,17 @@
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/test-utils/**/*.ts"]
+        "lintFilePatterns": [
+          "libs/utils-ui/**/*.ts",
+          "libs/utils-ui/package.json"
+        ]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "libs/test-utils/jest.config.ts",
+        "jestConfig": "libs/utils-ui/jest.config.ts",
         "passWithNoTests": true
       },
       "configurations": {
@@ -37,5 +40,5 @@
       }
     }
   },
-  "tags": ["scope:shared"]
+  "tags": ["scope:shared-utils-ui"]
 }

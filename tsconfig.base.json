@@ -13,7 +13,8 @@
       "@demo-t3/dummy-data": ["libs/dummy-data/src/index.ts"],
       "@demo-t3/models": ["libs/models/src/index.ts"],
       "@demo-t3/test-utils": ["libs/test-utils/src/index.ts"],
-      "@demo-t3/utils": ["libs/utils/src/index.ts"]
+      "@demo-t3/utils": ["libs/utils/src/index.ts"],
+      "@demo-t3/utils-ui": ["libs/utils-ui/src/index.ts"]
     }
   },
   "exclude": ["dist", "node_modules"]

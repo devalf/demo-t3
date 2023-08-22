@@ -18,7 +18,11 @@
               },
               {
                 "sourceTag": "scope:client-mx",
-                "onlyDependOnLibsWithTags": ["scope:client-mx", "scope:shared"]
+                "onlyDependOnLibsWithTags": [
+                  "scope:client-mx",
+                  "scope:shared",
+                  "scope:shared-utils-ui"
+                ]
               },
               {
                 "sourceTag": "scope:server-nest",
