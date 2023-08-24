@@ -7,6 +7,7 @@ export function useInjection<T>(
   serviceIdentifier: interfaces.ServiceIdentifier<T>
 ): T {
   const { container } = useContext(InversifyContext);
+
   if (!container) {
     throw new Error();
   }

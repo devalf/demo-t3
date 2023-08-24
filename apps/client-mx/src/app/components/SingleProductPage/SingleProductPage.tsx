@@ -5,11 +5,14 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart';
 import { observer } from 'mobx-react-lite';
 import { useInjection } from 'inversify-react';
+import { AxiosError } from 'axios';
 
 import { PathParams } from '../../types';
 import { useProduct } from '../../state';
 import { ICartManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/DependencyType';
+import { LoadingBox } from '../LoadingBox/LoadingBox';
+import { ItemNotFound } from '../ItemNotFound/ItemNotFound';
 
 export const SingleProductPage: FC = observer(() => {
   const { id } = useParams() as PathParams;
@@ -19,17 +22,25 @@ export const SingleProductPage: FC = observer(() => {
     useInjection<ICartManager>(DependencyType.CartManager);
 
   if (isLoading && !product) {
-    return <>Loading...</>;
+    return <LoadingBox />;
   }
 
   if (error) {
+    if (error instanceof AxiosError) {
+      const { response } = error;
+
+      if (response?.status === 404) {
+        return <ItemNotFound />;
+      }
+    }
+
     console.log('An error has occurred: ' + error.message);
 
     return null;
   }
 
   if (!product) {
-    return <>Product not found</>;
+    return <ItemNotFound />;
   }
 
   return (

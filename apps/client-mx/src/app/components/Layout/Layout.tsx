@@ -1,17 +1,36 @@
-import React from 'react';
+import React, { FC, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
-import { Home, ProductPage } from '../../pages';
+import { Home } from '../../pages';
 import { Header } from '../Header/Header';
 import { routes } from '../../constants';
+import { LoadingBox } from '../LoadingBox/LoadingBox';
 
-export const Layout: React.FC = () => {
+const Product = lazy(() => import('../../pages/Product'));
+const Cart = lazy(() => import('../../pages/Cart'));
+
+export const Layout: FC = () => {
   return (
     <Router>
       <Header />
       <Routes>
         <Route path={routes.home} element={<Home />} />
-        <Route path={routes.product} element={<ProductPage />} />
+        <Route
+          path={routes.product}
+          element={
+            <Suspense fallback={<LoadingBox />}>
+              <Product />
+            </Suspense>
+          }
+        />
+        <Route
+          path={routes.cart}
+          element={
+            <Suspense fallback={<LoadingBox />}>
+              <Cart />
+            </Suspense>
+          }
+        />
       </Routes>
     </Router>
   );

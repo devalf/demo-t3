@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react';
+import React, { FC, PropsWithChildren } from 'react';
 import { Container } from 'inversify';
 import { Provider as InversifyReactProvider } from 'inversify-react';
 
@@ -12,7 +12,7 @@ type Props = {
   container: Container;
 };
 
-export const Provider: React.FC<PropsWithChildren<Props>> = (props) => {
+export const Provider: FC<PropsWithChildren<Props>> = (props) => {
   const { container, children } = props;
 
   return (

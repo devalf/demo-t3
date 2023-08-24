@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { FC } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 
 import { useProductsInfiniteQuery } from '../state';
 import { ProductList } from '../components';
 
-export const Home: React.FC = () => {
+export const Home: FC = () => {
   const {
     data: products,
     error,

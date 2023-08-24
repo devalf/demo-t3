@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { Product } from '@demo-t3/models';
 import { Grid } from '@mui/material';
 
@@ -13,7 +13,7 @@ type ProductListProps = {
   isCompleted: boolean;
 };
 
-export const ProductList: React.FC<ProductListProps> = ({
+export const ProductList: FC<ProductListProps> = ({
   products,
   fetchNextPage,
   isCompleted,

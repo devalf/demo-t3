@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { Link as ReactRouterLink } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
@@ -8,15 +8,14 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import { Badge, IconButton, Link } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { observer } from 'mobx-react-lite';
-import { toJS } from 'mobx';
 
 import { useInjection } from '../../bootstrap/ioc/useInjection';
 import { ICartManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/DependencyType';
 import { routes } from '../../constants';
 
-export const Header: React.FC = observer(() => {
-  const { getTotalProductsInCart, cartItems } = useInjection<ICartManager>(
+export const Header: FC = observer(() => {
+  const { getTotalProductsInCart } = useInjection<ICartManager>(
     DependencyType.CartManager
   );
 
@@ -41,19 +40,22 @@ export const Header: React.FC = observer(() => {
             </Box>
           </Box>
           <Box>
-            <IconButton
-              size="large"
-              aria-label="show 4 new mails"
-              color="inherit"
-              onClick={() => {
-                console.log('Cart Modal functionality will be defined');
-                console.log(toJS(cartItems));
-              }}
+            <Link
+              component={ReactRouterLink}
+              to={routes.cart}
+              sx={{ color: 'white' }}
+              data-testid={'link_to_cart'}
             >
-              <Badge badgeContent={getTotalProductsInCart()} color="error">
-                <ShoppingCartIcon />
-              </Badge>
-            </IconButton>
+              <IconButton
+                size="large"
+                aria-label="show cart items"
+                color="inherit"
+              >
+                <Badge badgeContent={getTotalProductsInCart()} color="error">
+                  <ShoppingCartIcon />
+                </Badge>
+              </IconButton>
+            </Link>
           </Box>
         </Toolbar>
       </Container>

@@ -3,8 +3,8 @@ import { getGreeting } from '../support/app.po';
 describe('client-mx', () => {
   beforeEach(() => cy.visit('/'));
 
-  it('should render `Home` link', () => {
-    cy.get('a').should('exist').should('have.text', 'Home');
+  it('should render `HomePage` link', () => {
+    cy.get('a').should('exist').should('have.text', 'HomePage');
   });
 
   it.skip('should display welcome message', () => {

@@ -2,6 +2,8 @@ import React, { FC } from 'react';
 
 import { SingleProductPage } from '../components';
 
-export const ProductPage: FC = () => {
+const Product: FC = () => {
   return <SingleProductPage />;
 };
+
+export default Product;

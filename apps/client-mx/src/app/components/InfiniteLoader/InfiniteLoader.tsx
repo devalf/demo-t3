@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import React, { useCallback, useEffect } from 'react';
+import React, { FC, useCallback, useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 import { FetchNextPage } from '../../types';
@@ -10,7 +10,7 @@ type InfiniteLoaderProps = {
   isCompleted: boolean;
 };
 
-export const InfiniteLoader: React.FC<InfiniteLoaderProps> = ({
+export const InfiniteLoader: FC<InfiniteLoaderProps> = ({
   fetchNextPage,
   isCompleted,
 }) => {
