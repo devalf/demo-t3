@@ -8,9 +8,8 @@ import { useInjection } from '../../bootstrap/ioc/useInjection';
 import { DependencyType } from '../../bootstrap/ioc/DependencyType';
 
 export const CartPageComponent: FC = observer(() => {
-  const { cartItems, removeProductFromCart } = useInjection<ICartManager>(
-    DependencyType.CartManager
-  );
+  const { cartItems, removeProductFromCart, totalPrice } =
+    useInjection<ICartManager>(DependencyType.CartManager);
 
   return (
     <Box sx={{ border: 1, borderColor: 'grey.500', borderRadius: 1 }}>
@@ -69,6 +68,18 @@ export const CartPageComponent: FC = observer(() => {
             </Grid>
           </Grid>
         ))}
+      </Box>
+
+      <Box
+        sx={{
+          borderTop: 1,
+          borderColor: 'grey.500',
+          p: 2,
+        }}
+      >
+        <Typography variant={'h6'} sx={{ fontWeight: 600 }}>
+          Total: ${totalPrice}
+        </Typography>
       </Box>
 
       <Box

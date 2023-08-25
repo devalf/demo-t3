@@ -16,6 +16,12 @@ export class CartManager implements ICartManager {
     return this.productsInCart;
   }
 
+  get totalPrice(): number {
+    return this.productsInCart.reduce((acc, item) => {
+      return acc + item.product.price * item.quantity;
+    }, 0);
+  }
+
   addProductToCart = (item: Product): void => {
     if (this.isProductInCart(item)) {
       throw new Error('Product is already in cart');
@@ -55,11 +61,6 @@ export class CartManager implements ICartManager {
   getTotalProductsInCart = () => {
     return this.productsInCart.length;
   };
-
-  calculateTotalPrice = (): number =>
-    this.productsInCart.reduce((acc, item) => {
-      return acc + item.product.price * item.quantity;
-    }, 0);
 
   isProductInCart = (item: Product): boolean => {
     const foundItem = this.productsInCart.find(
