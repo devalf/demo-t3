@@ -6,4 +6,4 @@ export * from './InfiniteLoader/InfiniteLoader';
 export * from './SingleProductPage/SingleProductPage';
 export * from './LoadingBox/LoadingBox';
 export * from './ItemNotFound/ItemNotFound';
-export * from './CartPageComponent/CartPageComponent';
+export * from './CartForm/CartForm';

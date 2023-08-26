@@ -9,4 +9,5 @@ export const createCartManagerMock = (): ICartManager => ({
   clearCart: () => undefined,
   getTotalProductsInCart: () => 0,
   isProductInCart: () => false,
+  getCartItemTotalPrice: () => 0,
 });

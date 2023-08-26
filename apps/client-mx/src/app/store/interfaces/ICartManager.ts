@@ -14,4 +14,5 @@ export interface ICartManager {
   clearCart: () => void;
   getTotalProductsInCart: () => number;
   isProductInCart: (item: Product) => boolean;
+  getCartItemTotalPrice: (item: CartItem) => number;
 }

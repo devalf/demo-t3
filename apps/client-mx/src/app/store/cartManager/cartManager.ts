@@ -69,4 +69,8 @@ export class CartManager implements ICartManager {
 
     return !!foundItem;
   };
+
+  getCartItemTotalPrice = (item: CartItem): number => {
+    return item.product.price * item.quantity;
+  };
 }

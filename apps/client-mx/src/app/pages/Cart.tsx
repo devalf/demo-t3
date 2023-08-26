@@ -2,7 +2,7 @@ import { Box, Container, Typography } from '@mui/material';
 import React, { FC } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { CartPageComponent } from '../components';
+import { CartForm } from '../components';
 import { useInjection } from '../bootstrap/ioc/useInjection';
 import { ICartManager } from '../store/interfaces';
 import { DependencyType } from '../bootstrap/ioc/DependencyType';
@@ -21,7 +21,7 @@ const Cart: FC = observer(() => {
           </Typography>
         </Box>
 
-        {!carrIsEmpty && <CartPageComponent />}
+        {!carrIsEmpty && <CartForm />}
       </Box>
     </Container>
   );
