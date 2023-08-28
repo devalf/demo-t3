@@ -5,13 +5,16 @@ import { mockProduct } from '@demo-t3/dummy-data';
 import { faker } from '@faker-js/faker';
 import * as router from 'react-router';
 import { generatePath } from 'react-router-dom';
-import { fireEvent } from '@testing-library/react';
+import { fireEvent, waitFor } from '@testing-library/react';
 
 import { CartForm } from '../CartForm';
 import { createTestContainer } from '../../../bootstrap/ioc/test.helpers';
 import { Provider } from '../../../bootstrap/ioc/InversifyContext';
 import { DependencyType } from '../../../bootstrap/ioc/DependencyType';
 import { routes } from '../../../constants';
+import { createOrder } from '../../../repository';
+
+jest.mock('../../../repository');
 
 describe('Testing CartFrom', () => {
   let inversifyContainer: Container;
@@ -155,5 +158,86 @@ describe('Testing CartFrom', () => {
       expect.any(Object),
       5
     );
+  });
+
+  it('should send request to create order and handle success request properly', async () => {
+    const clearCartMock = jest.fn();
+    const navigateMock = jest.fn();
+    const mockOrderId = 1234;
+
+    (createOrder as jest.Mock).mockResolvedValue({ id: mockOrderId });
+
+    jest.spyOn(router, 'useNavigate').mockImplementation(() => navigateMock);
+
+    inversifyContainer.rebind(DependencyType.CartManager).toConstantValue({
+      cartItems: [
+        {
+          product: mockProduct({ id: faker.string.uuid() }),
+          quantity: 1,
+        },
+      ],
+      totalPrice: 100,
+      getCartItemTotalPrice: () => 100,
+      clearCart: clearCartMock,
+    });
+
+    const { getByTestId } = renderApp(<CartForm />, {
+      wrapper: InversifyProviderMock,
+    });
+
+    const searchParams = new URLSearchParams({ order_id: String(mockOrderId) });
+    const orderSuccessPathWithParams = `${
+      routes.orderSuccess
+    }?${searchParams.toString()}`;
+
+    const makeOrderButton = getByTestId('cart_make_order_btn');
+
+    fireEvent.click(makeOrderButton);
+
+    await waitFor(() => {
+      expect(createOrder).toHaveBeenCalled();
+      expect(clearCartMock).toHaveBeenCalled();
+      expect(navigateMock).toHaveBeenCalledWith(orderSuccessPathWithParams);
+    });
+  });
+
+  it('should match all provided params on the page', () => {
+    const mockedProduct = mockProduct();
+
+    inversifyContainer.rebind(DependencyType.CartManager).toConstantValue({
+      cartItems: [
+        {
+          product: mockedProduct,
+          quantity: 4,
+        },
+      ],
+      totalPrice: 100,
+      getCartItemTotalPrice: () => 400,
+    });
+
+    const { getByTestId } = renderApp(<CartForm />, {
+      wrapper: InversifyProviderMock,
+    });
+
+    const cartItemProductPicture = getByTestId('cart_item_product_picture');
+    const cartItemProductName = getByTestId('cart_item_product_name');
+    const cartItemProductCompany = getByTestId('cart_item_product_company');
+    const cartItemProductPrice = getByTestId('cart_item_product_price');
+    const cartItemProductQuantity = getByTestId('cart_item_product_quantity');
+    const cartItemTotalAmountPrice = getByTestId(
+      'cart_item_total_amount_price'
+    );
+
+    expect(cartItemProductPicture.getAttribute('src')).toContain(
+      'https://picsum.photos/seed/'
+    );
+
+    expect(cartItemProductName.textContent).toEqual(mockedProduct.name);
+    expect(cartItemProductCompany.textContent).toEqual(mockedProduct.company);
+    expect(cartItemProductPrice.textContent).toEqual(
+      `Product price: $${mockedProduct.price}`
+    );
+    expect(cartItemProductQuantity.getAttribute('value')).toEqual('4');
+    expect(cartItemTotalAmountPrice.textContent).toEqual('$400');
   });
 });
