@@ -1,12 +1,22 @@
 import { makeAutoObservable } from 'mobx';
 import { injectable } from 'inversify';
 import { Product } from '@demo-t3/models';
+import { mockProduct } from '@demo-t3/dummy-data';
 
 import { CartItem, ICartManager } from '../interfaces';
 
 @injectable()
 export class CartManager implements ICartManager {
-  private productsInCart: CartItem[] = [];
+  private productsInCart: CartItem[] = [
+    {
+      product: mockProduct(),
+      quantity: 1,
+    },
+    {
+      product: mockProduct({ id: '2', name: 'Product 2' }),
+      quantity: 3,
+    },
+  ];
 
   public constructor() {
     makeAutoObservable(this);

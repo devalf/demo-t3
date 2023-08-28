@@ -54,8 +54,13 @@ export const CartForm: FC = observer(() => {
           },
         }}
       >
-        {cartItems.map((cartItem) => (
-          <Grid container key={cartItem.product.id} alignItems={'center'}>
+        {cartItems.map((cartItem, idx) => (
+          <Grid
+            container
+            key={cartItem.product.id}
+            alignItems={'center'}
+            data-testid={`cart_item_row_${idx}`}
+          >
             <Grid item xs={12} md={4}>
               <Box
                 display={'flex'}
@@ -78,13 +83,23 @@ export const CartForm: FC = observer(() => {
                   data-testid={'cart_item_product_picture'}
                 />
                 <Box>
-                  <Typography variant={'h6'}>
+                  <Typography
+                    variant={'h6'}
+                    data-testid={'cart_item_product_name'}
+                  >
                     {cartItem.product.name}
                   </Typography>
-                  <Typography variant={'body1'}>
+                  <Typography
+                    variant={'body1'}
+                    data-testid={'cart_item_product_company'}
+                  >
                     {cartItem.product.company}
                   </Typography>
-                  <Typography variant={'body1'} sx={{ fontWeight: 600, mt: 2 }}>
+                  <Typography
+                    variant={'body1'}
+                    sx={{ fontWeight: 600, mt: 2 }}
+                    data-testid={'cart_item_product_price'}
+                  >
                     Product price: ${cartItem.product.price}
                   </Typography>
                 </Box>
@@ -105,7 +120,12 @@ export const CartForm: FC = observer(() => {
                 }}
               >
                 <Box>
-                  <Typography variant={'body1'}>Quantity:</Typography>
+                  <Typography
+                    variant={'body1'}
+                    data-testid={'cart_item_quantity_label'}
+                  >
+                    Quantity:
+                  </Typography>
                   <TextField
                     type={'number'}
                     value={cartItem.quantity}
@@ -118,13 +138,22 @@ export const CartForm: FC = observer(() => {
                     InputProps={{
                       inputProps: {
                         min: 1,
+                        'data-testid': 'cart_item_product_quantity',
                       },
                     }}
                   />
                 </Box>
                 <Box>
-                  <Typography variant={'body1'}>Total amount price:</Typography>
-                  <Typography variant={'h6'}>
+                  <Typography
+                    variant={'body1'}
+                    data-testid={'cart_item_total_amount_price_label'}
+                  >
+                    Total amount price:
+                  </Typography>
+                  <Typography
+                    variant={'h6'}
+                    data-testid={'cart_item_total_amount_price'}
+                  >
                     ${getCartItemTotalPrice(cartItem)}
                   </Typography>
                 </Box>
@@ -146,6 +175,7 @@ export const CartForm: FC = observer(() => {
                 color={'secondary'}
                 size={'large'}
                 onClick={() => removeProductFromCart(cartItem.product)}
+                data-testid={'cart_item_remove_btn'}
               >
                 Remove
               </Button>
@@ -162,7 +192,8 @@ export const CartForm: FC = observer(() => {
         }}
       >
         <Typography variant={'h6'} sx={{ fontWeight: 600 }}>
-          Total price: ${totalPrice}
+          Total price:{' '}
+          <span data-testid={'cart_total_price'}>${totalPrice}</span>
         </Typography>
       </Box>
 
@@ -180,6 +211,7 @@ export const CartForm: FC = observer(() => {
           size={'large'}
           onClick={handleCreateOrder}
           loading={isLoading}
+          data-testid={'cart_make_order_btn'}
         >
           Make order
         </LoadingButton>

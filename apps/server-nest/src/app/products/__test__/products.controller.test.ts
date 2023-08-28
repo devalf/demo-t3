@@ -13,7 +13,7 @@ describe('ProductsController', () => {
     productsController = new ProductsController(productsService);
   });
 
-  test('should return an list of products', async () => {
+  it('should return an list of products', async () => {
     const result = mockApiProductList();
 
     jest.spyOn(productsService, 'getProducts').mockResolvedValue(result);
@@ -23,7 +23,7 @@ describe('ProductsController', () => {
     ).toBe(result);
   });
 
-  test('should return a product', async () => {
+  it('should return a product', async () => {
     const result = mockProductDetailed();
 
     jest.spyOn(productsService, 'getProduct').mockResolvedValue(result);
