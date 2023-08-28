@@ -3,4 +3,5 @@ export const routes = {
   products: '/products',
   product: '/products/:id',
   cart: '/cart',
+  orderSuccess: '/order-success',
 };

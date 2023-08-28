@@ -23,3 +23,8 @@ export class ApiProductListDTO implements ApiEntryList<ProductDTO> {
   })
   entries: [ProductDTO];
 }
+
+export class ApiOrderCreatedDTO {
+  @ApiProperty()
+  id: number;
+}

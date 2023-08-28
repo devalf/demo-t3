@@ -8,6 +8,7 @@ import { LoadingBox } from '../LoadingBox/LoadingBox';
 
 const Product = lazy(() => import('../../pages/Product'));
 const Cart = lazy(() => import('../../pages/Cart'));
+const OrderSuccess = lazy(() => import('../../pages/OrderSuccess'));
 
 export const Layout: FC = () => {
   return (
@@ -28,6 +29,14 @@ export const Layout: FC = () => {
           element={
             <Suspense fallback={<LoadingBox />}>
               <Cart />
+            </Suspense>
+          }
+        />
+        <Route
+          path={routes.orderSuccess}
+          element={
+            <Suspense fallback={<LoadingBox />}>
+              <OrderSuccess />
             </Suspense>
           }
         />

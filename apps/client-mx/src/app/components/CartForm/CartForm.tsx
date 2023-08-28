@@ -3,11 +3,13 @@ import Box from '@mui/material/Box';
 import { Button, Grid, TextField, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { generatePath, useNavigate } from 'react-router-dom';
+import { LoadingButton } from '@mui/lab';
 
 import { ICartManager } from '../../store/interfaces';
 import { useInjection } from '../../bootstrap/ioc/useInjection';
 import { DependencyType } from '../../bootstrap/ioc/DependencyType';
 import { routes } from '../../constants';
+import { useOrderMutation } from '../../state';
 
 export const CartForm: FC = observer(() => {
   const {
@@ -16,9 +18,27 @@ export const CartForm: FC = observer(() => {
     totalPrice,
     updateCartItemQuantity,
     getCartItemTotalPrice,
+    clearCart,
   } = useInjection<ICartManager>(DependencyType.CartManager);
 
   const navigate = useNavigate();
+
+  const { createOrder, isLoading } = useOrderMutation();
+
+  // simulation of requesting order creation
+  const handleCreateOrder = async () => {
+    const { id: orderId } = await createOrder();
+
+    if (orderId) {
+      const searchParams = new URLSearchParams({ order_id: String(orderId) });
+      const orderSuccessPathWithParams = `${
+        routes.orderSuccess
+      }?${searchParams.toString()}`;
+
+      navigate(orderSuccessPathWithParams);
+      clearCart();
+    }
+  };
 
   return (
     <Box sx={{ border: 1, borderColor: 'grey.500', borderRadius: 1 }}>
@@ -95,6 +115,11 @@ export const CartForm: FC = observer(() => {
                         Number(event.target.value)
                       );
                     }}
+                    InputProps={{
+                      inputProps: {
+                        min: 1,
+                      },
+                    }}
                   />
                 </Box>
                 <Box>
@@ -149,14 +174,15 @@ export const CartForm: FC = observer(() => {
           textAlign: 'center',
         }}
       >
-        <Button
+        <LoadingButton
           variant={'contained'}
           color={'primary'}
           size={'large'}
-          onClick={() => console.log('Order request will be developed')}
+          onClick={handleCreateOrder}
+          loading={isLoading}
         >
           Make order
-        </Button>
+        </LoadingButton>
       </Box>
     </Box>
   );
