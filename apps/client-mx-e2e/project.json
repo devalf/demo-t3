@@ -5,19 +5,10 @@
   "projectType": "application",
   "targets": {
     "e2e": {
-      "executor": "@nx/cypress:cypress",
+      "executor": "@nx/playwright:playwright",
+      "outputs": ["{workspaceRoot}/dist/.playwright/apps/client-mx"],
       "options": {
-        "cypressConfig": "apps/client-mx-e2e/cypress.config.ts",
-        "devServerTarget": "client-mx:serve:development",
-        "testingType": "e2e"
-      },
-      "configurations": {
-        "production": {
-          "devServerTarget": "client-mx:serve:production"
-        },
-        "ci": {
-          "devServerTarget": "client-mx:serve-static"
-        }
+        "config": "apps/client-mx-e2e/playwright.config.ts"
       }
     },
     "lint": {
