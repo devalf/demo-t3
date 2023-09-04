@@ -2,19 +2,35 @@
   "migrations": [
     {
       "cli": "nx",
-      "version": "16.2.0-beta.0",
-      "description": "Remove react-test-renderer from package.json",
-      "implementation": "./src/migrations/update-16-2-0-remove-package/update-16-2-0-remove-package",
+      "version": "16.7.0-beta.2",
+      "description": "Add @babel/core to package.json if @babel/preset-react is present",
+      "implementation": "./src/migrations/update-16-7-0/add-babel-core",
       "package": "@nx/react",
-      "name": "update-16-2-0-remove-package"
+      "name": "add-babel-core"
     },
     {
       "cli": "nx",
-      "version": "16.2.0-beta.0",
-      "description": "Normalize tsconfig.cy.json files to be located at '<projectRoot>/cypress/tsconfig.json'",
-      "implementation": "./src/migrations/update-16-2-0/update-cy-tsconfig",
-      "package": "@nx/cypress",
-      "name": "update-16-2-0-normalize-tsconfigs"
+      "version": "16.7.0-beta.2",
+      "description": "Add @nx/react types to tsconfig types array",
+      "implementation": "./src/migrations/update-16-7-0-add-typings/update-16-7-0-add-typings",
+      "package": "@nx/react",
+      "name": "update-16-7-0-add-typings"
+    },
+    {
+      "cli": "nx",
+      "version": "16.7.0-beta.2",
+      "description": "Add @babel/core to package.json if @babel/preset-react is present",
+      "implementation": "./src/migrations/update-16-7-0/add-babel-core",
+      "package": "@nrwl/react",
+      "name": "add-babel-core"
+    },
+    {
+      "cli": "nx",
+      "version": "16.7.0-beta.2",
+      "description": "Add @nx/react types to tsconfig types array",
+      "implementation": "./src/migrations/update-16-7-0-add-typings/update-16-7-0-add-typings",
+      "package": "@nrwl/react",
+      "name": "update-16-7-0-add-typings"
     }
   ]
 }
