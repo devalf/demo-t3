@@ -13,7 +13,8 @@
     "test:all": "nx run-many --all --target=test --coverage",
     "lint:all": "nx run-many --all --target=lint",
     "prepare": "husky install",
-    "start:demo": "npx nx run-many --parallel --target=serve --projects=client-mx,server-nest"
+    "start:demo": "npx nx run-many --parallel --target=serve --projects=client-mx,server-nest",
+    "test:e2e": "nx run-many --all --target=e2e --parallel"
   },
   "author": "Oleksiy Petrychko",
   "license": "MIT",

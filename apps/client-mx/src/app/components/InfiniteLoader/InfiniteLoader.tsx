@@ -36,6 +36,7 @@ export const InfiniteLoader: FC<InfiniteLoaderProps> = ({
         textAlign: 'center',
         display: isCompleted ? 'none' : 'block',
       }}
+      data-testid={'infinite_loader'}
     >
       <Box
         component={'img'}

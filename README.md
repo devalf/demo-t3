@@ -59,3 +59,6 @@ _Note:_ Run all commands from root folder, no need to enter any directory.
 - `npm run test [application-name|library-name]` to run test for a specific application|package
 - `npm run lint [application-name|library-name]` to run eslint for a specific application|package
 - `npm run format [application-name|library-name]` to run prettier for a specific application|package
+- `npx nx e2e [application-name] --ui` to run e2e tests for client application in UI mode (with Browser) (
+  e.g. `client-mx-e2e`)
+- `npx nx run client-mx-e2e:e2e -g '<title>'` to run e2e for specific test by title

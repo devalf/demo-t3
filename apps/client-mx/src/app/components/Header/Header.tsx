@@ -51,7 +51,11 @@ export const Header: FC = observer(() => {
                 aria-label="show cart items"
                 color="inherit"
               >
-                <Badge badgeContent={getTotalProductsInCart()} color="error">
+                <Badge
+                  badgeContent={getTotalProductsInCart()}
+                  color="error"
+                  data-testid={'cart_icon_container'}
+                >
                   <ShoppingCartIcon />
                 </Badge>
               </IconButton>
