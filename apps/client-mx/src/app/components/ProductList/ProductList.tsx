@@ -20,7 +20,7 @@ export const ProductList: FC<ProductListProps> = ({
 }) => {
   return (
     <>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} data-testid={'products_list'}>
         {products?.map((product) => (
           <Grid
             item

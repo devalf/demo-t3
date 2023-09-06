@@ -10,18 +10,18 @@ import { DependencyType } from '../bootstrap/ioc/DependencyType';
 const Cart: FC = observer(() => {
   const { cartItems } = useInjection<ICartManager>(DependencyType.CartManager);
 
-  const carrIsEmpty = cartItems.length === 0;
+  const cartIsEmpty = cartItems.length === 0;
 
   return (
     <Container maxWidth={'xl'}>
       <Box sx={{ mt: 2, mb: 2 }}>
         <Box sx={{ textAlign: 'center', mb: 2 }}>
-          <Typography variant={'h4'}>
-            Cart {carrIsEmpty && <>- is empty</>}
+          <Typography variant={'h4'} data-testid={'cart_heading'}>
+            Cart {cartIsEmpty && <>- is empty</>}
           </Typography>
         </Box>
 
-        {!carrIsEmpty && <CartForm />}
+        {!cartIsEmpty && <CartForm />}
       </Box>
     </Container>
   );
