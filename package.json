@@ -68,6 +68,7 @@
     "@svgr/webpack": "^8.0.1",
     "@swc/cli": "0.6.0",
     "@swc/core": "1.5.7",
+    "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "16.1.0",
     "@types/jest": "29.5.14",
     "@types/node": "18.19.9",

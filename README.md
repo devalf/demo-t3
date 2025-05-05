@@ -40,6 +40,8 @@ $ npx nx serve server-nest
 
 ## Test
 
+Ensure that both apps are running locally when executing the E2E test
+
 ```bash
 # unit tests
 $ yarn test:all
@@ -55,12 +57,12 @@ http://localhost:8082/ link and check the result.
 
 _Note:_ Run all commands from root folder, no need to enter any directory.
 
-- `npm install` to setup all dependencies
-- `npm start [application-name]` to run dev server for specific platform locally
-- `npm run build [application-name|library-name]` build an app/library
-- `npm run test [application-name|library-name]` to run test for a specific application|package
-- `npm run lint [application-name|library-name]` to run eslint for a specific application|package
-- `npm run format [application-name|library-name]` to run prettier for a specific application|package
+- `yarn install` to setup all dependencies
+- `yarn start [application-name]` to run dev server for specific platform locally
+- `yarn build [application-name|library-name]` build an app/library
+- `yarn test [application-name|library-name]` to run test for a specific application|package
+- `yarn lint [application-name|library-name]` to run eslint for a specific application|package
+- `yarn format [application-name|library-name]` to run prettier for a specific application|package
 - `npx nx e2e [application-name] --ui` to run e2e tests for client application in UI mode (with Browser) (
   e.g. `client-mx-e2e`)
 - `npx nx run client-mx-e2e:e2e -g '<title>'` to run e2e for specific test by title

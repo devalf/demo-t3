@@ -9,9 +9,9 @@ import { diContainer } from './bootstrap/ioc/DiContainer';
 
 const queryClient = new QueryClient();
 
-const { NX_RENDER_DEV_TOOLS = 'false' } = process.env;
+const { NX_PUBLIC_RENDER_DEV_TOOLS = 'false' } = process.env;
 
-const shouldRenderDevtools = JSON.parse(NX_RENDER_DEV_TOOLS);
+const shouldRenderDevtools = JSON.parse(NX_PUBLIC_RENDER_DEV_TOOLS);
 
 const App: FC = () => {
   return (

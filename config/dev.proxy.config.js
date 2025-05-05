@@ -1,9 +1,9 @@
-const { PORT_API_SERVER = 8083 } = process.env;
+const { NX_PUBLIC_SERVER_NEST_PORT = 8083 } = process.env;
 
 module.exports = [
   {
     context: ['/api'],
-    target: `http://localhost:${PORT_API_SERVER}/`,
+    target: `http://localhost:${NX_PUBLIC_SERVER_NEST_PORT}/`,
     secure: true,
     changeOrigin: true,
   },

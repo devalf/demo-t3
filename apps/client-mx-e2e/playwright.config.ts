@@ -1,10 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
-const baseURL = process.env['BASE_URL'] || 'http://localhost:8082';
+
+const CLIENT_MX_PORT = process.env['NX_PUBLIC_CLIENT_MX_PORT'];
+const appUrl = `http://localhost:${CLIENT_MX_PORT || 8082}`;
+
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src/e2e' }),
   use: {
-    baseURL,
+    baseURL: appUrl,
     trace: 'on-first-retry',
   },
   projects: [
