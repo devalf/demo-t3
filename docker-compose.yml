@@ -1,25 +1,25 @@
-version: '3.8'
-
-networks:
-  corp:
-    driver: bridge
-
-services:
-  client-mx:
-    container_name: client-mx
-    build:
-      context: ./
-      cache_from:
-        - nginx:1.24.0
-      dockerfile: ./apps/client-mx/Dockerfile
-      args:
-        NODE_ENV: 'development'
-        BUILD_FLAG: ''
-    image: client-mx:nx-dev
-    ports:
-      - ${PORT_CLIENT_MX}:80
-    environment:
-      NODE_ENV: 'development'
-    networks:
-      - corp
-    restart: on-failure
+#version: '3.8'
+#
+#networks:
+#  corp:
+#    driver: bridge
+#
+#services:
+#  client-mx:
+#    container_name: client-mx
+#    build:
+#      context: ./
+#      cache_from:
+#        - nginx:1.24.0
+#      dockerfile: ./apps/client-mx/Dockerfile
+#      args:
+#        NODE_ENV: 'development'
+#        BUILD_FLAG: ''
+#    image: client-mx:nx-dev
+#    ports:
+#      - ${PORT_CLIENT_MX}:80
+#    environment:
+#      NODE_ENV: 'development'
+#    networks:
+#      - corp
+#    restart: on-failure

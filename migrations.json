@@ -1,36 +1,59 @@
 {
   "migrations": [
     {
+      "version": "20.0.0-beta.7",
+      "description": "Migration for v20.0.0-beta.7",
+      "implementation": "./src/migrations/update-20-0-0/move-use-daemon-process",
+      "package": "nx",
+      "name": "move-use-daemon-process"
+    },
+    {
+      "version": "20.0.1",
+      "description": "Set `useLegacyCache` to true for migrating workspaces",
+      "implementation": "./src/migrations/update-20-0-1/use-legacy-cache",
+      "x-repair-skip": true,
+      "package": "nx",
+      "name": "use-legacy-cache"
+    },
+    {
       "cli": "nx",
-      "version": "16.7.0-beta.2",
-      "description": "Add @babel/core to package.json if @babel/preset-react is present",
-      "implementation": "./src/migrations/update-16-7-0/add-babel-core",
+      "version": "20.0.0-beta.5",
+      "description": "replace getJestProjects with getJestProjectsAsync",
+      "implementation": "./src/migrations/update-20-0-0/replace-getJestProjects-with-getJestProjectsAsync",
+      "package": "@nx/jest",
+      "name": "replace-getJestProjects-with-getJestProjectsAsync"
+    },
+    {
+      "cli": "nx",
+      "version": "20.2.0-beta.2",
+      "description": "Update the ModuleFederationConfig import use @nx/module-federation.",
+      "factory": "./src/migrations/update-20-2-0/migrate-mf-imports-to-new-package",
       "package": "@nx/react",
-      "name": "add-babel-core"
+      "name": "update-20-2-0-update-module-federation-config-import"
     },
     {
       "cli": "nx",
-      "version": "16.7.0-beta.2",
-      "description": "Add @nx/react types to tsconfig types array",
-      "implementation": "./src/migrations/update-16-7-0-add-typings/update-16-7-0-add-typings",
+      "version": "20.2.0-beta.2",
+      "description": "Update the withModuleFederation import use @nx/module-federation/webpack.",
+      "factory": "./src/migrations/update-20-2-0/migrate-with-mf-import-to-new-package",
       "package": "@nx/react",
-      "name": "update-16-7-0-add-typings"
+      "name": "update-20-2-0-update-with-module-federation-import"
     },
     {
       "cli": "nx",
-      "version": "16.7.0-beta.2",
-      "description": "Add @babel/core to package.json if @babel/preset-react is present",
-      "implementation": "./src/migrations/update-16-7-0/add-babel-core",
-      "package": "@nrwl/react",
-      "name": "add-babel-core"
+      "version": "20.3.0-beta.2",
+      "description": "If workspace includes Module Federation projects, ensure the new @nx/module-federation package is installed.",
+      "factory": "./src/migrations/update-20-3-0/ensure-nx-module-federation-package",
+      "package": "@nx/react",
+      "name": "ensure-nx-module-federation-package"
     },
     {
       "cli": "nx",
-      "version": "16.7.0-beta.2",
-      "description": "Add @nx/react types to tsconfig types array",
-      "implementation": "./src/migrations/update-16-7-0-add-typings/update-16-7-0-add-typings",
-      "package": "@nrwl/react",
-      "name": "update-16-7-0-add-typings"
+      "version": "20.4.0-beta.0",
+      "description": "Add NX_MF_DEV_REMOTES to inputs for task hashing when '@nx/webpack:webpack' or '@nx/rspack:rspack' is used for Module Federation.",
+      "factory": "./src/migrations/update-18-0-0/add-mf-env-var-to-target-defaults",
+      "package": "@nx/react",
+      "name": "add-mf-env-var-to-target-defaults"
     }
   ]
 }

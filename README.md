@@ -21,15 +21,17 @@ Unit tests, Integration tests, E2E tests.
 
 ## Installation
 
+Make sure you are using Node.js v23 (it's might be fine with a newer version)
+
 ```bash
-$ npm install
+$ yarn install
 ```
 
 ## Running the apps
 
 ```bash
 # run all apps: locally in development mode
-$ npm run start:demo
+$ yarn start:demo
 
 # to run client and server separately
 $ npx nx serve client-mx
@@ -38,9 +40,11 @@ $ npx nx serve server-nest
 
 ## Test
 
+Ensure that both apps are running locally when executing the E2E test
+
 ```bash
 # unit tests
-$ npm run test:all
+$ yarn test:all
 
 # e2e tests
 $ npx nx run-many --all --target=e2e --parallel
@@ -53,12 +57,12 @@ http://localhost:8082/ link and check the result.
 
 _Note:_ Run all commands from root folder, no need to enter any directory.
 
-- `npm install` to setup all dependencies
-- `npm start [application-name]` to run dev server for specific platform locally
-- `npm run build [application-name|library-name]` build an app/library
-- `npm run test [application-name|library-name]` to run test for a specific application|package
-- `npm run lint [application-name|library-name]` to run eslint for a specific application|package
-- `npm run format [application-name|library-name]` to run prettier for a specific application|package
+- `yarn install` to setup all dependencies
+- `yarn start [application-name]` to run dev server for specific platform locally
+- `yarn build [application-name|library-name]` build an app/library
+- `yarn test [application-name|library-name]` to run test for a specific application|package
+- `yarn lint [application-name|library-name]` to run eslint for a specific application|package
+- `yarn format [application-name|library-name]` to run prettier for a specific application|package
 - `npx nx e2e [application-name] --ui` to run e2e tests for client application in UI mode (with Browser) (
   e.g. `client-mx-e2e`)
 - `npx nx run client-mx-e2e:e2e -g '<title>'` to run e2e for specific test by title
