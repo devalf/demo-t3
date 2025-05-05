@@ -21,15 +21,17 @@ Unit tests, Integration tests, E2E tests.
 
 ## Installation
 
+Make sure you are using Node.js v23 (it's might be fine with a newer version)
+
 ```bash
-$ npm install
+$ yarn install
 ```
 
 ## Running the apps
 
 ```bash
 # run all apps: locally in development mode
-$ npm run start:demo
+$ yarn start:demo
 
 # to run client and server separately
 $ npx nx serve client-mx
@@ -40,7 +42,7 @@ $ npx nx serve server-nest
 
 ```bash
 # unit tests
-$ npm run test:all
+$ yarn test:all
 
 # e2e tests
 $ npx nx run-many --all --target=e2e --parallel

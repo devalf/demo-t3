@@ -9,7 +9,7 @@
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "compiler": "babel",
+        "compiler": "swc",
         "outputPath": "dist/apps/client-mx",
         "index": "apps/client-mx/src/index.html",
         "baseHref": "/",
@@ -21,7 +21,6 @@
         ],
         "styles": ["apps/client-mx/src/styles.css"],
         "scripts": [],
-        "isolatedConfig": true,
         "webpackConfig": "apps/client-mx/webpack.config.js"
       },
       "configurations": {
@@ -91,14 +90,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/client-mx/jest.config.ts",
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "codeCoverage": true
-        }
+        "jestConfig": "apps/client-mx/jest.config.ts"
       }
     }
   },
