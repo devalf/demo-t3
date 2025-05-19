@@ -1,21 +1,39 @@
+version: '3.8'
+
 services:
-  db_one_postgres:
-    container_name: db_one_postgres
+  # Auth Service Database
+  auth_postgres:
+    container_name: auth_postgres
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: demo_t3
-      POSTGRES_USER: alex
-      POSTGRES_PASSWORD: abc123
+      POSTGRES_DB: ${NX_PUBLIC_AUTH_DB_POSTGRES_DB}
+      POSTGRES_USER: ${NX_PUBLIC_AUTH_DB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD}
     volumes:
-      - db_one_postgres:/var/lib/postgresql/data
+      - auth_postgres_data:/var/lib/postgresql/data
     ports:
-      - '5434:5432'
+      - '${NX_PUBLIC_AUTH_DB_POSTGRES_PORT}:5432'
 
+  # Products Management Service Database
+  products_postgres:
+    container_name: products_postgres
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${NX_PUBLIC_PRODUCTS_DB_POSTGRES_DB}
+      POSTGRES_USER: ${NX_PUBLIC_PRODUCTS_DB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${NX_PUBLIC_PRODUCTS_DB_POSTGRES_PASSWORD}
+    volumes:
+      - products_postgres_data:/var/lib/postgresql/data
+    ports:
+      - '${NX_PUBLIC_PRODUCTS_DB_POSTGRES_PORT}:5432'
+
+  # Redis (shared)
   demo_t3_redis:
     container_name: demo_t3_redis
     image: redis:8-alpine
     ports:
-      - '6389:6379'
+      - '${NX_PUBLIC_REDIS_PORT}:6379'
 
 volumes:
-  db_one_postgres:
+  auth_postgres_data:
+  products_postgres_data:
