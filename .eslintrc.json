@@ -30,6 +30,13 @@
                   "scope:server-nest",
                   "scope:shared"
                 ]
+              },
+              {
+                "sourceTag": "scope:auth-service",
+                "onlyDependOnLibsWithTags": [
+                  "scope:auth-service",
+                  "scope:shared"
+                ]
               }
             ]
           }

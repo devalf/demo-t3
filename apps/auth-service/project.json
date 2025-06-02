@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/auth-service/src",
   "projectType": "application",
-  "tags": [],
+  "tags": ["scope:auth-service"],
   "targets": {
     "build": {
       "executor": "@nx/webpack:webpack",
@@ -22,7 +22,8 @@
       "configurations": {
         "development": {},
         "production": {}
-      }
+      },
+      "dependsOn": ["prisma-generate"]
     },
     "serve": {
       "executor": "@nx/js:node",
@@ -47,6 +48,20 @@
     "test": {
       "options": {
         "passWithNoTests": true
+      }
+    },
+    "prisma-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "yarn prisma:generate",
+        "cwd": "apps/auth-service"
+      }
+    },
+    "migrate:dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "yarn prisma:migrate:dev",
+        "cwd": "apps/auth-service"
       }
     }
   }

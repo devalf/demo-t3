@@ -17,10 +17,12 @@ async function bootstrap() {
     .setDescription('API documentation for demo-t3 auth service')
     .setVersion('1.0')
     .build();
+
   const document = SwaggerModule.createDocument(app, config, {
     ignoreGlobalPrefix: false,
   });
-  SwaggerModule.setup('docs', app, document); // open swagger docs at the /docs endpoint
+
+  SwaggerModule.setup('docs', app, document);
 
   const port = process.env.NX_PUBLIC_AUTH_SERVICE_PORT || 8084;
 

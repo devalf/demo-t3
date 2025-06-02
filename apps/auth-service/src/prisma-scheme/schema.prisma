@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("NX_PUBLIC_AUTH_DB_URL")
+}
+
+
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String? @db.VarChar(100)
+  password String  @db.VarChar(100)
+  email    String  @unique @db.VarChar(45)
+  role     Role    @default(CLIENT)
+  settings Json    @default("{}")
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now()) @updatedAt
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  CLIENT
+}
