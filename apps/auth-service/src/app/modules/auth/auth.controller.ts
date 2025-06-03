@@ -1,11 +1,20 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
-import { AuthParamsDto, SignUpResponseDto, TokenDto } from './dto/auth.dto';
+import { AuthParamsDto, TokenDto, UserDto } from './dto';
 
 @ApiTags('Auth')
 @Controller('auth')
+@UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
   constructor(private authService: AuthService) {}
 
@@ -14,7 +23,7 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'User created successfully',
-    type: SignUpResponseDto,
+    type: UserDto,
   })
   async register(@Body() authParams: AuthParamsDto) {
     return this.authService.createUser(authParams);

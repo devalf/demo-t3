@@ -15,16 +15,16 @@
     "prepare": "husky install",
     "start:demo": "npx nx run-many --parallel --target=serve --projects=client-mx,server-nest",
     "test:e2e": "nx run-many --all --target=e2e --parallel",
-    "prisma:generate": "prisma generate --schema=./apps/auth-service/src/prisma-scheme/schema.prisma",
-    "prisma:migrate:dev": "prisma migrate dev --schema=./apps/auth-service/src/prisma-scheme/schema.prisma",
-    "prisma:migrate:deploy": "prisma migrate deploy --schema=./apps/auth-service/src/prisma-scheme/schema.prisma",
-    "prisma:studio": "prisma studio --schema=./apps/auth-service/src/prisma-scheme/schema.prisma",
+    "prisma:generate": "prisma generate --schema=./apps/auth-service/src/prisma-setup/schema.prisma",
+    "prisma:migrate:dev": "prisma migrate dev --schema=./apps/auth-service/src/prisma-setup/schema.prisma",
+    "prisma:migrate:deploy": "prisma migrate deploy --schema=./apps/auth-service/src/prisma-setup/schema.prisma",
+    "prisma:studio": "prisma studio --schema=./apps/auth-service/src/prisma-setup/schema.prisma",
     "seed": "npx prisma db seed"
   },
   "author": "Oleksiy Petrychko",
   "license": "MIT",
   "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} apps/auth-service/src/prisma-scheme/seed/seed.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} apps/auth-service/src/prisma-setup/seed/seed.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
