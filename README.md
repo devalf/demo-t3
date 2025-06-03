@@ -21,7 +21,7 @@ Unit tests, Integration tests, E2E tests.
 
 ## Installation
 
-Make sure you are using Node.js v23 (it's might be fine with a newer version)
+Make sure you are using Node.js v22 (it might be fine with a newer version)
 
 ```bash
 $ yarn install
@@ -66,3 +66,26 @@ _Note:_ Run all commands from root folder, no need to enter any directory.
 - `npx nx e2e [application-name] --ui` to run e2e tests for client application in UI mode (with Browser) (
   e.g. `client-mx-e2e`)
 - `npx nx run client-mx-e2e:e2e -g '<title>'` to run e2e for specific test by title
+
+### Section related to the new `auth-service`, is under construction yet
+
+generate migration
+
+```shell
+
+yarn prisma:generate
+```
+
+run migration
+
+```shell
+
+yarn prisma:migrate:dev
+```
+
+seed the DB
+
+```shell
+
+yarn seed
+```
