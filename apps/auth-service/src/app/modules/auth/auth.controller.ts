@@ -10,7 +10,13 @@ import {
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
-import { AuthParamsDto, TokenDto, UserDto } from './dto';
+import {
+  AuthParamsDto,
+  TokenDto,
+  UserDto,
+  VerifyTokenDto,
+  VerifyTokenParamsDto,
+} from './dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -39,5 +45,19 @@ export class AuthController {
   })
   async signIn(@Body() authParams: AuthParamsDto) {
     return this.authService.signIn(authParams);
+  }
+
+  @Post('verify')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify a JWT token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Token verification result',
+    type: VerifyTokenDto,
+  })
+  async verifyToken(
+    @Body() verifyTokenRequest: VerifyTokenParamsDto
+  ): Promise<VerifyTokenDto> {
+    return this.authService.verifyToken(verifyTokenRequest.token);
   }
 }

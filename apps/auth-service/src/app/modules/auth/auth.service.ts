@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -81,5 +82,29 @@ export class AuthService {
     return {
       token,
     };
+  }
+
+  async verifyToken(token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(token);
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.id },
+      });
+
+      if (!user) {
+        throw new ForbiddenException('User no longer exists');
+      }
+
+      return {
+        isValid: true,
+        payload,
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        error: error.message,
+      };
+    }
   }
 }
