@@ -1,16 +1,11 @@
-import { ApiUser } from '../api-user';
-
 export type ApiAuthParams = {
   email: string;
   password: string;
   name?: string;
 };
 
-export type ApiSignUpResponse = {
-  token: string;
-  user: ApiUser;
-};
+export type Token = string;
 
-export type ApiSignInResponse = {
-  token: string;
+export type ApiTokenObject = {
+  token: Token;
 };
