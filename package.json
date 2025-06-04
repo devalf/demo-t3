@@ -12,6 +12,7 @@
     "build:all": "nx run-many --all --target=build",
     "test:all": "nx run-many --all --target=test --coverage",
     "lint:all": "nx run-many --all --target=lint",
+    "check-all": "nx run-many --all --targets=lint,tscheck,test",
     "prepare": "husky install",
     "start:demo": "npx nx run-many --parallel --target=serve --projects=client-mx,server-nest",
     "test:e2e": "nx run-many --all --target=e2e --parallel",

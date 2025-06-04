@@ -1,6 +1,6 @@
 import { mockProduct } from '@demo-t3/dummy-data';
 
-import { CartManager } from '../cartManager';
+import { CartManager } from '../cart-manager';
 
 describe('CartManager testing', () => {
   let instance: CartManager;

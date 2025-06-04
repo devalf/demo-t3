@@ -3,9 +3,9 @@ import React, { FC } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { CartForm } from '../components';
-import { useInjection } from '../bootstrap/ioc/useInjection';
+import { useInjection } from '../bootstrap/ioc/use-injection';
 import { ICartManager } from '../store/interfaces';
-import { DependencyType } from '../bootstrap/ioc/DependencyType';
+import { DependencyType } from '../bootstrap/ioc/dependency-type';
 
 const Cart: FC = observer(() => {
   const { cartItems } = useInjection<ICartManager>(DependencyType.CartManager);

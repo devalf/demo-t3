@@ -1,4 +1,4 @@
 export * from './routes';
-export * from './fetchOptions';
-export * from './formatTime';
+export * from './fetch-options';
+export * from './format-time';
 export * from './timers';

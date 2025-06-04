@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 
 import App from '../app';
 
-import { initApp } from './initApp';
+import { initApp } from './init-app';
 
 export async function bootstrap(): Promise<void> {
   await initApp();

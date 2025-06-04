@@ -4,10 +4,10 @@ import { mockProduct, mockProductWithTags } from '@demo-t3/dummy-data';
 import { renderApp } from '@demo-t3/utils-ui';
 import { FC, PropsWithChildren } from 'react';
 
-import { SingleProductPage } from '../SingleProductPage';
+import { SingleProductPage } from '../single-product-page';
 import { createTestContainer } from '../../../bootstrap/ioc/test.helpers';
 import { fetchProduct } from '../../../repository';
-import { Provider } from '../../../bootstrap/ioc/InversifyContext';
+import { Provider } from '../../../bootstrap/ioc/inversify-context';
 
 jest.mock('../../../repository');
 

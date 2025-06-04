@@ -1,3 +1,3 @@
-export * from './IStoreExampleOne';
-export * from './IStoreExampleTwo';
-export * from './ICartManager';
+export * from './istore-example-one';
+export * from './istore-example-two';
+export * from './icart-manager';

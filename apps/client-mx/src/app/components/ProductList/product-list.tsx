@@ -2,10 +2,10 @@ import React, { FC } from 'react';
 import { Product } from '@demo-t3/models';
 import { Grid } from '@mui/material';
 
-import { InfiniteLoader } from '../InfiniteLoader/InfiniteLoader';
+import { InfiniteLoader } from '../InfiniteLoader/infinite-loader';
 import { FetchNextPage } from '../../types';
 
-import { ProductCard } from './ProductCard';
+import { ProductCard } from './product-card';
 
 type ProductListProps = {
   products?: Product[];

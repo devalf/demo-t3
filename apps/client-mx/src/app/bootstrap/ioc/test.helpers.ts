@@ -11,7 +11,7 @@ import {
   createStoreExampleTwoMock,
 } from '../../store/__dummy__';
 
-import { DependencyType } from './DependencyType';
+import { DependencyType } from './dependency-type';
 
 export function createTestContainer(): Container {
   const inversifyContainer = new Container({ defaultScope: 'Singleton' });

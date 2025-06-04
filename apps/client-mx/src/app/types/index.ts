@@ -1,2 +1,2 @@
-export * from './pathParams';
-export * from './queryResult';
+export * from './path-params';
+export * from './query-result';

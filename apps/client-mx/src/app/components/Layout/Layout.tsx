@@ -4,11 +4,11 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Home } from '../../pages';
 import { Header } from '../Header/Header';
 import { routes } from '../../constants';
-import { LoadingBox } from '../LoadingBox/LoadingBox';
+import { LoadingBox } from '../LoadingBox/loading-box';
 
 const Product = lazy(() => import('../../pages/Product'));
 const Cart = lazy(() => import('../../pages/Cart'));
-const OrderSuccess = lazy(() => import('../../pages/OrderSuccess'));
+const OrderSuccess = lazy(() => import('../../pages/order-success'));
 
 export const Layout: FC = () => {
   return (

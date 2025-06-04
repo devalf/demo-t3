@@ -3,7 +3,7 @@ import { IsIn, IsOptional, ValidateIf } from 'class-validator';
 import { Type } from 'class-transformer';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-import { ListQueryParamsDto } from './listQueryParams.dto';
+import { ListQueryParamsDto } from './list-query-params.dto';
 
 export class ProductQueryParamsDto extends ListQueryParamsDto {
   @ApiPropertyOptional({

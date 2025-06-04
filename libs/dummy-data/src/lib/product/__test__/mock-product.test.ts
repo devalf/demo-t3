@@ -2,7 +2,7 @@ import {
   mockProduct,
   mockProductList,
   mockProductWithTags,
-} from '../mockProduct';
+} from '../mock-product';
 
 describe('Testing `mockProduct`', () => {
   test('should return correct minimal object', () => {

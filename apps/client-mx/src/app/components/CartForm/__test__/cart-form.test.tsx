@@ -7,10 +7,10 @@ import * as router from 'react-router';
 import { generatePath } from 'react-router-dom';
 import { fireEvent, waitFor } from '@testing-library/react';
 
-import { CartForm } from '../CartForm';
+import { CartForm } from '../cart-form';
 import { createTestContainer } from '../../../bootstrap/ioc/test.helpers';
-import { Provider } from '../../../bootstrap/ioc/InversifyContext';
-import { DependencyType } from '../../../bootstrap/ioc/DependencyType';
+import { Provider } from '../../../bootstrap/ioc/inversify-context';
+import { DependencyType } from '../../../bootstrap/ioc/dependency-type';
 import { routes } from '../../../constants';
 import { createOrder } from '../../../repository';
 

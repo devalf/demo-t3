@@ -1,1 +1,1 @@
-export * from './productParsers';
+export * from './product-parsers';
