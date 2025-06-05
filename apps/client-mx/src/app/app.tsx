@@ -3,9 +3,9 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { CssBaseline } from '@mui/material';
 
-import { Provider } from './bootstrap/ioc/InversifyContext';
+import { Provider } from './bootstrap/ioc/inversify-context';
 import { Layout } from './components';
-import { diContainer } from './bootstrap/ioc/DiContainer';
+import { diContainer } from './bootstrap/ioc/di-container';
 
 const queryClient = new QueryClient();
 

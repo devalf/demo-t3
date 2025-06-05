@@ -10,9 +10,9 @@ import { AxiosError } from 'axios';
 import { PathParams } from '../../types';
 import { useProduct } from '../../state';
 import { ICartManager } from '../../store/interfaces';
-import { DependencyType } from '../../bootstrap/ioc/DependencyType';
-import { LoadingBox } from '../LoadingBox/LoadingBox';
-import { ItemNotFound } from '../ItemNotFound/ItemNotFound';
+import { DependencyType } from '../../bootstrap/ioc/dependency-type';
+import { LoadingBox } from '../LoadingBox/loading-box';
+import { ItemNotFound } from '../ItemNotFound/item-not-found';
 
 export const SingleProductPage: FC = observer(() => {
   const { id } = useParams() as PathParams;

@@ -6,8 +6,8 @@ import { generatePath, useNavigate } from 'react-router-dom';
 import { LoadingButton } from '@mui/lab';
 
 import { ICartManager } from '../../store/interfaces';
-import { useInjection } from '../../bootstrap/ioc/useInjection';
-import { DependencyType } from '../../bootstrap/ioc/DependencyType';
+import { useInjection } from '../../bootstrap/ioc/use-injection';
+import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 import { routes } from '../../constants';
 import { useOrderMutation } from '../../state';
 

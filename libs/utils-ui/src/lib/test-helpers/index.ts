@@ -1,1 +1,1 @@
-export * from './renderUtils';
+export * from './render-utils';

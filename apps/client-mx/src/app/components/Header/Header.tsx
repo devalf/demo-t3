@@ -9,9 +9,9 @@ import { Badge, IconButton, Link } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { observer } from 'mobx-react-lite';
 
-import { useInjection } from '../../bootstrap/ioc/useInjection';
+import { useInjection } from '../../bootstrap/ioc/use-injection';
 import { ICartManager } from '../../store/interfaces';
-import { DependencyType } from '../../bootstrap/ioc/DependencyType';
+import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 import { routes } from '../../constants';
 
 export const Header: FC = observer(() => {

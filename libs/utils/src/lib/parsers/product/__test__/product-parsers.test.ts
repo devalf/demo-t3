@@ -1,6 +1,6 @@
 import { DBProduct, DBProductDetailed } from '@demo-t3/models';
 
-import { parseProduct, parseProductDetailed } from '../productParsers';
+import { parseProduct, parseProductDetailed } from '../product-parsers';
 
 describe('Testing productParsers', () => {
   const timestampDate1 = '2023-08-01T00:00:00.000Z';

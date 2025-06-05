@@ -1,3 +1,3 @@
-export * from './fetchProducts';
-export * from './fetchProduct';
-export * from './createOrder';
+export * from './fetch-products';
+export * from './fetch-product';
+export * from './create-order';

@@ -1,1 +1,1 @@
-export * from './mockApiData';
+export * from './mock-api-data';

@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import { inject, injectable } from 'inversify';
 
 import type { IStoreExampleOne, IStoreExampleTwo } from '../interfaces';
-import { DependencyType } from '../../bootstrap/ioc/DependencyType';
+import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 
 @injectable()
 export class StoreExampleTwo implements IStoreExampleTwo {

@@ -1,1 +1,1 @@
-export * from './parseMetadata';
+export * from './parse-metadata';

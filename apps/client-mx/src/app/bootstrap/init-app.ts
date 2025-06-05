@@ -1,4 +1,4 @@
-import { diContainer } from './ioc/DiContainer';
+import { diContainer } from './ioc/di-container';
 
 export async function initApp() {
   const exampleStrFromStore =

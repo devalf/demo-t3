@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import type { interfaces } from 'inversify';
 
-import { InversifyContext } from './InversifyContext';
+import { InversifyContext } from './inversify-context';
 
 export function useInjection<T>(
   serviceIdentifier: interfaces.ServiceIdentifier<T>

@@ -7,7 +7,7 @@ import {
   IStoreExampleTwo,
 } from '../../store/interfaces';
 
-import { DependencyType } from './DependencyType';
+import { DependencyType } from './dependency-type';
 
 export class DiContainer {
   public inversifyContainer: Container;
