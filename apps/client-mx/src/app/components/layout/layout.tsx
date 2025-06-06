@@ -2,9 +2,9 @@ import React, { FC, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 import { Home } from '../../pages';
-import { Header } from '../Header/Header';
+import { Header } from '../header/header';
 import { routes } from '../../constants';
-import { LoadingBox } from '../LoadingBox/loading-box';
+import { LoadingBox } from '../loading-box/loading-box';
 
 const Product = lazy(() => import('../../pages/Product'));
 const Cart = lazy(() => import('../../pages/Cart'));

@@ -1,11 +1,11 @@
-import React, { FC, ReactElement } from 'react';
+import React, { FC, ReactElement, ReactNode } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { MemoryRouter } from 'react-router-dom';
 
 export type WithPath = { path?: string };
 export type CustomRenderOptions = RenderOptions & WithPath;
-export type WithChildren = { children: ReactElement };
+export type WithChildren = { children: ReactNode };
 
 export const MockRouter: FC<WithChildren & WithPath> = ({ children, path }) => (
   <MemoryRouter initialEntries={path ? [path] : undefined}>
