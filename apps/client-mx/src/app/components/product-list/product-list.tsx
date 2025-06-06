@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { Product } from '@demo-t3/models';
 import { Grid } from '@mui/material';
 
-import { InfiniteLoader } from '../InfiniteLoader/infinite-loader';
+import { InfiniteLoader } from '../infinite-loader/infinite-loader';
 import { FetchNextPage } from '../../types';
 
 import { ProductCard } from './product-card';

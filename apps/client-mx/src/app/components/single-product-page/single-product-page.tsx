@@ -11,8 +11,8 @@ import { PathParams } from '../../types';
 import { useProduct } from '../../state';
 import { ICartManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
-import { LoadingBox } from '../LoadingBox/loading-box';
-import { ItemNotFound } from '../ItemNotFound/item-not-found';
+import { LoadingBox } from '../loading-box/loading-box';
+import { ItemNotFound } from '../item-not-found/item-not-found';
 
 export const SingleProductPage: FC = observer(() => {
   const { id } = useParams() as PathParams;

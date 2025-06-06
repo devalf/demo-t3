@@ -1,2 +1,2 @@
 export * from './product';
-export * from './apiData';
+export * from './api-data';

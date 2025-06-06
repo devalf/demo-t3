@@ -1,1 +1,1 @@
-export * from './axiosClient/axios-client';
+export * from './axios-client/axios-client';
