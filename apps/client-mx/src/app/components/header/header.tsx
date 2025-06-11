@@ -5,18 +5,22 @@ import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import { Badge, IconButton, Link } from '@mui/material';
+import { Badge, Button, IconButton, Link } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { observer } from 'mobx-react-lite';
 
 import { useInjection } from '../../bootstrap/ioc/use-injection';
-import { ICartManager } from '../../store/interfaces';
+import { ICartManager, IModalManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 import { routes } from '../../constants';
 
 export const Header: FC = observer(() => {
   const { getTotalProductsInCart } = useInjection<ICartManager>(
     DependencyType.CartManager
+  );
+
+  const { showModal } = useInjection<IModalManager>(
+    DependencyType.ModalManager
   );
 
   return (
@@ -39,7 +43,19 @@ export const Header: FC = observer(() => {
               </Link>
             </Box>
           </Box>
-          <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box>
+              <Button
+                variant={'contained'}
+                color={'chrome'}
+                onClick={() => showModal('LOGIN_MODAL')}
+              >
+                Login
+              </Button>
+              <Button variant={'contained'} color={'warning'} sx={{ ml: 2 }}>
+                Sign Up
+              </Button>
+            </Box>
             <Link
               component={ReactRouterLink}
               to={routes.cart}

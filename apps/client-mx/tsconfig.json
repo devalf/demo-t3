@@ -7,7 +7,7 @@
     "allowSyntheticDefaultImports": true,
     "strict": true
   },
-  "files": [],
+  "files": ["src/d-types/window.d.ts", "src/d-types/mui-components.d.ts"],
   "include": [],
   "references": [
     {

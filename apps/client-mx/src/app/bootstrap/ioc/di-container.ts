@@ -1,8 +1,14 @@
 import { Container } from 'inversify';
 
-import { CartManager, StoreExampleOne, StoreExampleTwo } from '../../store';
+import {
+  CartManager,
+  ModalManager,
+  StoreExampleOne,
+  StoreExampleTwo,
+} from '../../store';
 import {
   ICartManager,
+  IModalManager,
   IStoreExampleOne,
   IStoreExampleTwo,
 } from '../../store/interfaces';
@@ -26,6 +32,10 @@ export class DiContainer {
     this.inversifyContainer
       .bind<ICartManager>(DependencyType.CartManager)
       .to(CartManager);
+
+    this.inversifyContainer
+      .bind<IModalManager>(DependencyType.ModalManager)
+      .to(ModalManager);
   }
 
   public get storeExampleOne(): IStoreExampleOne {
