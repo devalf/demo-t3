@@ -11,7 +11,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import {
-  AuthParamsDto,
+  AuthSignInDto,
+  CreateUserDto,
   TokenDto,
   UserDto,
   VerifyTokenDto,
@@ -31,7 +32,7 @@ export class AuthController {
     description: 'User created successfully',
     type: UserDto,
   })
-  async register(@Body() authParams: AuthParamsDto) {
+  async register(@Body() authParams: CreateUserDto): Promise<UserDto> {
     return this.authService.createUser(authParams);
   }
 
@@ -43,7 +44,7 @@ export class AuthController {
     description: 'User signed in successfully',
     type: TokenDto,
   })
-  async signIn(@Body() authParams: AuthParamsDto) {
+  async signIn(@Body() authParams: AuthSignInDto): Promise<TokenDto> {
     return this.authService.signIn(authParams);
   }
 

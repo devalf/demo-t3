@@ -8,7 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
-import { ApiAuthParams } from '@demo-t3/models';
+import { ApiAuthSignInParams, ApiCreateUserParams } from '@demo-t3/models';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -21,7 +21,7 @@ export class AuthService {
     private prisma: PrismaService
   ) {}
 
-  async createUser({ email, password, name }: ApiAuthParams) {
+  async createUser({ email, password, name }: ApiCreateUserParams) {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -56,7 +56,7 @@ export class AuthService {
     });
   }
 
-  async signIn({ email, password }: ApiAuthParams) {
+  async signIn({ email, password }: ApiAuthSignInParams) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { email },
     });
