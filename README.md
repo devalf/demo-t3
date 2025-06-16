@@ -23,11 +23,22 @@ Unit tests, Integration tests, E2E tests.
 
 Make sure you are using Node.js v22 (it might be fine with a newer version)
 
+Copy `.env.example` file to the `.env`
+
 ```bash
 $ yarn install
 ```
 
 ## Running the apps
+
+Run docker compose
+
+```bash
+$ docker compose up
+```
+
+On initial launch you have to execute some additional commands to manage DB and seed it. You can find necessary info in the very
+last section (REMINDER - it is still under construction)
 
 ```bash
 # run all apps: locally in development mode
@@ -36,6 +47,7 @@ $ yarn start:demo
 # to run client and server separately
 $ npx nx serve client-mx
 $ npx nx serve server-nest
+$ npx nx serve auth-service
 ```
 
 ## Test

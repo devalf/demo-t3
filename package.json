@@ -10,7 +10,7 @@
     "lint:all": "nx run-many --all --target=lint",
     "check-all": "nx run-many --all --targets=lint,tscheck,test",
     "prepare": "husky install",
-    "start:demo": "npx nx run-many --parallel --target=serve --projects=client-mx,server-nest",
+    "start:demo": "npx nx run-many --parallel --target=serve --projects=client-mx,server-nest,auth-service",
     "test:e2e": "nx run-many --all --target=e2e --parallel",
     "prisma:generate": "prisma generate --schema=./apps/auth-service/src/prisma-setup/schema.prisma",
     "prisma:migrate:dev": "prisma migrate dev --schema=./apps/auth-service/src/prisma-setup/schema.prisma",
