@@ -10,6 +10,16 @@
         "isDefault": true
       },
       "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "nx:build-server-nest",
+      "type": "shell",
+      "command": "yarn nx build server-nest --configuration=development",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$tsc"]
     }
   ]
 }

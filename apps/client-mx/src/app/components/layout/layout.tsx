@@ -6,8 +6,8 @@ import { Header } from '../header/header';
 import { routes } from '../../constants';
 import { LoadingBox } from '../loading-box/loading-box';
 
-const Product = lazy(() => import('../../pages/Product'));
-const Cart = lazy(() => import('../../pages/Cart'));
+const Product = lazy(() => import('../../pages/product'));
+const Cart = lazy(() => import('../../pages/cart'));
 const OrderSuccess = lazy(() => import('../../pages/order-success'));
 
 export const Layout: FC = () => {

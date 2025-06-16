@@ -1,18 +1,23 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AuthModule } from './modules/auth/auth.module';
-
-const { NX_PUBLIC_JWT_SECRET } = process.env;
+import { HealthCheckModule } from './modules/health-check/health-check.module';
 
 @Module({
   imports: [
-    JwtModule.register({
+    ConfigModule.forRoot({ isGlobal: true }),
+    JwtModule.registerAsync({
       global: true,
-      secret: NX_PUBLIC_JWT_SECRET,
-      signOptions: { expiresIn: '1h' },
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('NX_PUBLIC_JWT_SECRET'),
+        signOptions: { expiresIn: '1h' },
+      }),
     }),
     AuthModule,
+    HealthCheckModule,
   ],
   controllers: [],
   providers: [],

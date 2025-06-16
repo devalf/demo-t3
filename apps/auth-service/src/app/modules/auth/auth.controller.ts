@@ -8,15 +8,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AuthSignInDto, CreateUserDto } from '@demo-t3/dto';
 
 import { AuthService } from './auth.service';
-import {
-  AuthParamsDto,
-  TokenDto,
-  UserDto,
-  VerifyTokenDto,
-  VerifyTokenParamsDto,
-} from './dto';
+import { TokenDto, UserDto, VerifyTokenDto, VerifyTokenParamsDto } from './dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -31,7 +26,7 @@ export class AuthController {
     description: 'User created successfully',
     type: UserDto,
   })
-  async register(@Body() authParams: AuthParamsDto) {
+  async register(@Body() authParams: CreateUserDto): Promise<UserDto> {
     return this.authService.createUser(authParams);
   }
 
@@ -43,7 +38,7 @@ export class AuthController {
     description: 'User signed in successfully',
     type: TokenDto,
   })
-  async signIn(@Body() authParams: AuthParamsDto) {
+  async signIn(@Body() authParams: AuthSignInDto): Promise<TokenDto> {
     return this.authService.signIn(authParams);
   }
 
