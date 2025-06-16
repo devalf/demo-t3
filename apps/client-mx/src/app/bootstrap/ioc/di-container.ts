@@ -12,6 +12,8 @@ import {
   IStoreExampleOne,
   IStoreExampleTwo,
 } from '../../store/interfaces';
+import { IUserManager } from '../../store/interfaces/iuser-manager';
+import { UserManager } from '../../store/user-manager/user-manager';
 
 import { DependencyType } from './dependency-type';
 
@@ -36,6 +38,10 @@ export class DiContainer {
     this.inversifyContainer
       .bind<IModalManager>(DependencyType.ModalManager)
       .to(ModalManager);
+
+    this.inversifyContainer
+      .bind<IUserManager>(DependencyType.UserManager)
+      .to(UserManager);
   }
 
   public get storeExampleOne(): IStoreExampleOne {

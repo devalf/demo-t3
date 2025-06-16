@@ -11,6 +11,7 @@ import { plainToInstance } from 'class-transformer';
 import { ApiAuthSignInParams, ApiCreateUserParams } from '@demo-t3/models';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { SALT_ROUNDS } from '../../constants';
 
 import { UserDto } from './dto';
 
@@ -23,7 +24,7 @@ export class AuthService {
 
   async createUser({ email, password, name }: ApiCreateUserParams) {
     try {
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
       const user = await this.prisma.user.create({
         data: {

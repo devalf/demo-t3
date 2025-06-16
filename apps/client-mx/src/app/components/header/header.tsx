@@ -13,6 +13,9 @@ import { useInjection } from '../../bootstrap/ioc/use-injection';
 import { ICartManager, IModalManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 import { routes } from '../../constants';
+import { IUserManager } from '../../store/interfaces/iuser-manager';
+
+import { UserDropdown } from './user-dropdown';
 
 export const Header: FC = observer(() => {
   const { getTotalProductsInCart } = useInjection<ICartManager>(
@@ -22,6 +25,8 @@ export const Header: FC = observer(() => {
   const { showModal } = useInjection<IModalManager>(
     DependencyType.ModalManager
   );
+
+  const { isSignedIn } = useInjection<IUserManager>(DependencyType.UserManager);
 
   return (
     <AppBar position="static">
@@ -45,16 +50,26 @@ export const Header: FC = observer(() => {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box>
-              <Button
-                variant={'contained'}
-                color={'chrome'}
-                onClick={() => showModal('LOGIN_MODAL')}
-              >
-                Login
-              </Button>
-              <Button variant={'contained'} color={'warning'} sx={{ ml: 2 }}>
-                Sign Up
-              </Button>
+              {isSignedIn ? (
+                <UserDropdown />
+              ) : (
+                <>
+                  <Button
+                    variant={'contained'}
+                    color={'chrome'}
+                    onClick={() => showModal('LOGIN_MODAL')}
+                  >
+                    Login
+                  </Button>
+                  <Button
+                    variant={'contained'}
+                    color={'warning'}
+                    sx={{ ml: 2 }}
+                  >
+                    Sign Up
+                  </Button>
+                </>
+              )}
             </Box>
             <Link
               component={ReactRouterLink}

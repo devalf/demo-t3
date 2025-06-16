@@ -1,10 +1,10 @@
 import { AxiosResponse } from 'axios';
-import { ApiCreateUserParams, ApiTokenObject } from '@demo-t3/models';
+import { ApiAuthSignInParams, ApiTokenObject } from '@demo-t3/models';
 
 import { axiosClient } from '../http';
 
-export const loginRequest = async (
-  params: ApiCreateUserParams
+export const sighInRequest = async (
+  params: ApiAuthSignInParams
 ): Promise<ApiTokenObject> => {
   const { data }: AxiosResponse<ApiTokenObject> = await axiosClient.post(
     '/auth/sign-in',
@@ -12,4 +12,14 @@ export const loginRequest = async (
   );
 
   return data;
+};
+
+export const checkAuthStatusRequest = async (): Promise<boolean> => {
+  try {
+    await axiosClient.get('/auth/me', { withCredentials: true });
+
+    return true;
+  } catch (error: unknown) {
+    return false;
+  }
 };

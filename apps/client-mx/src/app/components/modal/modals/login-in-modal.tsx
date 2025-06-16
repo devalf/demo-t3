@@ -4,6 +4,11 @@ import { LoadingButton } from '@mui/lab';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
+import { useSignInMutation } from '../../../state';
+import { useInjection } from '../../../bootstrap/ioc/use-injection';
+import { IModalManager } from '../../../store/interfaces';
+import { DependencyType } from '../../../bootstrap/ioc/dependency-type';
+
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
     .email('Invalid email format')
@@ -14,6 +19,11 @@ const LoginSchema = Yup.object().shape({
 });
 
 export const LoginInModal: FC = () => {
+  const { signIn } = useSignInMutation();
+  const { closeModal } = useInjection<IModalManager>(
+    DependencyType.ModalManager
+  );
+
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -23,12 +33,9 @@ export const LoginInModal: FC = () => {
     validationSchema: LoginSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        console.log('Logging in with:', values);
+        await signIn(values);
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Handle successful login
-        // For example: closeModal(), redirectUser(), etc.
+        closeModal();
       } catch (error) {
         console.error('Login failed:', error);
       } finally {

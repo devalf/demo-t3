@@ -8,16 +8,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AuthSignInDto, CreateUserDto } from '@demo-t3/dto';
 
 import { AuthService } from './auth.service';
-import {
-  AuthSignInDto,
-  CreateUserDto,
-  TokenDto,
-  UserDto,
-  VerifyTokenDto,
-  VerifyTokenParamsDto,
-} from './dto';
+import { TokenDto, UserDto, VerifyTokenDto, VerifyTokenParamsDto } from './dto';
 
 @ApiTags('Auth')
 @Controller('auth')

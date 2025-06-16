@@ -34,6 +34,40 @@
         "webpack:///./*": "${workspaceFolder}/*",
         "webpack:///*": "*"
       }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Server Nest",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/dist/apps/server-nest/main.js",
+      "preLaunchTask": "nx:build-server-nest",
+      "outFiles": ["${workspaceFolder}/dist/apps/server-nest/**/*.js"],
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
+        "webpack:///./*": "${workspaceFolder}/*",
+        "webpack:///*": "*"
+      },
+      "smartStep": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to Server Nest",
+      "port": 9229,
+      "restart": true,
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/dist/apps/server-nest/**/*.js"],
+      "sourceMapPathOverrides": {
+        "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
+        "webpack:///./*": "${workspaceFolder}/*",
+        "webpack:///*": "*"
+      }
     }
   ]
 }
