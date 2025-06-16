@@ -86,4 +86,26 @@ export class AuthController {
   async getMe(@Res() res: Response) {
     return res.status(200).send();
   }
+
+  @Post('logout')
+  @ApiOperation({
+    summary: 'Logout',
+    description: 'Clears the authentication cookie.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User logged out successfully. JWT cookie cleared.',
+  })
+  async logout(@Res({ passthrough: false }) res: Response) {
+    const isProduction = this.configService.get<boolean>('NX_PUBLIC_MODE');
+
+    res.cookie('jwt', '', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      maxAge: 0,
+      path: '/',
+    });
+    return res.status(200).send();
+  }
 }

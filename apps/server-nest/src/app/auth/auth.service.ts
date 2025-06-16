@@ -40,6 +40,12 @@ export class AuthService {
     }
   }
 
+  /**
+   * TODO finish it
+   * this logic will be refactored in the next iteration. Cashing with the Redis will be implemented
+   *
+   * @param token
+   */
   async verifyToken(token: string): Promise<any> {
     try {
       const url = `${this.authServiceUrl}/verify`;

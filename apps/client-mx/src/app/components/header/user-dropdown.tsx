@@ -8,9 +8,7 @@ import { IUserManager } from '../../store/interfaces/iuser-manager';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 
 export const UserDropdown: FC = observer(() => {
-  const { setIsSignedIn } = useInjection<IUserManager>(
-    DependencyType.UserManager
-  );
+  const { logout } = useInjection<IUserManager>(DependencyType.UserManager);
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -21,8 +19,9 @@ export const UserDropdown: FC = observer(() => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const handleLogout = () => {
-    setIsSignedIn(false);
+  const handleLogout = async () => {
+    await logout();
+
     handleClose();
   };
 

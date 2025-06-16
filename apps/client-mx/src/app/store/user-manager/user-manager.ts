@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import { injectable } from 'inversify';
 
 import { IUserManager } from '../interfaces/iuser-manager';
-import { checkAuthStatusRequest } from '../../repository';
+import { checkAuthStatusRequest, logoutRequest } from '../../repository';
 
 @injectable()
 export class UserManager implements IUserManager {
@@ -30,5 +30,11 @@ export class UserManager implements IUserManager {
     const isSignedIn = await checkAuthStatusRequest();
 
     this.setIsSignedIn(isSignedIn);
+  };
+
+  logout = async (): Promise<void> => {
+    await logoutRequest();
+
+    this.setIsSignedIn(false);
   };
 }

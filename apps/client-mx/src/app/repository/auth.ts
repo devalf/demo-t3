@@ -23,3 +23,7 @@ export const checkAuthStatusRequest = async (): Promise<boolean> => {
     return false;
   }
 };
+
+export const logoutRequest = async (): Promise<void> => {
+  await axiosClient.post('/auth/logout', {}, { withCredentials: true });
+};
