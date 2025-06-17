@@ -15,6 +15,11 @@ export type ApiTokenObject = {
   token: Token;
 };
 
+// we need this type to simplify handling response in case of error
+export type ApiTokenResponse = ApiTokenObject & {
+  message?: string;
+};
+
 export type ApiAuthResponseError = {
   message: string[];
   error: string;

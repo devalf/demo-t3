@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { faker } from '@faker-js/faker';
 
-import { ApiOrderCreatedDTO } from '../dto';
+import { ApiOrderCreatedDTO } from '../../dto';
 
 @Injectable()
 export class OrderService {

@@ -20,7 +20,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(globalPrefix, app, document);
+  SwaggerModule.setup('docs', app, document);
 
   const port = process.env.NX_PUBLIC_SERVER_NEST_PORT || 8083;
 

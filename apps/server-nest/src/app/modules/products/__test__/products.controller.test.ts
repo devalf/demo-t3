@@ -2,7 +2,7 @@ import { mockApiProductList, mockProductDetailed } from '@demo-t3/dummy-data';
 
 import { ProductsController } from '../products.controller';
 import { ProductsService } from '../products.service';
-import { ProductQueryParamsDto } from '../../dto';
+import { ProductQueryParamsDto } from '../../../dto';
 
 describe('ProductsController', () => {
   let productsController: ProductsController;

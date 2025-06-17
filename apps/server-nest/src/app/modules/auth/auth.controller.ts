@@ -5,7 +5,7 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthSignInDto } from '@demo-t3/dto';
 import { Response } from 'express';
 
-import { JwtAuthGuard } from '../common/guards';
+import { JwtAuthGuard } from '../../common/guards';
 
 import { AuthService } from './auth.service';
 
