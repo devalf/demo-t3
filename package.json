@@ -128,5 +128,10 @@
     "*.{json,yml,yaml}": [
       "nx format:write --files"
     ]
+  },
+  "resolutions": {
+    "crypto-js": "^4.2.0",
+    "ws": "^8.17.1",
+    "multer": "^2.0.1"
   }
 }
