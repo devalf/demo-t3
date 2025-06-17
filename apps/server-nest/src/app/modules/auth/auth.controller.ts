@@ -2,10 +2,10 @@ import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { jwtDecode } from 'jwt-decode';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthSignInDto } from '@demo-t3/dto';
 import { Response } from 'express';
 
 import { JwtAuthGuard } from '../../common/guards';
+import { AuthSignInDto } from '../../dto/auth.dto';
 
 import { AuthService } from './auth.service';
 
