@@ -5,7 +5,7 @@ import {
   ApiProductListDTO,
   ProductDetailedDTO,
   ProductQueryParamsDto,
-} from '../dto';
+} from '../../dto';
 
 import { ProductsService } from './products.service';
 

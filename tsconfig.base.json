@@ -10,7 +10,6 @@
     "lib": ["dom", "ESNext"],
     "baseUrl": ".",
     "paths": {
-      "@demo-t3/dto": ["libs/dto/src/index.ts"],
       "@demo-t3/dummy-data": ["libs/dummy-data/src/index.ts"],
       "@demo-t3/models": ["libs/models/src/index.ts"],
       "@demo-t3/test-utils": ["libs/test-utils/src/index.ts"],

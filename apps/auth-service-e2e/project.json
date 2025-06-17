@@ -10,8 +10,7 @@
       "options": {
         "jestConfig": "apps/auth-service-e2e/jest.config.ts",
         "passWithNoTests": true
-      },
-      "dependsOn": ["auth-service:build"]
+      }
     },
     "lint": {
       "executor": "@nx/eslint:lint"

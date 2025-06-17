@@ -2,8 +2,8 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { parseProductDetailed, parseProducts } from '@demo-t3/utils';
 import { ApiEntryList, Product, ProductDetailed } from '@demo-t3/models';
 
-import { LIMIT_ITEMS, OFFSET_ITEMS, providers } from '../../constants';
-import { ProductQueryParamsDto } from '../dto';
+import { LIMIT_ITEMS, OFFSET_ITEMS, providers } from '../../../constants';
+import { ProductQueryParamsDto } from '../../dto';
 
 @Injectable()
 export class ProductsService {

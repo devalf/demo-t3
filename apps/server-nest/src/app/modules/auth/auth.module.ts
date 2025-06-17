@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+
+import { RedisModule } from '../redis/redis.module';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -12,6 +15,8 @@ import { AuthService } from './auth.service';
       maxRedirects: 5,
     }),
     ConfigModule,
+    JwtModule.register({}),
+    RedisModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
