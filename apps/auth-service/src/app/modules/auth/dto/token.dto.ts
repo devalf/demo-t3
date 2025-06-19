@@ -1,9 +1,33 @@
-import { IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { ApiTokenObject } from '@demo-t3/models';
+import { ApiAuthTokens, ApiRefreshTokenObject } from '@demo-t3/models';
 
-export class TokenDto implements ApiTokenObject {
+export class RefreshTokenDto implements ApiRefreshTokenObject {
+  @ApiProperty({
+    example: 'eyJhbGciOiJIUzI1NiIs...',
+    description: 'JWT refresh token',
+  })
   @IsString()
-  @ApiProperty()
-  token: string;
+  @IsNotEmpty()
+  refreshToken: string;
+}
+
+export class AuthTokensDto implements ApiAuthTokens {
+  @ApiProperty({
+    description: 'JWT access token',
+    example: 'eyJhbGciOiJIUzI1NiIs...',
+  })
+  accessToken: string;
+
+  @ApiProperty({
+    description: 'Refresh token for getting new access tokens',
+    example: 'eyJhbGciOiJIUzI1NiIs...',
+  })
+  refreshToken: string;
+
+  @ApiProperty({
+    description: 'Access token expiration in seconds',
+    example: 900,
+  })
+  expiresIn: number;
 }
