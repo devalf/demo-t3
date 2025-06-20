@@ -99,7 +99,7 @@ Generate Prisma client:
 yarn prisma:generate
 ```
 
-Run database migrations:
+Generate and run DB migrations:
 
 ```shell
 

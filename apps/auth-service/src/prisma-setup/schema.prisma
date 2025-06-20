@@ -16,6 +16,10 @@ model User {
   role     Role    @default(CLIENT)
   settings Json    @default("{}")
 
+  is_active      Boolean   @default(true)
+  deleted_at     DateTime?
+  original_email String?   @db.VarChar(45)
+
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 
@@ -37,6 +41,18 @@ model RefreshToken {
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
+}
+
+model AuditLog {
+  id             Int      @id @default(autoincrement())
+  action         String   @db.VarChar(50)
+  user_id        Int
+  target_user_id Int?
+  ip_address     String?  @db.VarChar(45) // IPv4/IPv6
+  user_agent     String?  @db.Text
+  timestamp      DateTime @default(now())
+
+  @@map("audit_logs")
 }
 
 enum Role {
