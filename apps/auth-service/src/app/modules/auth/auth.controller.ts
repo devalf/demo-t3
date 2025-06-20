@@ -14,13 +14,17 @@ import { Request } from 'express';
 
 import { AuthService } from './auth.service';
 import {
+  AuthSignInDto,
   AuthTokensDto,
+  CreateUserDto,
+  LogoutAllRequestDto,
+  LogoutAllResponseDto,
+  LogoutResponseDto,
   RefreshTokenDto,
   UserDto,
   VerifyTokenDto,
   VerifyTokenParamsDto,
 } from './dto';
-import { AuthSignInDto, CreateUserDto } from './dto/auth.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -101,11 +105,14 @@ export class AuthController {
   })
   async logout(
     @Body() refreshTokenDto: RefreshTokenDto
-  ): Promise<{ message: string }> {
+  ): Promise<LogoutResponseDto> {
     try {
       await this.authService.revokeRefreshToken(refreshTokenDto.refreshToken);
 
-      return { message: 'Logged out successfully' };
+      return {
+        message: 'Logged out successfully',
+        timestamp: new Date().toISOString(),
+      };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw new UnauthorizedException('Invalid or expired refresh token');
@@ -117,22 +124,39 @@ export class AuthController {
 
   @Post('logout-all')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Logout from all devices' })
+  @ApiOperation({
+    summary: 'Logout from all devices',
+    description:
+      'This endpoint is intended for internal microservice use only. The consumer of this endpoint is responsible for ' +
+      'securely extracting the userId from the authenticated user context and providing it in the request body.',
+  })
   @ApiResponse({
     status: 200,
     description: 'Logged out from all devices successfully',
   })
   async logoutAll(
-    @Body() body: { userId: number }
-  ): Promise<{ message: string }> {
-    await this.authService.revokeAllRefreshTokens(body.userId);
+    @Body() body: LogoutAllRequestDto
+  ): Promise<LogoutAllResponseDto> {
+    const revokedCount = await this.authService.revokeAllRefreshTokens(
+      body.userId
+    );
 
-    return { message: 'Logged out from all devices successfully' };
+    return {
+      message: 'Logged out from all devices successfully',
+      devicesLoggedOut: revokedCount,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   @Post('verify')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify a JWT token' })
+  @ApiOperation({
+    summary: 'Verify a JWT token',
+    description:
+      'This endpoint is intended for one-time token verification and is not suitable for repeated or continuous validations. ' +
+      'The consumer of this endpoint is responsible for implementing an in-memory solution to track and manage already ' +
+      'verified tokens. This approach minimizes network overhead and latency.',
+  })
   @ApiResponse({
     status: 200,
     description: 'Token verification result',
