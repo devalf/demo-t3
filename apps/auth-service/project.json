@@ -20,8 +20,14 @@
         "generatePackageJson": true
       },
       "configurations": {
-        "development": {},
-        "production": {}
+        "development": {
+          "sourceMap": true,
+          "optimization": false
+        },
+        "production": {
+          "optimization": true,
+          "sourceMap": false
+        }
       },
       "dependsOn": ["prisma-generate"]
     },
@@ -31,7 +37,8 @@
       "dependsOn": ["build"],
       "options": {
         "buildTarget": "auth-service:build",
-        "runBuildTargetDependencies": false
+        "runBuildTargetDependencies": false,
+        "inspect": true
       },
       "configurations": {
         "development": {

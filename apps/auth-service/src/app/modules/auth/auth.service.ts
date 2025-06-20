@@ -172,13 +172,20 @@ export class AuthService {
   async revokeRefreshToken(refreshToken: string): Promise<void> {
     try {
       const payload = await this.verifyRefreshToken(refreshToken);
-
       await this.cleanupToken(payload.tokenId);
 
       this.logger.log(`Refresh token revoked: ${payload.tokenId}`);
     } catch (error) {
-      // Token might be invalid or already deleted, which is acceptable for logout
-      this.logger.warn(`Failed to revoke refresh token: ${error.message}`);
+      if (
+        error.name === 'JsonWebTokenError' ||
+        error.name === 'TokenExpiredError' ||
+        error.name === 'UnauthorizedException'
+      ) {
+        this.logger.warn(`Failed to revoke refresh token: ${error.message}`);
+        throw new UnauthorizedException('Invalid or expired refresh token');
+      }
+
+      throw error;
     }
   }
 

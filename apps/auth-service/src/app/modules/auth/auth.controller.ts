@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Post,
   Req,
+  UnauthorizedException,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -101,9 +102,17 @@ export class AuthController {
   async logout(
     @Body() refreshTokenDto: RefreshTokenDto
   ): Promise<{ message: string }> {
-    await this.authService.revokeRefreshToken(refreshTokenDto.refreshToken);
+    try {
+      await this.authService.revokeRefreshToken(refreshTokenDto.refreshToken);
 
-    return { message: 'Logged out successfully' };
+      return { message: 'Logged out successfully' };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw new UnauthorizedException('Invalid or expired refresh token');
+      }
+
+      throw error;
+    }
   }
 
   @Post('logout-all')
