@@ -1,7 +1,6 @@
 import { randomBytes } from 'crypto';
 
 import {
-  ConflictException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -39,49 +38,30 @@ export class AuthService {
   async createUser(userData: ApiCreateUserParams): Promise<UserDto> {
     const { email, password, name } = userData;
 
-    try {
-      const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-      const user = await this.prisma.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          name,
-        },
-      });
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+      },
+    });
 
-      return plainToInstance(UserDto, user);
-    } catch (error) {
-      if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
-        throw new ConflictException('User with this email already exists');
-      }
-
-      throw error;
-    }
+    return plainToInstance(UserDto, user);
   }
 
   async updateUser(id: number, data: { email?: string }) {
-    try {
-      return await this.prisma.user.update({
-        where: { id },
-        data,
-      });
-    } catch (error) {
-      this.logger.error(`Failed to update user ${id}: ${error.message}`);
-
-      throw error;
-    }
+    return this.prisma.user.update({
+      where: { id },
+      data,
+    });
   }
 
   async deleteUser(id: number) {
-    try {
-      return await this.prisma.user.delete({
-        where: { id },
-      });
-    } catch (error) {
-      this.logger.error(`Failed to delete user ${id}: ${error.message}`);
-      throw error;
-    }
+    return this.prisma.user.delete({
+      where: { id },
+    });
   }
 
   async signIn(

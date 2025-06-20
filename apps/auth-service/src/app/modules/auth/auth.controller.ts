@@ -2,6 +2,7 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Delete,
   HttpCode,
   HttpStatus,
   Post,
@@ -17,6 +18,8 @@ import {
   AuthSignInDto,
   AuthTokensDto,
   CreateUserDto,
+  DeleteUserDto,
+  DeleteUserParamsDto,
   LogoutAllRequestDto,
   LogoutAllResponseDto,
   LogoutResponseDto,
@@ -166,6 +169,25 @@ export class AuthController {
     @Body() verifyTokenRequest: VerifyTokenParamsDto
   ): Promise<VerifyTokenDto> {
     return this.authService.verifyToken(verifyTokenRequest.token);
+  }
+
+  @Delete('user')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete a user by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'User deleted successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  async deleteUser(
+    @Body() params: DeleteUserParamsDto
+  ): Promise<DeleteUserDto> {
+    await this.authService.deleteUser(params.id);
+
+    return { message: 'User deleted successfully' };
   }
 
   private extractDeviceInfo(request: Request) {

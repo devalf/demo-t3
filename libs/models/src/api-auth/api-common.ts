@@ -14,3 +14,7 @@ export type ApiRefreshTokenPayload = {
   tokenId: string;
   type: 'refresh';
 };
+
+export type ApiMessagePayload = {
+  message: string;
+};
