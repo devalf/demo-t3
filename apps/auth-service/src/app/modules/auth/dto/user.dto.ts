@@ -30,4 +30,6 @@ export class UserDto implements ApiUser {
 
   createdAt: string;
   updatedAt: string;
+  password: string;
+  settings: string;
 }

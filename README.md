@@ -31,7 +31,8 @@ Prerequisites:
 ```
 
 ```bash
-$ yarn install
+
+yarn install
 ```
 
 ## Running the Applications
@@ -39,7 +40,8 @@ $ yarn install
 Start the infrastructure services with Docker:
 
 ```bash
-$ docker compose up
+
+docker compose up
 ```
 
 Database Setup: On initial launch, you'll need to execute additional commands for database migration and seeding. Refer to the final section for details (note: this section is currently under construction).

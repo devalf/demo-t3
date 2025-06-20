@@ -8,7 +8,6 @@ datasource db {
   url      = env("NX_PUBLIC_AUTH_DB_URL")
 }
 
-
 model User {
   id       Int     @id @default(autoincrement())
   name     String? @db.VarChar(100)
@@ -17,8 +16,27 @@ model User {
   role     Role    @default(CLIENT)
   settings Json    @default("{}")
 
-  created_at DateTime  @default(now())
-  updated_at DateTime  @default(now()) @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  refresh_tokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id           String    @id @db.VarChar(64)
+  user_id      Int
+  token        String    @db.VarChar(255)
+  user_agent   String?   @db.Text
+  ip_address   String?   @db.VarChar(45) // IPv4/IPv6
+  expires_at   DateTime
+  created_at   DateTime  @default(now())
+  last_used_at DateTime?
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
 }
 
 enum Role {

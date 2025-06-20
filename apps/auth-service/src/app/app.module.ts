@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthCheckModule } from './modules/health-check/health-check.module';
+import { TOKEN_CONFIG } from './constants';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { HealthCheckModule } from './modules/health-check/health-check.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('NX_PUBLIC_JWT_SECRET'),
-        signOptions: { expiresIn: '1h' },
+        signOptions: { expiresIn: TOKEN_CONFIG.ACCESS_TOKEN.JWT_EXPIRY },
       }),
     }),
     AuthModule,
