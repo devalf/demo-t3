@@ -10,7 +10,6 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { plainToInstance } from 'class-transformer';
 import {
   ApiAuthSignInParams,
   ApiCreateUserParams,
@@ -18,6 +17,7 @@ import {
   ApiJwtPayload,
   ApiRefreshTokenPayload,
 } from '@demo-t3/models';
+import { plainToInstance } from 'class-transformer';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { SALT_ROUNDS, TOKEN_CONFIG } from '../../constants';
