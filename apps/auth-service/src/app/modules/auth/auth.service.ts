@@ -189,7 +189,7 @@ export class AuthService {
     }
   }
 
-  async revokeAllRefreshTokens(userId: number): Promise<void> {
+  async revokeAllRefreshTokens(userId: number): Promise<number> {
     try {
       const result = await this.prisma.refreshToken.deleteMany({
         where: { user_id: userId },
@@ -198,6 +198,8 @@ export class AuthService {
       this.logger.log(
         `Revoked ${result.count} refresh tokens for user ${userId}`
       );
+
+      return result.count;
     } catch (error) {
       this.logger.error(
         `Failed to revoke all tokens for user ${userId}: ${error.message}`
