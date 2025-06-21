@@ -173,10 +173,19 @@ export class AuthController {
 
   @Delete('user')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Delete a user by ID' })
+  @ApiOperation({
+    summary: 'Delete a user by ID',
+    description:
+      'This endpoint is intended for internal microservice use only. The consumer service is responsible for' +
+      ' authenticating the user and providing the authenticated user context.',
+  })
   @ApiResponse({
     status: 200,
     description: 'User deleted successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - insufficient permissions',
   })
   @ApiResponse({
     status: 404,
@@ -185,7 +194,7 @@ export class AuthController {
   async deleteUser(
     @Body() params: DeleteUserParamsDto
   ): Promise<DeleteUserDto> {
-    await this.authService.deleteUser(params.id);
+    await this.authService.deleteUser(params.targetUserId, params.accessToken);
 
     return { message: 'User deleted successfully' };
   }

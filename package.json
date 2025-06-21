@@ -18,7 +18,7 @@
     "prisma:migrate:reset": "prisma migrate reset --schema=./apps/auth-service/src/prisma-setup/schema.prisma",
     "prisma:studio": "prisma studio --schema=./apps/auth-service/src/prisma-setup/schema.prisma",
     "prisma:db:push": "prisma db push --schema=./apps/auth-service/src/prisma-setup/schema.prisma",
-    "seed": "npx prisma db seed"
+    "seed": "npx prisma db seed --schema=./apps/auth-service/src/prisma-setup/schema.prisma"
   },
   "author": "Oleksiy Petrychko",
   "license": "MIT",

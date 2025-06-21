@@ -37,6 +37,8 @@ export class AuthService {
     const url = `${this.authServiceUrl}/sign-in`;
 
     try {
+      // TODO pass from server-nest the data related to ApiDeviceInfo
+
       const response = await this.makeHttpRequest<ApiTokenResponse>(
         url,
         params
@@ -52,6 +54,7 @@ export class AuthService {
         error: error.message,
         params: { ...params, password: '[REDACTED]' },
       });
+
       throw error;
     }
   }
@@ -97,7 +100,7 @@ export class AuthService {
     status: number;
     data?: ApiTokenResponse;
   }): boolean {
-    return response.status === 200 && Boolean(response.data?.token);
+    return response.status === 200 && Boolean(response.data?.accessToken);
   }
 
   private async getCachedTokenPayload(token: string): Promise<unknown | null> {
@@ -183,9 +186,12 @@ export class AuthService {
 
       return Math.max(0, decoded.exp - now - this.cacheBufferSeconds);
     } catch (error) {
-      this.logger.warn('Could not decode JWT for exp field, skipping cache', {
-        error: error.message,
-      });
+      this.logger.warn(
+        'Could not decode accessToken for exp field, skipping cache',
+        {
+          error: error.message,
+        }
+      );
 
       return 0;
     }

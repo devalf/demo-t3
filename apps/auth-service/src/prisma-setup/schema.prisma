@@ -43,18 +43,6 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-model AuditLog {
-  id             Int      @id @default(autoincrement())
-  action         String   @db.VarChar(50)
-  user_id        Int
-  target_user_id Int?
-  ip_address     String?  @db.VarChar(45) // IPv4/IPv6
-  user_agent     String?  @db.Text
-  timestamp      DateTime @default(now())
-
-  @@map("audit_logs")
-}
-
 enum Role {
   ADMIN
   MANAGER

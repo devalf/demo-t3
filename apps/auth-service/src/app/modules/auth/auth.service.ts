@@ -24,6 +24,7 @@ import { SALT_ROUNDS, TOKEN_CONFIG } from '../../constants';
 import { User as UserEntity } from '../../../prisma-setup/generated';
 
 import { AuthTokensDto, UserDto } from './dto';
+import { UserDeletionService } from './services';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +33,8 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    private readonly userDeletionService: UserDeletionService
   ) {}
 
   async createUser(userData: ApiCreateUserParams): Promise<UserDto> {
@@ -45,6 +47,7 @@ export class AuthService {
         email,
         password: hashedPassword,
         name,
+        original_email: email,
       },
     });
 
@@ -58,10 +61,8 @@ export class AuthService {
     });
   }
 
-  async deleteUser(id: number) {
-    return this.prisma.user.delete({
-      where: { id },
-    });
+  async deleteUser(targetUserId: number, accessToken: string) {
+    return this.userDeletionService.softDeleteUser(targetUserId, accessToken);
   }
 
   async signIn(

@@ -18,8 +18,14 @@
         "webpackConfig": "apps/server-nest/webpack.config.js"
       },
       "configurations": {
-        "development": {},
-        "production": {}
+        "development": {
+          "sourceMap": true,
+          "optimization": false
+        },
+        "production": {
+          "optimization": true,
+          "sourceMap": false
+        }
       }
     },
     "serve": {
