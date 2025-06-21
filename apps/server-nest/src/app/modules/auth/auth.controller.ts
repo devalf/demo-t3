@@ -21,7 +21,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'Sign in',
     description:
-      'Authenticate a user using email and password. Sets a JWT cookie on success.',
+      'Authenticate a user using email and password. Sets a accessToken cookie on success.',
   })
   @ApiBody({
     description: 'User credentials',
@@ -35,7 +35,8 @@ export class AuthController {
   })
   @ApiResponse({
     status: 200,
-    description: 'User signed in successfully. JWT token is set as a cookie.',
+    description:
+      'User signed in successfully. accessToken token is set as a cookie.',
   })
   async signIn(
     @Body() body: AuthSignInDto,
@@ -45,26 +46,50 @@ export class AuthController {
       const result = await this.authService.signIn(body);
       const isProduction = this.configService.get<boolean>('NX_PUBLIC_MODE');
 
-      let maxAge = 60 * 60 * 1000; // fallback: 1h
+      let accessTokenMaxAge = 15 * 60 * 1000; // fallback: 15m
+      let refreshTokenMaxAge = 7 * 24 * 60 * 60 * 1000; // fallback: 7 days
 
       try {
-        const decoded: unknown = jwtDecode(result.token);
+        const decoded: unknown = jwtDecode(result.accessToken);
         const exp = decoded['exp'];
 
         if (exp) {
-          maxAge = Math.max(exp * 1000 - Date.now(), 0);
+          accessTokenMaxAge = Math.max(exp * 1000 - Date.now(), 0);
         }
       } catch (error) {
-        // fallback to default maxAge
+        // fallback to default accessTokenMaxAge
       }
 
-      res.cookie('jwt', result.token, {
+      if (result.refreshToken) {
+        try {
+          const decodedRefresh: unknown = jwtDecode(result.refreshToken);
+          const refreshExp = decodedRefresh['exp'];
+
+          if (refreshExp) {
+            refreshTokenMaxAge = Math.max(refreshExp * 1000 - Date.now(), 0);
+          }
+        } catch (error) {
+          // fallback to default refreshTokenMaxAge
+        }
+      }
+
+      res.cookie('accessToken', result.accessToken, {
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? 'strict' : 'lax',
-        maxAge,
+        maxAge: accessTokenMaxAge,
         path: '/',
       });
+
+      if (result.refreshToken) {
+        res.cookie('refreshToken', result.refreshToken, {
+          httpOnly: true,
+          secure: isProduction,
+          sameSite: isProduction ? 'strict' : 'lax',
+          maxAge: refreshTokenMaxAge,
+          path: '/',
+        });
+      }
 
       return res.status(200).send();
     } catch (error) {
@@ -80,7 +105,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Unauthorized. JWT token missing or invalid.',
+    description: 'Unauthorized. accessToken token missing or invalid.',
   })
   @UseGuards(JwtAuthGuard)
   async getMe(@Res() res: Response) {
@@ -94,12 +119,14 @@ export class AuthController {
   })
   @ApiResponse({
     status: 200,
-    description: 'User logged out successfully. JWT cookie cleared.',
+    description: 'User logged out successfully. accessToken cookie cleared.',
   })
   async logout(@Res({ passthrough: false }) res: Response) {
     const isProduction = this.configService.get<boolean>('NX_PUBLIC_MODE');
 
-    res.cookie('jwt', '', {
+    // TODO verify and fix this logic
+
+    res.cookie('accessToken', '', {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'strict' : 'lax',

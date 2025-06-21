@@ -14,10 +14,10 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const token = request.cookies?.['jwt'];
+    const token = request.cookies?.['accessToken'];
 
     if (!token) {
-      throw new UnauthorizedException('No JWT token found');
+      throw new UnauthorizedException('No accessToken token found');
     }
 
     try {
@@ -26,7 +26,9 @@ export class JwtAuthGuard implements CanActivate {
 
       return true;
     } catch (error) {
-      throw new UnauthorizedException(error.message || 'Invalid JWT token');
+      throw new UnauthorizedException(
+        error.message || 'Invalid accessToken token'
+      );
     }
   }
 }

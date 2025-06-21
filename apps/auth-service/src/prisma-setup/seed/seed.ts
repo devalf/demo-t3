@@ -24,6 +24,7 @@ async function main() {
       name: 'Admin User',
       password: hashedPassword,
       role: 'ADMIN',
+      original_email: NX_PUBLIC_ALPHA_USER_EMAIL,
     },
   });
 

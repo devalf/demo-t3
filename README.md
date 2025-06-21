@@ -44,7 +44,7 @@ Start the infrastructure services with Docker:
 docker compose up
 ```
 
-Database Setup: On initial launch, you'll need to execute additional commands for database migration and seeding. Refer to the final section for details (note: this section is currently under construction).
+Database Setup: On initial launch, you'll need to execute additional commands for database migration and seeding. Refer to the final section for details.
 
 Start all applications in development mode:
 
@@ -90,7 +90,7 @@ _Note_: Execute all commands from the root directory - no need to navigate to sp
   e.g. `client-mx-e2e`)
 - `npx nx run client-mx-e2e:e2e -g '<title>'` to run e2e for specific test by title
 
-### Auth Service Setup (Under Construction)
+### Auth Service Setup
 
 Generate Prisma client:
 
@@ -99,7 +99,7 @@ Generate Prisma client:
 yarn prisma:generate
 ```
 
-Run database migrations:
+Generate and run DB migrations:
 
 ```shell
 

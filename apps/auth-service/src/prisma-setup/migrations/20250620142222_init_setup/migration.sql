@@ -9,6 +9,9 @@ CREATE TABLE "users" (
     "email" VARCHAR(45) NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'CLIENT',
     "settings" JSONB NOT NULL DEFAULT '{}',
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "deleted_at" TIMESTAMP(3),
+    "original_email" VARCHAR(45),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
