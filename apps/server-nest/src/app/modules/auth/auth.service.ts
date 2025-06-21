@@ -7,6 +7,8 @@ import { firstValueFrom } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 import {
   ApiAuthSignInParams,
+  ApiDeviceInfo,
+  ApiDeviceInfoParams,
   ApiTokenResponse,
   ApiVerifyToken,
 } from '@demo-t3/models';
@@ -16,6 +18,8 @@ type DecodedJwt = {
   exp?: number;
   [key: string]: unknown;
 };
+
+type SignInWithDeviceParams = ApiAuthSignInParams & ApiDeviceInfoParams;
 
 @Injectable()
 export class AuthService {
@@ -33,15 +37,21 @@ export class AuthService {
     this.authServiceUrl = this.buildAuthServiceUrl();
   }
 
-  async signIn(params: ApiAuthSignInParams): Promise<ApiTokenResponse> {
+  async signIn(
+    params: ApiAuthSignInParams,
+    deviceInfo: ApiDeviceInfo
+  ): Promise<ApiTokenResponse> {
     const url = `${this.authServiceUrl}/sign-in`;
 
     try {
-      // TODO pass from server-nest the data related to ApiDeviceInfo
+      const requestPayload: SignInWithDeviceParams = {
+        ...params,
+        deviceInfo,
+      };
 
       const response = await this.makeHttpRequest<ApiTokenResponse>(
         url,
-        params
+        requestPayload
       );
 
       if (!this.isValidSignInResponse(response)) {
@@ -53,6 +63,7 @@ export class AuthService {
       this.logger.error('Sign-in failed', {
         error: error.message,
         params: { ...params, password: '[REDACTED]' },
+        deviceInfo,
       });
 
       throw error;

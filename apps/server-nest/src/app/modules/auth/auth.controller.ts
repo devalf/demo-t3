@@ -1,8 +1,17 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { jwtDecode } from 'jwt-decode';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 import { JwtAuthGuard } from '../../common/guards';
 import { AuthSignInDto } from '../../dto/auth.dto';
@@ -40,10 +49,13 @@ export class AuthController {
   })
   async signIn(
     @Body() body: AuthSignInDto,
+    @Req() request: Request,
     @Res({ passthrough: false }) res: Response
   ) {
+    const deviceInfo = this.extractDeviceInfo(request);
+
     try {
-      const result = await this.authService.signIn(body);
+      const result = await this.authService.signIn(body, deviceInfo);
       const isProduction = this.configService.get<boolean>('NX_PUBLIC_MODE');
 
       let accessTokenMaxAge = 15 * 60 * 1000; // fallback: 15m
@@ -56,8 +68,12 @@ export class AuthController {
         if (exp) {
           accessTokenMaxAge = Math.max(exp * 1000 - Date.now(), 0);
         }
-      } catch (error) {
-        // fallback to default accessTokenMaxAge
+      } catch (err) {
+        if (err instanceof UnauthorizedException) {
+          throw new UnauthorizedException('Invalid or expired access token');
+        }
+
+        throw err;
       }
 
       if (result.refreshToken) {
@@ -68,7 +84,12 @@ export class AuthController {
           if (refreshExp) {
             refreshTokenMaxAge = Math.max(refreshExp * 1000 - Date.now(), 0);
           }
-        } catch (error) {
+        } catch (err) {
+          if (err instanceof UnauthorizedException) {
+            throw new UnauthorizedException('Invalid or expired refresh token');
+          }
+
+          throw err;
           // fallback to default refreshTokenMaxAge
         }
       }
@@ -134,5 +155,21 @@ export class AuthController {
       path: '/',
     });
     return res.status(200).send();
+  }
+
+  private extractDeviceInfo(request: Request) {
+    return {
+      userAgent: request.get('User-Agent') || 'Unknown',
+      ip: this.getClientIp(request),
+    };
+  }
+
+  private getClientIp(request: Request): string {
+    return (
+      request.ip ||
+      request.connection.remoteAddress ||
+      request.headers['x-forwarded-for']?.toString().split(',')[0] ||
+      'Unknown'
+    );
   }
 }

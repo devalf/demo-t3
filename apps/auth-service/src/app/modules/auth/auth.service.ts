@@ -267,7 +267,7 @@ export class AuthService {
         user_id: user.id,
         token: await bcrypt.hash(refreshToken, SALT_ROUNDS),
         user_agent: deviceInfo.userAgent,
-        ip_address: deviceInfo.ip, // TODO define DTO model that is mandatory to pass to this microservice
+        ip_address: deviceInfo.ip,
         expires_at: new Date(
           Date.now() + TOKEN_CONFIG.REFRESH_TOKEN.MILLISECONDS
         ),

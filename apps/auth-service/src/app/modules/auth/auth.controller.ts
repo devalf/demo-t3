@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
+import { ApiDeviceInfo } from '@demo-t3/models';
 
 import { AuthService } from './auth.service';
 import {
@@ -24,6 +25,7 @@ import {
   LogoutAllResponseDto,
   LogoutResponseDto,
   RefreshTokenDto,
+  RefreshTokenWithDeviceDto,
   UserDto,
   VerifyTokenDto,
   VerifyTokenParamsDto,
@@ -67,12 +69,13 @@ export class AuthController {
     description: 'User not found',
   })
   async signIn(
-    @Body() authParams: AuthSignInDto,
+    @Body() body: AuthSignInDto,
     @Req() request: Request
   ): Promise<AuthTokensDto> {
-    const deviceInfo = this.extractDeviceInfo(request);
+    const { email, password, deviceInfo } = body;
+    const finalDeviceInfo = this.resolveDeviceInfo(deviceInfo, request);
 
-    return this.authService.signIn(authParams, deviceInfo);
+    return this.authService.signIn({ email, password }, finalDeviceInfo);
   }
 
   @Post('refresh')
@@ -88,15 +91,13 @@ export class AuthController {
     description: 'Invalid or expired refresh token',
   })
   async refreshToken(
-    @Body() refreshTokenDto: RefreshTokenDto,
+    @Body() body: RefreshTokenWithDeviceDto,
     @Req() request: Request
   ): Promise<AuthTokensDto> {
-    const deviceInfo = this.extractDeviceInfo(request);
+    const { refreshToken, deviceInfo } = body;
+    const finalDeviceInfo = this.resolveDeviceInfo(deviceInfo, request);
 
-    return this.authService.refreshToken(
-      refreshTokenDto.refreshToken,
-      deviceInfo
-    );
+    return this.authService.refreshToken(refreshToken, finalDeviceInfo);
   }
 
   @Post('logout')
@@ -199,18 +200,22 @@ export class AuthController {
     return { message: 'User deleted successfully' };
   }
 
-  private extractDeviceInfo(request: Request) {
+  private resolveDeviceInfo(
+    deviceInfo: { userAgent?: string; ip?: string } | undefined,
+    request: Request
+  ): ApiDeviceInfo {
     return {
-      userAgent: request.get('User-Agent') || 'Unknown',
-      ip: this.getClientIp(request),
+      userAgent:
+        deviceInfo?.userAgent || request.headers['user-agent'] || 'Unknown',
+      ip: deviceInfo?.ip || this.extractClientIp(request) || 'Unknown',
     };
   }
 
-  private getClientIp(request: Request): string {
+  private extractClientIp(request: Request): string {
     return (
       request.ip ||
-      request.connection.remoteAddress ||
-      request.headers['x-forwarded-for']?.toString().split(',')[0] ||
+      request.connection?.remoteAddress ||
+      (request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
       'Unknown'
     );
   }
