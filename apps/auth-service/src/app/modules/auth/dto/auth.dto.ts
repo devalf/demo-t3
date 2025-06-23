@@ -3,37 +3,11 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsStrongPassword,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { ApiAuthSignInParams, ApiCreateUserParams } from '@demo-t3/models';
-
-export class CreateUserDto implements ApiCreateUserParams {
-  @ApiProperty({
-    description: 'User email address',
-    example: 'user@example.com',
-  })
-  @IsEmail()
-  email: string;
-
-  @ApiProperty({
-    description: 'Strong password with minimum requirements',
-    example: 'SecurePassword123!',
-  })
-  @IsStrongPassword()
-  password: string;
-
-  @ApiProperty({
-    description: 'User display name',
-    example: 'John Doe',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  name?: string;
-}
+import { ApiAuthSignInParams } from '@demo-t3/models';
 
 export class DeviceInfoDto {
   @ApiProperty({

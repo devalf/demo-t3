@@ -1,7 +1,47 @@
-import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsStrongPassword,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { ApiMessagePayload, ApiUser } from '@demo-t3/models';
+import {
+  ApiCreateUserParams,
+  ApiMessagePayload,
+  ApiUser,
+} from '@demo-t3/models';
 import { Exclude, Expose, Transform } from 'class-transformer';
+
+export class CreateUserDto implements ApiCreateUserParams {
+  @ApiProperty({
+    description: 'User email address',
+    example: 'user@example.com',
+  })
+  @IsEmail()
+  @MaxLength(45)
+  email: string;
+
+  @ApiProperty({
+    description: 'Strong password with minimum requirements',
+    example: 'SecurePassword123!',
+  })
+  @IsStrongPassword()
+  password: string;
+
+  @ApiProperty({
+    description: 'User display name',
+    example: 'John Doe',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  name?: string;
+}
 
 @Exclude()
 export class UserDto implements ApiUser {
