@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import { ApiDeviceInfo } from '@demo-t3/models';
+import { extractDeviceInfo } from '@demo-t3/utils';
 
 import { AuthService } from './auth.service';
 import {
@@ -27,8 +27,8 @@ import {
   RefreshTokenDto,
   RefreshTokenWithDeviceDto,
   UserDto,
+  VerifyAccessTokenParamsDto,
   VerifyTokenDto,
-  VerifyTokenParamsDto,
 } from './dto';
 
 @ApiTags('Auth')
@@ -73,7 +73,7 @@ export class AuthController {
     @Req() request: Request
   ): Promise<AuthTokensDto> {
     const { email, password, deviceInfo } = body;
-    const finalDeviceInfo = this.resolveDeviceInfo(deviceInfo, request);
+    const finalDeviceInfo = extractDeviceInfo(request, deviceInfo);
 
     return this.authService.signIn({ email, password }, finalDeviceInfo);
   }
@@ -95,7 +95,7 @@ export class AuthController {
     @Req() request: Request
   ): Promise<AuthTokensDto> {
     const { refreshToken, deviceInfo } = body;
-    const finalDeviceInfo = this.resolveDeviceInfo(deviceInfo, request);
+    const finalDeviceInfo = extractDeviceInfo(request, deviceInfo);
 
     return this.authService.refreshToken(refreshToken, finalDeviceInfo);
   }
@@ -155,7 +155,7 @@ export class AuthController {
   @Post('verify')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Verify a JWT token',
+    summary: 'Verify a accessToken token',
     description:
       'This endpoint is intended for one-time token verification and is not suitable for repeated or continuous validations. ' +
       'The consumer of this endpoint is responsible for implementing an in-memory solution to track and manage already ' +
@@ -167,9 +167,9 @@ export class AuthController {
     type: VerifyTokenDto,
   })
   async verifyToken(
-    @Body() verifyTokenRequest: VerifyTokenParamsDto
+    @Body() verifyTokenRequest: VerifyAccessTokenParamsDto
   ): Promise<VerifyTokenDto> {
-    return this.authService.verifyToken(verifyTokenRequest.token);
+    return this.authService.verifyToken(verifyTokenRequest.accessToken);
   }
 
   @Delete('user')
@@ -198,25 +198,5 @@ export class AuthController {
     await this.authService.deleteUser(params.targetUserId, params.accessToken);
 
     return { message: 'User deleted successfully' };
-  }
-
-  private resolveDeviceInfo(
-    deviceInfo: { userAgent?: string; ip?: string } | undefined,
-    request: Request
-  ): ApiDeviceInfo {
-    return {
-      userAgent:
-        deviceInfo?.userAgent || request.headers['user-agent'] || 'Unknown',
-      ip: deviceInfo?.ip || this.extractClientIp(request) || 'Unknown',
-    };
-  }
-
-  private extractClientIp(request: Request): string {
-    return (
-      request.ip ||
-      request.connection?.remoteAddress ||
-      (request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-      'Unknown'
-    );
   }
 }

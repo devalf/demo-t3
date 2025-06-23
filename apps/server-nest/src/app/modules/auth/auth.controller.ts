@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { jwtDecode } from 'jwt-decode';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { extractDeviceInfo } from '@demo-t3/utils';
 
 import { JwtAuthGuard } from '../../common/guards';
 import { AuthSignInDto } from '../../dto/auth.dto';
@@ -52,7 +53,7 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: false }) res: Response
   ) {
-    const deviceInfo = this.extractDeviceInfo(request);
+    const deviceInfo = extractDeviceInfo(request);
 
     try {
       const result = await this.authService.signIn(body, deviceInfo);
@@ -145,8 +146,6 @@ export class AuthController {
   async logout(@Res({ passthrough: false }) res: Response) {
     const isProduction = this.configService.get<boolean>('NX_PUBLIC_MODE');
 
-    // TODO verify and fix this logic
-
     res.cookie('accessToken', '', {
       httpOnly: true,
       secure: isProduction,
@@ -154,22 +153,15 @@ export class AuthController {
       maxAge: 0,
       path: '/',
     });
+
+    res.cookie('refreshToken', '', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      maxAge: 0,
+      path: '/',
+    });
+
     return res.status(200).send();
-  }
-
-  private extractDeviceInfo(request: Request) {
-    return {
-      userAgent: request.get('User-Agent') || 'Unknown',
-      ip: this.getClientIp(request),
-    };
-  }
-
-  private getClientIp(request: Request): string {
-    return (
-      request.ip ||
-      request.connection.remoteAddress ||
-      request.headers['x-forwarded-for']?.toString().split(',')[0] ||
-      'Unknown'
-    );
   }
 }

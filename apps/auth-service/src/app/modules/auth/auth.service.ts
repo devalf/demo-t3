@@ -153,9 +153,8 @@ export class AuthService {
   async revokeRefreshToken(refreshToken: string): Promise<void> {
     try {
       const payload = await this.verifyRefreshToken(refreshToken);
-      await this.cleanupToken(payload.tokenId);
 
-      this.logger.log(`Refresh token revoked: ${payload.tokenId}`);
+      await this.cleanupToken(payload.tokenId);
     } catch (error) {
       if (
         error.name === 'JsonWebTokenError' ||
@@ -163,6 +162,7 @@ export class AuthService {
         error.name === 'UnauthorizedException'
       ) {
         this.logger.warn(`Failed to revoke refresh token: ${error.message}`);
+
         throw new UnauthorizedException('Invalid or expired refresh token');
       }
 
@@ -175,10 +175,6 @@ export class AuthService {
       const result = await this.prisma.refreshToken.deleteMany({
         where: { user_id: userId },
       });
-
-      this.logger.log(
-        `Revoked ${result.count} refresh tokens for user ${userId}`
-      );
 
       return result.count;
     } catch (error) {
@@ -223,8 +219,6 @@ export class AuthService {
           },
         },
       });
-
-      this.logger.log(`Cleaned up ${result.count} expired refresh tokens`); // TODO delete all unnecessary loggers
 
       return result.count;
     } catch (error) {
@@ -296,7 +290,7 @@ export class AuthService {
       expiresIn: TOKEN_CONFIG.ACCESS_TOKEN.JWT_EXPIRY,
     });
 
-    const newTokenId = randomBytes(32).toString('hex'); // TODO use DRY approach
+    const newTokenId = randomBytes(32).toString('hex');
     const newRefreshTokenPayload: ApiRefreshTokenPayload = {
       userId: user.id,
       tokenId: newTokenId,

@@ -1,15 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { ApiTokenObject, ApiVerifyToken } from '@demo-t3/models';
+import { ApiAccessToken, ApiVerifyToken } from '@demo-t3/models';
 
-export class VerifyTokenParamsDto implements ApiTokenObject {
+export class VerifyAccessTokenParamsDto implements ApiAccessToken {
   @ApiProperty({
-    description: 'JWT token to verify',
+    description: 'accessToken token to verify',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
   @IsNotEmpty()
   @IsString()
-  token: string;
+  accessToken: string;
 }
 
 export class VerifyTokenDto implements ApiVerifyToken {

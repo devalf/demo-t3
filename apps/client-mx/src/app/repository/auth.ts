@@ -1,12 +1,12 @@
 import { AxiosResponse } from 'axios';
-import { ApiAuthSignInParams, ApiTokenObject } from '@demo-t3/models';
+import { ApiAuthSignInParams, ApiAuthTokens } from '@demo-t3/models';
 
 import { axiosClient } from '../http';
 
 export const sighInRequest = async (
   params: ApiAuthSignInParams
-): Promise<ApiTokenObject> => {
-  const { data }: AxiosResponse<ApiTokenObject> = await axiosClient.post(
+): Promise<ApiAuthTokens> => {
+  const { data }: AxiosResponse<ApiAuthTokens> = await axiosClient.post(
     '/auth/sign-in',
     params
   );
