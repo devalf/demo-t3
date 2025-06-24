@@ -75,6 +75,44 @@ export class UserDeletionService {
     }
   }
 
+  async hardDeleteUser(targetUserId: number, accessToken: string) {
+    const currentUser = await this.extractUserFromAccessToken(accessToken);
+
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: {
+        id: true,
+        role: true,
+        is_active: true,
+        email: true,
+      },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    const canDelete = this.canUserDelete(currentUser, targetUser);
+
+    if (!canDelete.allowed) {
+      throw new ForbiddenException(canDelete.reason);
+    }
+
+    try {
+      await this.prisma.user.delete({
+        where: { id: targetUserId },
+      });
+
+      return { message: 'User hard deleted successfully' };
+    } catch (error) {
+      this.logger.error(
+        `Failed to hard delete user ${targetUserId}: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
   private canUserDelete(
     currentUser: UserDto,
     targetUser: Partial<UserDto>

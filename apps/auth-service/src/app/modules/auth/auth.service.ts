@@ -61,8 +61,12 @@ export class AuthService {
     });
   }
 
-  async deleteUser(targetUserId: number, accessToken: string) {
+  async softDeleteUser(targetUserId: number, accessToken: string) {
     return this.userDeletionService.softDeleteUser(targetUserId, accessToken);
+  }
+
+  async hardDeleteUser(targetUserId: number, accessToken: string) {
+    return this.userDeletionService.hardDeleteUser(targetUserId, accessToken);
   }
 
   async signIn(

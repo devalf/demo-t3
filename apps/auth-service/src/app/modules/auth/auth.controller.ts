@@ -5,6 +5,7 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Req,
   UnauthorizedException,
@@ -172,17 +173,17 @@ export class AuthController {
     return this.authService.verifyToken(verifyTokenRequest.accessToken);
   }
 
-  @Delete('user')
+  @Patch('user/soft-delete')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Delete a user by ID',
+    summary: 'Soft delete a user by ID',
     description:
       'This endpoint is intended for internal microservice use only. The consumer service is responsible for' +
-      ' authenticating the user and providing the authenticated user context.',
+      ' authenticating the user and providing the authenticated user context. Instead of permanently deleting, this marks the user as deleted.',
   })
   @ApiResponse({
     status: 200,
-    description: 'User deleted successfully',
+    description: 'User soft deleted successfully',
   })
   @ApiResponse({
     status: 403,
@@ -192,11 +193,42 @@ export class AuthController {
     status: 404,
     description: 'User not found',
   })
-  async deleteUser(
+  async softDeleteUser(
     @Body() params: DeleteUserParamsDto
   ): Promise<DeleteUserDto> {
-    await this.authService.deleteUser(params.targetUserId, params.accessToken);
+    await this.authService.softDeleteUser(
+      params.targetUserId,
+      params.accessToken
+    );
 
-    return { message: 'User deleted successfully' };
+    return { message: 'User soft deleted successfully' };
+  }
+
+  @Delete('user')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Hard delete a user by ID',
+    description:
+      'This endpoint permanently deletes the user and all related data from the database. Only allowed for users with sufficient permissions.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User hard deleted successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - insufficient permissions',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  async hardDeleteUser(
+    @Body() params: DeleteUserParamsDto
+  ): Promise<DeleteUserDto> {
+    return this.authService.hardDeleteUser(
+      params.targetUserId,
+      params.accessToken
+    );
   }
 }
