@@ -25,6 +25,7 @@ model User {
 
   refresh_tokens RefreshToken[]
 
+  @@unique([email], name: "unique_email_case_insensitive", map: "unique_email_case_insensitive")
   @@map("users")
 }
 

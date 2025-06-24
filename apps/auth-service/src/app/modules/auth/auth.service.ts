@@ -39,15 +39,15 @@ export class AuthService {
 
   async createUser(userData: ApiCreateUserParams): Promise<UserDto> {
     const { email, password, name } = userData;
-
+    const normalizedEmail = email.toLowerCase();
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     const user = await this.prisma.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         name,
-        original_email: email,
+        original_email: normalizedEmail,
       },
     });
 
