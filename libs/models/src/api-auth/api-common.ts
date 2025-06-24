@@ -3,6 +3,10 @@ export type ApiDeviceInfo = {
   ip: string;
 };
 
+export type ApiDeviceInfoParams = {
+  deviceInfo: ApiDeviceInfo;
+};
+
 export type ApiJwtPayload = {
   id: number;
   email: string;

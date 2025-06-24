@@ -54,9 +54,9 @@ Start all applications in development mode:
 yarn start:demo
 
 # Or run services individually
-npx nx serve client-mx      # Client application
-npx nx serve server-nest    # Main server  
-npx nx serve auth-service   # Authentication service
+yarn nx serve client-mx      # Client application
+yarn nx serve server-nest    # Main server  
+yarn nx serve auth-service   # Authentication service
 ```
 
 ## Testing
@@ -69,7 +69,7 @@ Ensure all applications are running locally before executing end-to-end tests.
 yarn test:all
 
 # Run end-to-end tests for all applications
-npx nx run-many --all --target=e2e --parallel
+yarn nx run-many --all --target=e2e --parallel
 ```
 
 When starting the applications, open http://localhost:8082/ in your browser 
@@ -86,11 +86,11 @@ _Note_: Execute all commands from the root directory - no need to navigate to sp
 - `yarn test [application-name|library-name]` to run test for a specific application|package
 - `yarn lint [application-name|library-name]` to run eslint for a specific application|package
 - `yarn format [application-name|library-name]` to run prettier for a specific application|package
-- `npx nx e2e [application-name] --ui` to run e2e tests for client application in UI mode (with Browser) (
+- `yarn nx e2e [application-name] --ui` to run e2e tests for client application in UI mode (with Browser) (
   e.g. `client-mx-e2e`)
-- `npx nx run client-mx-e2e:e2e -g '<title>'` to run e2e for specific test by title
+- `yarn nx run client-mx-e2e:e2e -g '<title>'` to run e2e for specific test by title
 
-### Auth Service Setup
+### Auth Service Setup and DB managing (section under construction)
 
 Generate Prisma client:
 
@@ -111,4 +111,37 @@ Seed the database with initial data:
 ```shell
 
 yarn seed
+```
+
+#### Database Migration Steps
+Adding Custom SQL Changes -> Adjusting Prisma Scheme
+
+Create empty migration
+```shell
+
+yarn prisma:migrate:dev -- --create-only --name your_migration_name
+```
+
+Edit the generated migration file
+`apps/auth-service/src/prisma-setup/migrations/[timestamp]_your_migration_name/migration.sql`
+
+Apply migration
+```shell
+
+yarn prisma:migrate:deploy
+```
+
+Verify status
+```shell
+
+yarn prisma migrate status --schema=./apps/auth-service/src/prisma-setup/schema.prisma
+```
+
+
+##### Fixing Failed Migrations
+
+Mark failed migration as rolled back
+```shell
+
+yarn prisma migrate resolve --rolled-back "migration_name" --schema=./apps/auth-service/src/prisma-setup/schema.prisma
 ```

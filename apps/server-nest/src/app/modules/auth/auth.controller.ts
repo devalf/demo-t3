@@ -1,8 +1,18 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { jwtDecode } from 'jwt-decode';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { extractDeviceInfo } from '@demo-t3/utils';
 
 import { JwtAuthGuard } from '../../common/guards';
 import { AuthSignInDto } from '../../dto/auth.dto';
@@ -40,10 +50,13 @@ export class AuthController {
   })
   async signIn(
     @Body() body: AuthSignInDto,
+    @Req() request: Request,
     @Res({ passthrough: false }) res: Response
   ) {
+    const deviceInfo = extractDeviceInfo(request);
+
     try {
-      const result = await this.authService.signIn(body);
+      const result = await this.authService.signIn(body, deviceInfo);
       const isProduction = this.configService.get<boolean>('NX_PUBLIC_MODE');
 
       let accessTokenMaxAge = 15 * 60 * 1000; // fallback: 15m
@@ -56,8 +69,12 @@ export class AuthController {
         if (exp) {
           accessTokenMaxAge = Math.max(exp * 1000 - Date.now(), 0);
         }
-      } catch (error) {
-        // fallback to default accessTokenMaxAge
+      } catch (err) {
+        if (err instanceof UnauthorizedException) {
+          throw new UnauthorizedException('Invalid or expired access token');
+        }
+
+        throw err;
       }
 
       if (result.refreshToken) {
@@ -68,7 +85,12 @@ export class AuthController {
           if (refreshExp) {
             refreshTokenMaxAge = Math.max(refreshExp * 1000 - Date.now(), 0);
           }
-        } catch (error) {
+        } catch (err) {
+          if (err instanceof UnauthorizedException) {
+            throw new UnauthorizedException('Invalid or expired refresh token');
+          }
+
+          throw err;
           // fallback to default refreshTokenMaxAge
         }
       }
@@ -124,8 +146,6 @@ export class AuthController {
   async logout(@Res({ passthrough: false }) res: Response) {
     const isProduction = this.configService.get<boolean>('NX_PUBLIC_MODE');
 
-    // TODO verify and fix this logic
-
     res.cookie('accessToken', '', {
       httpOnly: true,
       secure: isProduction,
@@ -133,6 +153,15 @@ export class AuthController {
       maxAge: 0,
       path: '/',
     });
+
+    res.cookie('refreshToken', '', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      maxAge: 0,
+      path: '/',
+    });
+
     return res.status(200).send();
   }
 }

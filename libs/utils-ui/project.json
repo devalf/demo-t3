@@ -33,5 +33,5 @@
       }
     }
   },
-  "tags": ["scope:shared-utils-ui"]
+  "tags": ["scope:shared", "type:util-ui"]
 }

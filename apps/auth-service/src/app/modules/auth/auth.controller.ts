@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
+import { extractDeviceInfo } from '@demo-t3/utils';
 
 import { AuthService } from './auth.service';
 import {
@@ -24,9 +25,10 @@ import {
   LogoutAllResponseDto,
   LogoutResponseDto,
   RefreshTokenDto,
+  RefreshTokenWithDeviceDto,
   UserDto,
+  VerifyAccessTokenParamsDto,
   VerifyTokenDto,
-  VerifyTokenParamsDto,
 } from './dto';
 
 @ApiTags('Auth')
@@ -67,12 +69,13 @@ export class AuthController {
     description: 'User not found',
   })
   async signIn(
-    @Body() authParams: AuthSignInDto,
+    @Body() body: AuthSignInDto,
     @Req() request: Request
   ): Promise<AuthTokensDto> {
-    const deviceInfo = this.extractDeviceInfo(request);
+    const { email, password, deviceInfo } = body;
+    const finalDeviceInfo = extractDeviceInfo(request, deviceInfo);
 
-    return this.authService.signIn(authParams, deviceInfo);
+    return this.authService.signIn({ email, password }, finalDeviceInfo);
   }
 
   @Post('refresh')
@@ -88,15 +91,13 @@ export class AuthController {
     description: 'Invalid or expired refresh token',
   })
   async refreshToken(
-    @Body() refreshTokenDto: RefreshTokenDto,
+    @Body() body: RefreshTokenWithDeviceDto,
     @Req() request: Request
   ): Promise<AuthTokensDto> {
-    const deviceInfo = this.extractDeviceInfo(request);
+    const { refreshToken, deviceInfo } = body;
+    const finalDeviceInfo = extractDeviceInfo(request, deviceInfo);
 
-    return this.authService.refreshToken(
-      refreshTokenDto.refreshToken,
-      deviceInfo
-    );
+    return this.authService.refreshToken(refreshToken, finalDeviceInfo);
   }
 
   @Post('logout')
@@ -154,7 +155,7 @@ export class AuthController {
   @Post('verify')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Verify a JWT token',
+    summary: 'Verify a accessToken token',
     description:
       'This endpoint is intended for one-time token verification and is not suitable for repeated or continuous validations. ' +
       'The consumer of this endpoint is responsible for implementing an in-memory solution to track and manage already ' +
@@ -166,9 +167,9 @@ export class AuthController {
     type: VerifyTokenDto,
   })
   async verifyToken(
-    @Body() verifyTokenRequest: VerifyTokenParamsDto
+    @Body() verifyTokenRequest: VerifyAccessTokenParamsDto
   ): Promise<VerifyTokenDto> {
-    return this.authService.verifyToken(verifyTokenRequest.token);
+    return this.authService.verifyToken(verifyTokenRequest.accessToken);
   }
 
   @Delete('user')
@@ -197,21 +198,5 @@ export class AuthController {
     await this.authService.deleteUser(params.targetUserId, params.accessToken);
 
     return { message: 'User deleted successfully' };
-  }
-
-  private extractDeviceInfo(request: Request) {
-    return {
-      userAgent: request.get('User-Agent') || 'Unknown',
-      ip: this.getClientIp(request),
-    };
-  }
-
-  private getClientIp(request: Request): string {
-    return (
-      request.ip ||
-      request.connection.remoteAddress ||
-      request.headers['x-forwarded-for']?.toString().split(',')[0] ||
-      'Unknown'
-    );
   }
 }

@@ -13,16 +13,20 @@
             "allow": [],
             "depConstraints": [
               {
-                "sourceTag": "scope:shared",
+                "sourceTag": "type:ui",
+                "onlyDependOnLibsWithTags": ["scope:shared"]
+              },
+              {
+                "sourceTag": "type:data",
+                "onlyDependOnLibsWithTags": ["scope:shared"]
+              },
+              {
+                "sourceTag": "type:util",
                 "onlyDependOnLibsWithTags": ["scope:shared"]
               },
               {
                 "sourceTag": "scope:client-mx",
-                "onlyDependOnLibsWithTags": [
-                  "scope:client-mx",
-                  "scope:shared",
-                  "scope:shared-utils-ui"
-                ]
+                "onlyDependOnLibsWithTags": ["scope:client-mx", "scope:shared"]
               },
               {
                 "sourceTag": "scope:server-nest",
@@ -37,6 +41,10 @@
                   "scope:auth-service",
                   "scope:shared"
                 ]
+              },
+              {
+                "sourceTag": "scope:shared",
+                "onlyDependOnLibsWithTags": ["scope:shared"]
               }
             ]
           }
