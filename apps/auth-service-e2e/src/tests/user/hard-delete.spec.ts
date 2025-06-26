@@ -35,10 +35,6 @@ describe('DELETE /api/auth/user E2E', () => {
 
     expect(signInRes.status).toBe(200);
     accessToken = signInRes.data.accessToken;
-
-    console.log(
-      `📝 Test "${currentTestName}" created user ID: ${userId} with email: ${testEmail}`
-    );
   });
 
   afterEach(async () => {
@@ -49,31 +45,15 @@ describe('DELETE /api/auth/user E2E', () => {
       });
 
       if (signInRes.status === 200) {
-        console.log(
-          `⚠️  Test "${currentTestName}" DID NOT DELETE user ID: ${userId} with email: ${testEmail}`
-        );
-
         await axios.delete(apiHardDeleteEndpoint, {
           data: {
             targetUserId: userId,
             accessToken: signInRes.data.accessToken,
           },
         });
-        console.log(
-          `🧹 Cleaned up user ID: ${userId} after test "${currentTestName}"`
-        );
       }
-    } catch (err: any) {
-      if (err.response?.status === 404) {
-        console.log(
-          `✅ Test "${currentTestName}" properly deleted user ID: ${userId}`
-        );
-      } else {
-        console.log(
-          `❓ Test "${currentTestName}" - unable to verify user deletion status:`,
-          err.message
-        );
-      }
+    } catch (error: any) {
+      // console.error(error.message);
     }
   });
 
@@ -106,9 +86,9 @@ describe('DELETE /api/auth/user E2E', () => {
       });
 
       throw new Error('Expected 404 Not Found');
-    } catch (err: any) {
-      expect(err.response.status).toBe(404);
-      expect(err.response.data.message).toContain('User not found');
+    } catch (error: any) {
+      expect(error.response.status).toBe(404);
+      expect(error.response.data.message).toContain('User not found');
     }
   });
 
@@ -124,8 +104,8 @@ describe('DELETE /api/auth/user E2E', () => {
       });
 
       throw new Error('Expected 404 Not Found');
-    } catch (err: any) {
-      expect(err.response.status).toBe(404);
+    } catch (error: any) {
+      expect(error.response.status).toBe(404);
     }
   });
 
@@ -146,8 +126,8 @@ describe('DELETE /api/auth/user E2E', () => {
       });
 
       throw new Error('Expected 401 Unauthorized');
-    } catch (err: any) {
-      expect(err.response.status).toBe(401);
+    } catch (error: any) {
+      expect(error.response.status).toBe(401);
     }
   });
 
@@ -161,9 +141,9 @@ describe('DELETE /api/auth/user E2E', () => {
         });
 
         throw new Error('Expected 400 Bad Request');
-      } catch (err: any) {
-        expect(err.response.status).toBe(400);
-        expect(err.response.data.message).toEqual(
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+        expect(error.response.data.message).toEqual(
           expect.arrayContaining([expect.stringContaining('targetUserId')])
         );
       }
@@ -178,9 +158,9 @@ describe('DELETE /api/auth/user E2E', () => {
         });
 
         throw new Error('Expected 400 Bad Request');
-      } catch (err: any) {
-        expect(err.response.status).toBe(400);
-        expect(err.response.data.message).toEqual(
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+        expect(error.response.data.message).toEqual(
           expect.arrayContaining([expect.stringContaining('accessToken')])
         );
       }
@@ -196,9 +176,9 @@ describe('DELETE /api/auth/user E2E', () => {
         });
 
         throw new Error('Expected 400 Bad Request');
-      } catch (err: any) {
-        expect(err.response.status).toBe(400);
-        expect(err.response.data.message).toEqual(
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+        expect(error.response.data.message).toEqual(
           expect.arrayContaining([expect.stringContaining('targetUserId')])
         );
       }
@@ -214,9 +194,9 @@ describe('DELETE /api/auth/user E2E', () => {
         });
 
         throw new Error('Expected 400 Bad Request');
-      } catch (err: any) {
-        expect(err.response.status).toBe(400);
-        expect(err.response.data.message).toEqual(
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+        expect(error.response.data.message).toEqual(
           expect.arrayContaining([expect.stringContaining('accessToken')])
         );
       }
@@ -234,8 +214,8 @@ describe('DELETE /api/auth/user E2E', () => {
         });
 
         throw new Error('Expected 401 Unauthorized');
-      } catch (err: any) {
-        expect(err.response.status).toBe(401);
+      } catch (error: any) {
+        expect(error.response.status).toBe(401);
       }
     });
 
@@ -249,8 +229,8 @@ describe('DELETE /api/auth/user E2E', () => {
         });
 
         throw new Error('Expected 401 Unauthorized');
-      } catch (err: any) {
-        expect(err.response.status).toBe(401);
+      } catch (error: any) {
+        expect(error.response.status).toBe(401);
       }
     });
   });
@@ -266,8 +246,8 @@ describe('DELETE /api/auth/user E2E', () => {
         });
 
         throw new Error('Expected 400 or 404');
-      } catch (err: any) {
-        expect([400, 404].includes(err.response.status)).toBe(true);
+      } catch (error: any) {
+        expect([400, 404].includes(error.response.status)).toBe(true);
       }
     });
 
@@ -281,8 +261,8 @@ describe('DELETE /api/auth/user E2E', () => {
         });
 
         throw new Error('Expected 400 or 404');
-      } catch (err: any) {
-        expect([400, 404].includes(err.response.status)).toBe(true);
+      } catch (error: any) {
+        expect([400, 404].includes(error.response.status)).toBe(true);
       }
     });
   });
@@ -301,8 +281,8 @@ describe('DELETE /api/auth/user E2E', () => {
         });
 
         throw new Error('Expected 401 Unauthorized');
-      } catch (err: any) {
-        expect(err.response.status).toBe(401);
+      } catch (error: any) {
+        expect(error.response.status).toBe(401);
       }
     });
 
@@ -325,8 +305,8 @@ describe('DELETE /api/auth/user E2E', () => {
         });
 
         throw new Error('Expected 403 Forbidden');
-      } catch (err: any) {
-        expect([401, 403].includes(err.response.status)).toBe(true);
+      } catch (error: any) {
+        expect([401, 403].includes(error.response.status)).toBe(true);
       }
 
       const otherSignInRes = await axios.post(apiSignInEndpoint, {
@@ -368,8 +348,8 @@ describe('DELETE /api/auth/user E2E', () => {
         });
 
         throw new Error('Expected 400 Bad Request');
-      } catch (err: any) {
-        expect(err.response.status).toBe(400);
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
       }
     });
   });

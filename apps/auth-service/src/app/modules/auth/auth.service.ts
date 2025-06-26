@@ -74,9 +74,10 @@ export class AuthService {
     deviceInfo: ApiDeviceInfo
   ): Promise<AuthTokensDto> {
     const { email, password } = credentials;
+    const normalizedEmail = email.toLowerCase();
 
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
