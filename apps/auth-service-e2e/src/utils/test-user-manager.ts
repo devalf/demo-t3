@@ -153,7 +153,7 @@ export class TestUserManager {
     this.adminToken = null;
   }
 
-  private async getAdminToken(): Promise<string> {
+  public async getAdminToken(): Promise<string> {
     if (this.adminToken) {
       return this.adminToken;
     }

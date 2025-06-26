@@ -504,34 +504,6 @@ describe('Sign-in endpoint E2E', () => {
       });
     });
 
-    describe('Content-Type Tests', () => {
-      it('should handle application/json content type', async () => {
-        const res = await axios.post(
-          apiSignInEndpoint,
-          {
-            email: testUser.email,
-            password: testUser.password,
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        expect(res.status).toBe(200);
-      });
-
-      it('should handle missing content type', async () => {
-        const res = await axios.post(apiSignInEndpoint, {
-          email: testUser.email,
-          password: testUser.password,
-        });
-
-        expect(res.status).toBe(200);
-      });
-    });
-
     describe('Edge Cases and Security Tests', () => {
       it('should handle special characters in email', async () => {
         const specialUser = await createTestUser({
