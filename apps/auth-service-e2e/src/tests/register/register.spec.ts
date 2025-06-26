@@ -51,8 +51,8 @@ describe('Register endpoint E2E', () => {
         });
 
         throw new Error('Expected 409 Conflict');
-      } catch (err: any) {
-        expect(err.response.status).toBe(409);
+      } catch (error: any) {
+        expect(error.response.status).toBe(409);
       }
     });
 
@@ -65,9 +65,9 @@ describe('Register endpoint E2E', () => {
           });
 
           throw new Error('Expected 400 Bad Request');
-        } catch (err: any) {
-          expect(err.response.status).toBe(400);
-          expect(err.response.data.message).toEqual(
+        } catch (error: any) {
+          expect(error.response.status).toBe(400);
+          expect(error.response.data.message).toEqual(
             expect.arrayContaining([expect.stringContaining('email')])
           );
         }
@@ -82,9 +82,9 @@ describe('Register endpoint E2E', () => {
           });
 
           throw new Error('Expected 400 Bad Request');
-        } catch (err: any) {
-          expect(err.response.status).toBe(400);
-          expect(err.response.data.message).toEqual(
+        } catch (error: any) {
+          expect(error.response.status).toBe(400);
+          expect(error.response.data.message).toEqual(
             expect.arrayContaining([expect.stringContaining('email')])
           );
         }
@@ -98,9 +98,9 @@ describe('Register endpoint E2E', () => {
           });
 
           throw new Error('Expected 400 Bad Request');
-        } catch (err: any) {
-          expect(err.response.status).toBe(400);
-          expect(err.response.data.message).toEqual(
+        } catch (error: any) {
+          expect(error.response.status).toBe(400);
+          expect(error.response.data.message).toEqual(
             expect.arrayContaining([expect.stringContaining('password')])
           );
         }
@@ -115,9 +115,9 @@ describe('Register endpoint E2E', () => {
           });
 
           throw new Error('Expected 400 Bad Request');
-        } catch (err: any) {
-          expect(err.response.status).toBe(400);
-          expect(err.response.data.message).toEqual(
+        } catch (error: any) {
+          expect(error.response.status).toBe(400);
+          expect(error.response.data.message).toEqual(
             expect.arrayContaining([expect.stringContaining('password')])
           );
         }
@@ -128,8 +128,8 @@ describe('Register endpoint E2E', () => {
           await axios.post(apiRegisterEndpoint, {});
 
           throw new Error('Expected 400 Bad Request');
-        } catch (err: any) {
-          expect(err.response.status).toBe(400);
+        } catch (error: any) {
+          expect(error.response.status).toBe(400);
         }
       });
 
@@ -142,9 +142,9 @@ describe('Register endpoint E2E', () => {
           });
 
           throw new Error('Expected 400 Bad Request');
-        } catch (err: any) {
-          expect(err.response.status).toBe(400);
-          expect(err.response.data.message).toEqual(
+        } catch (error: any) {
+          expect(error.response.status).toBe(400);
+          expect(error.response.data.message).toEqual(
             expect.arrayContaining([expect.stringContaining('name')])
           );
         }
@@ -177,9 +177,9 @@ describe('Register endpoint E2E', () => {
           });
 
           throw new Error('Expected 400 Bad Request');
-        } catch (err: any) {
-          expect(err.response.status).toBe(400);
-          expect(err.response.data.message).toEqual(
+        } catch (error: any) {
+          expect(error.response.status).toBe(400);
+          expect(error.response.data.message).toEqual(
             expect.arrayContaining([expect.stringContaining('email')])
           );
         }
@@ -215,8 +215,8 @@ describe('Register endpoint E2E', () => {
           });
 
           throw new Error('Expected 409 Conflict');
-        } catch (err: any) {
-          expect(err.response.status).toBe(409);
+        } catch (error: any) {
+          expect(error.response.status).toBe(409);
         }
       });
     });
@@ -282,8 +282,8 @@ describe('Register endpoint E2E', () => {
           });
 
           throw new Error('Expected 400 Bad Request');
-        } catch (err: any) {
-          expect(err.response.status).toBe(400);
+        } catch (error: any) {
+          expect(error.response.status).toBe(400);
         }
       });
     });
