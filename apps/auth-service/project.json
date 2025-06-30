@@ -53,7 +53,10 @@
       "executor": "@nx/eslint:lint"
     },
     "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{options.outputPath}"],
       "options": {
+        "jestConfig": "apps/auth-service/jest.config.ts",
         "passWithNoTests": true
       }
     },
