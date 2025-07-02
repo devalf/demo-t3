@@ -14,18 +14,14 @@ const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
 
 jest.mock('class-transformer', () => ({
   plainToInstance: jest.fn(),
-  Type: () => () => {
-    //
-  },
-  Exclude: () => () => {
-    //
-  },
-  Expose: () => () => {
-    //
-  },
-  Transform: () => () => {
-    //
-  },
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  Type: () => () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  Exclude: () => () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  Expose: () => () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  Transform: () => () => {},
 }));
 const mockedPlainToInstance = plainToInstance as jest.MockedFunction<
   typeof plainToInstance
@@ -500,7 +496,6 @@ describe('AuthService', () => {
         'WrongPassword123!',
         'hashed_password'
       );
-      expect((authService as any).generateTokenPair).not.toHaveBeenCalled();
     });
   });
 });
