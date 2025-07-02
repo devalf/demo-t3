@@ -199,4 +199,80 @@ describe('AuthService', () => {
       expect(result).toEqual(expectedUserDto);
     });
   });
+
+  describe('update user', () => {
+    it('should update user email successfully', async () => {
+      const userId = 1;
+      const updateData = { email: 'new.email@example.com' };
+
+      const mockUpdatedUser = {
+        id: userId,
+        email: 'new.email@example.com',
+        password: 'hashed_password',
+        name: 'Test User',
+        role: 'CLIENT',
+        original_email: 'test@example.com',
+        created_at: new Date(),
+        updated_at: new Date(),
+        deleted_at: null,
+        settings: null,
+        is_active: true,
+      };
+
+      mockPrismaService.user.update.mockResolvedValue(mockUpdatedUser);
+
+      const result = await authService.updateUser(userId, updateData);
+
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: updateData,
+      });
+      expect(result).toEqual(mockUpdatedUser);
+    });
+
+    it('should handle empty update data', async () => {
+      const userId = 1;
+      const updateData = {};
+
+      const mockUpdatedUser = {
+        id: userId,
+        email: 'test@example.com',
+        password: 'hashed_password',
+        name: 'Test User',
+        role: 'CLIENT',
+        original_email: 'test@example.com',
+        created_at: new Date(),
+        updated_at: new Date(),
+        deleted_at: null,
+        settings: null,
+        is_active: true,
+      };
+
+      mockPrismaService.user.update.mockResolvedValue(mockUpdatedUser);
+
+      const result = await authService.updateUser(userId, updateData);
+
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: updateData,
+      });
+      expect(result).toEqual(mockUpdatedUser);
+    });
+
+    it('should throw an error when user is not found', async () => {
+      const userId = 999; // Non-existent user ID
+      const updateData = { email: 'new.email@example.com' };
+
+      const prismaError = new Error('User not found');
+      mockPrismaService.user.update.mockRejectedValue(prismaError);
+
+      await expect(
+        authService.updateUser(userId, updateData)
+      ).rejects.toThrow();
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: updateData,
+      });
+    });
+  });
 });
