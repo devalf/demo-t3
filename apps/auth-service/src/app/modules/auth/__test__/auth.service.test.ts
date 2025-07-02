@@ -2,6 +2,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
+import { ForbiddenException } from '@nestjs/common';
 
 import { AuthService } from '../auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -273,6 +274,233 @@ describe('AuthService', () => {
         where: { id: userId },
         data: updateData,
       });
+    });
+  });
+
+  describe('soft delete user', () => {
+    it('should call userDeletionService.softDeleteUser with correct parameters', async () => {
+      const targetUserId = 1;
+      const accessToken = 'valid.jwt.token';
+      const expectedResult = {
+        id: targetUserId,
+        email: 'test@example.com',
+        name: 'Test User',
+        is_active: false,
+      };
+
+      mockUserDeletionService.softDeleteUser.mockResolvedValue(expectedResult);
+
+      const result = await authService.softDeleteUser(
+        targetUserId,
+        accessToken
+      );
+
+      expect(mockUserDeletionService.softDeleteUser).toHaveBeenCalledWith(
+        targetUserId,
+        accessToken
+      );
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should propagate errors from userDeletionService', async () => {
+      const targetUserId = 1;
+      const accessToken = 'valid.jwt.token';
+      const expectedError = new ForbiddenException('Insufficient permissions');
+
+      mockUserDeletionService.softDeleteUser.mockRejectedValue(expectedError);
+
+      await expect(
+        authService.softDeleteUser(targetUserId, accessToken)
+      ).rejects.toThrow(ForbiddenException);
+
+      expect(mockUserDeletionService.softDeleteUser).toHaveBeenCalledWith(
+        targetUserId,
+        accessToken
+      );
+    });
+  });
+
+  describe('hard delete user', () => {
+    it('should call userDeletionService.hardDeleteUser with correct parameters', async () => {
+      const targetUserId = 1;
+      const accessToken = 'valid.jwt.token';
+      const expectedResult = { message: 'User hard deleted successfully' };
+
+      mockUserDeletionService.hardDeleteUser.mockResolvedValue(expectedResult);
+
+      const result = await authService.hardDeleteUser(
+        targetUserId,
+        accessToken
+      );
+
+      expect(mockUserDeletionService.hardDeleteUser).toHaveBeenCalledWith(
+        targetUserId,
+        accessToken
+      );
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should propagate errors from userDeletionService', async () => {
+      const targetUserId = 1;
+      const accessToken = 'valid.jwt.token';
+      const expectedError = new ForbiddenException('Insufficient permissions');
+
+      mockUserDeletionService.hardDeleteUser.mockRejectedValue(expectedError);
+
+      await expect(
+        authService.hardDeleteUser(targetUserId, accessToken)
+      ).rejects.toThrow(ForbiddenException);
+
+      expect(mockUserDeletionService.hardDeleteUser).toHaveBeenCalledWith(
+        targetUserId,
+        accessToken
+      );
+    });
+  });
+
+  describe('sign in', () => {
+    const mockDeviceInfo = {
+      ip: '127.0.0.1',
+      userAgent: 'Test User Agent',
+    };
+
+    it('should authenticate a user with valid credentials', async () => {
+      const credentials = {
+        email: 'test@example.com',
+        password: 'SecurePassword123!',
+      };
+
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        password: 'hashed_password',
+        name: 'Test User',
+        role: 'CLIENT',
+        original_email: 'test@example.com',
+        created_at: new Date(),
+        updated_at: new Date(),
+        deleted_at: null,
+        settings: null,
+        is_active: true,
+      };
+
+      const mockTokens = {
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+        expiresIn: 900,
+      };
+
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockedBcrypt.compare.mockResolvedValue(true as never);
+
+      jest
+        .spyOn(authService as any, 'generateTokenPair')
+        .mockResolvedValue(mockTokens);
+
+      const result = await authService.signIn(credentials, mockDeviceInfo);
+
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { email: 'test@example.com' },
+      });
+      expect(mockedBcrypt.compare).toHaveBeenCalledWith(
+        'SecurePassword123!',
+        'hashed_password'
+      );
+      expect((authService as any).generateTokenPair).toHaveBeenCalledWith(
+        mockUser,
+        mockDeviceInfo
+      );
+      expect(result).toEqual(mockTokens);
+    });
+
+    it('should normalize email to lowercase', async () => {
+      const credentials = {
+        email: 'Test@Example.com',
+        password: 'SecurePassword123!',
+      };
+
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        password: 'hashed_password',
+        name: 'Test User',
+        role: 'CLIENT',
+        original_email: 'test@example.com',
+        created_at: new Date(),
+        updated_at: new Date(),
+        deleted_at: null,
+        settings: null,
+        is_active: true,
+      };
+
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockedBcrypt.compare.mockResolvedValue(true as never);
+      jest.spyOn(authService as any, 'generateTokenPair').mockResolvedValue({
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+        expiresIn: 900,
+      });
+
+      await authService.signIn(credentials, mockDeviceInfo);
+
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { email: 'test@example.com' }, // Should be normalized to lowercase
+      });
+    });
+
+    it('should throw NotFoundException when user is not found', async () => {
+      const credentials = {
+        email: 'nonexistent@example.com',
+        password: 'SecurePassword123!',
+      };
+
+      mockPrismaService.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        authService.signIn(credentials, mockDeviceInfo)
+      ).rejects.toThrow('User not found');
+
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { email: 'nonexistent@example.com' },
+      });
+      expect(mockedBcrypt.compare).not.toHaveBeenCalled();
+    });
+
+    it('should throw UnauthorizedException when password is incorrect', async () => {
+      const credentials = {
+        email: 'test@example.com',
+        password: 'WrongPassword123!',
+      };
+
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        password: 'hashed_password',
+        name: 'Test User',
+        role: 'CLIENT',
+        original_email: 'test@example.com',
+        created_at: new Date(),
+        updated_at: new Date(),
+        deleted_at: null,
+        settings: null,
+        is_active: true,
+      };
+
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockedBcrypt.compare.mockResolvedValue(false as never);
+
+      await expect(
+        authService.signIn(credentials, mockDeviceInfo)
+      ).rejects.toThrow('Invalid credentials');
+
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { email: 'test@example.com' },
+      });
+      expect(mockedBcrypt.compare).toHaveBeenCalledWith(
+        'WrongPassword123!',
+        'hashed_password'
+      );
+      expect((authService as any).generateTokenPair).not.toHaveBeenCalled();
     });
   });
 });
