@@ -5,11 +5,15 @@ import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
+import { jwtDecode } from 'jwt-decode';
 import {
+  ApiAuthResponseError,
   ApiAuthSignInParams,
+  ApiCreateUserParams,
   ApiDeviceInfo,
   ApiDeviceInfoParams,
   ApiTokenResponse,
+  ApiUser,
   ApiVerifyToken,
 } from '@demo-t3/models';
 import { Redis } from 'ioredis';
@@ -20,6 +24,16 @@ type DecodedJwt = {
 };
 
 type SignInWithDeviceParams = ApiAuthSignInParams & ApiDeviceInfoParams;
+
+type CookieData = {
+  value: string;
+  maxAge: number;
+};
+
+type PreparedCookieData = {
+  accessToken: CookieData;
+  refreshToken?: CookieData;
+};
 
 @Injectable()
 export class AuthService {
@@ -35,6 +49,67 @@ export class AuthService {
     @Inject('REDIS_CLIENT') private readonly redisClient: Redis
   ) {
     this.authServiceUrl = this.buildAuthServiceUrl();
+  }
+
+  async registerUser(
+    params: ApiCreateUserParams,
+    deviceInfo: ApiDeviceInfo
+  ): Promise<ApiUser | ApiAuthResponseError> {
+    const url = `${this.authServiceUrl}/register`;
+
+    try {
+      const requestPayload = {
+        ...params,
+        deviceInfo,
+      };
+
+      const response = await this.makeHttpRequest<
+        ApiUser | ApiAuthResponseError
+      >(url, requestPayload);
+
+      if (!this.isValidRegistrationResponse(response)) {
+        const errorMessages = (response.data as ApiAuthResponseError)?.message;
+        const errorMessage = Array.isArray(errorMessages)
+          ? errorMessages.join(', ')
+          : errorMessages || 'Registration failed';
+
+        throw new Error(errorMessage);
+      }
+
+      return response.data;
+    } catch (error) {
+      this.logger.error('Registration failed', {
+        error: error.message,
+        params: { ...params, password: '[REDACTED]' },
+        deviceInfo,
+      });
+
+      throw error;
+    }
+  }
+
+  async registerAndSignIn(
+    params: ApiCreateUserParams,
+    deviceInfo: ApiDeviceInfo
+  ): Promise<ApiTokenResponse> {
+    try {
+      await this.registerUser(params, deviceInfo);
+
+      const signInParams: ApiAuthSignInParams = {
+        email: params.email,
+        password: params.password,
+      };
+
+      return await this.signIn(signInParams, deviceInfo);
+    } catch (error) {
+      this.logger.error('Register and sign-in failed', {
+        error: error.message,
+        params: { ...params, password: '[REDACTED]' },
+        deviceInfo,
+      });
+
+      throw error;
+    }
   }
 
   async signIn(
@@ -68,6 +143,36 @@ export class AuthService {
 
       throw error;
     }
+  }
+
+  prepareCookieData(tokenResponse: ApiTokenResponse): PreparedCookieData {
+    const accessTokenDecoded = jwtDecode(tokenResponse.accessToken);
+    const accessTokenMaxAge = Math.max(
+      accessTokenDecoded['exp'] * 1000 - Date.now(),
+      0
+    );
+
+    const cookieData: PreparedCookieData = {
+      accessToken: {
+        value: tokenResponse.accessToken,
+        maxAge: accessTokenMaxAge,
+      },
+    };
+
+    if (tokenResponse.refreshToken) {
+      const refreshTokenDecoded = jwtDecode(tokenResponse.refreshToken);
+      const refreshTokenMaxAge = Math.max(
+        refreshTokenDecoded['exp'] * 1000 - Date.now(),
+        0
+      );
+
+      cookieData.refreshToken = {
+        value: tokenResponse.refreshToken,
+        maxAge: refreshTokenMaxAge,
+      };
+    }
+
+    return cookieData;
   }
 
   async verifyToken(token: string): Promise<unknown> {
@@ -112,6 +217,13 @@ export class AuthService {
     data?: ApiTokenResponse;
   }): boolean {
     return response.status === 200 && Boolean(response.data?.accessToken);
+  }
+
+  private isValidRegistrationResponse(response: {
+    status: number;
+    data?: ApiUser | ApiAuthResponseError;
+  }): boolean {
+    return response.status === 201 && Boolean((response.data as ApiUser)?.id);
   }
 
   private async getCachedTokenPayload(token: string): Promise<unknown | null> {

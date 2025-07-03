@@ -18,7 +18,7 @@ This demo project showcases a monorepo architecture built with NX, containing mu
 
 The architecture includes Redis running in a separate container, making it accessible and shareable across all applications in the monorepo for session management and caching.
 
-All applications are developed in TypeScript and include comprehensive test coverage with unit tests, integration tests, and end-to-end tests.
+All applications are developed in TypeScript and include exemplary test coverage with representative unit tests, integration tests, and end-to-end tests..
 The server APIs are fully documented and accessible through Swagger documentation. Navigate to the `/docs` path for each service, for example: http://localhost:8084/docs
 
 ## Installation

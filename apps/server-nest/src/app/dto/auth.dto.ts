@@ -10,9 +10,6 @@ export class CreateUserDto implements ApiCreateUserParams {
   @ApiProperty()
   @IsStrongPassword()
   password: string;
-
-  @ApiProperty({ required: false })
-  name?: string;
 }
 
 export class AuthSignInDto implements ApiAuthSignInParams {
