@@ -5,17 +5,16 @@ import {
   Post,
   Req,
   Res,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { jwtDecode } from 'jwt-decode';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { extractDeviceInfo } from '@demo-t3/utils';
+import { ApiTokenResponse } from '@demo-t3/models';
 
 import { JwtAuthGuard } from '../../common/guards';
-import { AuthSignInDto } from '../../dto/auth.dto';
+import { AuthSignInDto, CreateUserDto } from '../../dto/auth.dto';
 
 import { AuthService } from './auth.service';
 
@@ -57,61 +56,8 @@ export class AuthController {
 
     try {
       const result = await this.authService.signIn(body, deviceInfo);
-      const isProduction = this.configService.get<boolean>('NX_PUBLIC_MODE');
 
-      let accessTokenMaxAge = 15 * 60 * 1000; // fallback: 15m
-      let refreshTokenMaxAge = 7 * 24 * 60 * 60 * 1000; // fallback: 7 days
-
-      try {
-        const decoded: unknown = jwtDecode(result.accessToken);
-        const exp = decoded['exp'];
-
-        if (exp) {
-          accessTokenMaxAge = Math.max(exp * 1000 - Date.now(), 0);
-        }
-      } catch (err) {
-        if (err instanceof UnauthorizedException) {
-          throw new UnauthorizedException('Invalid or expired access token');
-        }
-
-        throw err;
-      }
-
-      if (result.refreshToken) {
-        try {
-          const decodedRefresh: unknown = jwtDecode(result.refreshToken);
-          const refreshExp = decodedRefresh['exp'];
-
-          if (refreshExp) {
-            refreshTokenMaxAge = Math.max(refreshExp * 1000 - Date.now(), 0);
-          }
-        } catch (err) {
-          if (err instanceof UnauthorizedException) {
-            throw new UnauthorizedException('Invalid or expired refresh token');
-          }
-
-          throw err;
-          // fallback to default refreshTokenMaxAge
-        }
-      }
-
-      res.cookie('accessToken', result.accessToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'strict' : 'lax',
-        maxAge: accessTokenMaxAge,
-        path: '/',
-      });
-
-      if (result.refreshToken) {
-        res.cookie('refreshToken', result.refreshToken, {
-          httpOnly: true,
-          secure: isProduction,
-          sameSite: isProduction ? 'strict' : 'lax',
-          maxAge: refreshTokenMaxAge,
-          path: '/',
-        });
-      }
+      this.setCookiesFromTokens(res, result);
 
       return res.status(200).send();
     } catch (error) {
@@ -163,5 +109,86 @@ export class AuthController {
     });
 
     return res.status(200).send();
+  }
+
+  @Post('register')
+  @ApiOperation({
+    summary: 'Register and sign in user',
+    description:
+      'Register a new user and immediately sign them in. Sets accessToken and refreshToken cookies on success.' +
+      'This is simplified DEMO version, without the necessary steps such as email verification.',
+  })
+  @ApiBody({
+    description: 'User registration data',
+    type: CreateUserDto,
+    examples: {
+      valid: {
+        summary: 'Valid registration data',
+        value: { email: 'user@example.com', password: 'Password123!' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description:
+      'User registered and signed in successfully. Authentication cookies are set.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request. Invalid input data.',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflict. User with this email already exists.',
+  })
+  async registerAndSignIn(
+    @Body() body: CreateUserDto,
+    @Req() request: Request,
+    @Res({ passthrough: false }) res: Response
+  ) {
+    const deviceInfo = extractDeviceInfo(request);
+
+    try {
+      const result = await this.authService.registerAndSignIn(body, deviceInfo);
+
+      this.setCookiesFromTokens(res, result);
+
+      return res.status(201).send();
+    } catch (error) {
+      if (error.message?.includes('already exists')) {
+        return res.status(409).json({ message: error.message });
+      }
+
+      return res
+        .status(400)
+        .json({ message: error.message || 'Registration failed' });
+    }
+  }
+
+  private setCookiesFromTokens(
+    res: Response,
+    tokenResponse: ApiTokenResponse
+  ): void {
+    const isProduction = this.configService.get<boolean>('NX_PUBLIC_MODE');
+    const cookieData = this.authService.prepareCookieData(tokenResponse);
+
+    const baseCookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? ('strict' as const) : ('lax' as const),
+      path: '/',
+    };
+
+    res.cookie('accessToken', cookieData.accessToken.value, {
+      ...baseCookieOptions,
+      maxAge: cookieData.accessToken.maxAge,
+    });
+
+    if (cookieData.refreshToken) {
+      res.cookie('refreshToken', cookieData.refreshToken.value, {
+        ...baseCookieOptions,
+        maxAge: cookieData.refreshToken.maxAge,
+      });
+    }
   }
 }
