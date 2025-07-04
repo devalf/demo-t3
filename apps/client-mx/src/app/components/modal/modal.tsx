@@ -6,7 +6,7 @@ import { IModalManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 
 import { ModalContainer } from './modal-container';
-import { LoginInModal } from './modals';
+import { LoginInModal, SignUpModal } from './modals';
 
 type ModalComponentProps = {
   payload?: unknown;
@@ -17,7 +17,7 @@ export type ModalID = 'LOGIN_MODAL' | 'SIGNUP_MODAL';
 
 const MODAL_TEMPLATES: Record<ModalID, FC<ModalComponentProps>> = {
   LOGIN_MODAL: LoginInModal,
-  SIGNUP_MODAL: LoginInModal, // TODO provide correct template
+  SIGNUP_MODAL: SignUpModal,
 };
 
 export const Modal = observer(() => {

@@ -65,7 +65,7 @@ export const Header: FC = observer(() => {
                     variant={'contained'}
                     color={'warning'}
                     sx={{ ml: 2 }}
-                    onClick={() => console.log('Sign Up - TBD')}
+                    onClick={() => showModal('SIGNUP_MODAL')}
                   >
                     Sign Up
                   </Button>
