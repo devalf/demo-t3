@@ -14,14 +14,14 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const token = request.cookies?.['accessToken'];
+    const accessToken = request.cookies?.['accessToken'];
 
-    if (!token) {
+    if (!accessToken) {
       throw new UnauthorizedException('No accessToken token found');
     }
 
     try {
-      const payload = await this.authService.verifyToken(token);
+      const payload = await this.authService.verifyToken(accessToken);
       (request as Request & { user?: unknown }).user = payload;
 
       return true;

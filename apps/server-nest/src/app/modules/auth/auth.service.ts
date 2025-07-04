@@ -175,18 +175,18 @@ export class AuthService {
     return cookieData;
   }
 
-  async verifyToken(token: string): Promise<unknown> {
-    if (!token?.trim()) {
+  async verifyToken(accessToken: string): Promise<unknown> {
+    if (!accessToken?.trim()) {
       throw new Error('Token is required');
     }
 
-    const cachedPayload = await this.getCachedTokenPayload(token);
+    const cachedPayload = await this.getCachedTokenPayload(accessToken);
 
     if (cachedPayload) {
       return cachedPayload;
     }
 
-    return this.verifyTokenWithAuthService(token);
+    return this.verifyTokenWithAuthService(accessToken);
   }
 
   private buildAuthServiceUrl(): string {
@@ -243,12 +243,14 @@ export class AuthService {
     }
   }
 
-  private async verifyTokenWithAuthService(token: string): Promise<unknown> {
+  private async verifyTokenWithAuthService(
+    accessToken: string
+  ): Promise<unknown> {
     const url = `${this.authServiceUrl}/verify`;
 
     try {
       const response = await this.makeHttpRequest<ApiVerifyToken>(url, {
-        token,
+        accessToken,
       });
 
       if (!this.isValidVerificationResponse(response)) {
@@ -257,13 +259,13 @@ export class AuthService {
 
       const payload = response.data.payload;
 
-      await this.cacheTokenPayload(token, payload);
+      await this.cacheTokenPayload(accessToken, payload);
 
       return payload;
     } catch (error) {
       this.logger.error('Token verification failed', {
         error: error.message,
-        tokenLength: token.length,
+        tokenLength: accessToken.length,
       });
       throw error;
     }

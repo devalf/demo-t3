@@ -9,3 +9,5 @@ dist
 
 .nx/cache
 .nx/workspace-data
+
+CLAUDE.md
