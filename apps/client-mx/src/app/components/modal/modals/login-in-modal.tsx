@@ -17,7 +17,6 @@ export const LoginInModal: FC = () => {
       buttonText="Sign In"
       onSubmit={handleSubmit}
       testIdPrefix="login"
-      errorMessage="Login failed:"
     />
   );
 };

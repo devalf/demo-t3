@@ -13,7 +13,6 @@ export const SignUpModal: FC = () => {
       buttonText="Sign Up"
       onSubmit={signUp}
       testIdPrefix="sign_up"
-      errorMessage="Sign Up failed:"
     />
   );
 };

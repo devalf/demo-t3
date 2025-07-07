@@ -3,6 +3,7 @@ import { Box, TextField, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { extractErrorMessage } from '@demo-t3/utils';
 
 import { useInjection } from '../../../../bootstrap/ioc/use-injection';
 import { IModalManager, IToastManager } from '../../../../store/interfaces';
@@ -22,7 +23,6 @@ type AuthFormProps = {
   buttonText: string;
   onSubmit: (values: { email: string; password: string }) => Promise<void>;
   testIdPrefix: string;
-  errorMessage: string;
 };
 
 export const AuthForm: FC<AuthFormProps> = ({
@@ -30,7 +30,6 @@ export const AuthForm: FC<AuthFormProps> = ({
   buttonText,
   onSubmit,
   testIdPrefix,
-  errorMessage,
 }) => {
   const { closeModal } = useInjection<IModalManager>(
     DependencyType.ModalManager
@@ -51,10 +50,10 @@ export const AuthForm: FC<AuthFormProps> = ({
         await onSubmit(values);
         closeModal();
       } catch (error) {
-        console.error(error);
+        const errorMessage = extractErrorMessage(error);
 
         showToast({
-          message: (error as Error)?.message || errorMessage,
+          message: errorMessage,
           variant: 'error',
         });
       } finally {
