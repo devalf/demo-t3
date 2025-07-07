@@ -3,6 +3,17 @@ import { ApiAuthSignInParams, ApiAuthTokens } from '@demo-t3/models';
 
 import { axiosClient } from '../http';
 
+export const signUpRequest = async (
+  params: ApiAuthSignInParams
+): Promise<void> => {
+  const { data }: AxiosResponse<void> = await axiosClient.post(
+    '/auth/register',
+    params
+  );
+
+  return data;
+};
+
 export const sighInRequest = async (
   params: ApiAuthSignInParams
 ): Promise<ApiAuthTokens> => {

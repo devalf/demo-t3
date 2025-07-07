@@ -7,3 +7,4 @@ export * from './single-product-page/single-product-page';
 export * from './loading-box/loading-box';
 export * from './item-not-found/item-not-found';
 export * from './cart-form/cart-form';
+export * from './toast/toast';

@@ -1,1 +1,1 @@
-export const ALERT_TIMEOUT = 3000;
+export const TOAST_HIDE_DURATION_MS = 5000;

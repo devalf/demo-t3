@@ -5,28 +5,21 @@ import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import { Badge, Button, IconButton, Link } from '@mui/material';
+import { Badge, IconButton, Link } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { observer } from 'mobx-react-lite';
 
 import { useInjection } from '../../bootstrap/ioc/use-injection';
-import { ICartManager, IModalManager } from '../../store/interfaces';
+import { ICartManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 import { routes } from '../../constants';
-import { IUserManager } from '../../store/interfaces/iuser-manager';
 
-import { UserDropdown } from './user-dropdown';
+import { AuthSection } from './auth-section';
 
 export const Header: FC = observer(() => {
   const { getTotalProductsInCart } = useInjection<ICartManager>(
     DependencyType.CartManager
   );
-
-  const { showModal } = useInjection<IModalManager>(
-    DependencyType.ModalManager
-  );
-
-  const { isSignedIn } = useInjection<IUserManager>(DependencyType.UserManager);
 
   return (
     <AppBar position="static">
@@ -50,27 +43,7 @@ export const Header: FC = observer(() => {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box>
-              {isSignedIn ? (
-                <UserDropdown />
-              ) : (
-                <>
-                  <Button
-                    variant={'contained'}
-                    color={'chrome'}
-                    onClick={() => showModal('LOGIN_MODAL')}
-                  >
-                    Login
-                  </Button>
-                  <Button
-                    variant={'contained'}
-                    color={'warning'}
-                    sx={{ ml: 2 }}
-                    onClick={() => console.log('Sign Up - TBD')}
-                  >
-                    Sign Up
-                  </Button>
-                </>
-              )}
+              <AuthSection />
             </Box>
             <Link
               component={ReactRouterLink}

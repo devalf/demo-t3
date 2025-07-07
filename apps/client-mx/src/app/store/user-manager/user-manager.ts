@@ -13,9 +13,14 @@ export class UserManager implements IUserManager {
   }
 
   private _isSignedIn = false;
+  private _isLoading = true;
 
   get isSignedIn(): boolean {
     return this._isSignedIn;
+  }
+
+  get isLoading(): boolean {
+    return this._isLoading;
   }
 
   get usedData(): unknown {
@@ -26,10 +31,18 @@ export class UserManager implements IUserManager {
     this._isSignedIn = isSignedIn;
   };
 
-  checkAuthStatusOnLoad = async (): Promise<void> => {
-    const isSignedIn = await checkAuthStatusRequest();
+  setIsLoading = (isLoading: boolean): void => {
+    this._isLoading = isLoading;
+  };
 
-    this.setIsSignedIn(isSignedIn);
+  checkAuthStatusOnLoad = async (): Promise<void> => {
+    this.setIsLoading(true);
+    try {
+      const isSignedIn = await checkAuthStatusRequest();
+      this.setIsSignedIn(isSignedIn);
+    } finally {
+      this.setIsLoading(false);
+    }
   };
 
   logout = async (): Promise<void> => {

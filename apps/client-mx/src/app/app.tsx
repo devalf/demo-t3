@@ -4,7 +4,7 @@ import { ReactQueryDevtools } from 'react-query/devtools';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 
 import { Provider } from './bootstrap/ioc/inversify-context';
-import { Layout } from './components';
+import { Layout, Toast } from './components';
 import { diContainer } from './bootstrap/ioc/di-container';
 import { theme } from './style/theme';
 import { Modal } from './components/modal/modal';
@@ -23,6 +23,7 @@ const App: FC = () => {
           <CssBaseline>
             <Layout />
             <Modal />
+            <Toast />
           </CssBaseline>
         </Provider>
       </ThemeProvider>

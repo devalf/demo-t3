@@ -5,12 +5,14 @@ import {
   ModalManager,
   StoreExampleOne,
   StoreExampleTwo,
+  ToastManager,
 } from '../../store';
 import {
   ICartManager,
   IModalManager,
   IStoreExampleOne,
   IStoreExampleTwo,
+  IToastManager,
 } from '../../store/interfaces';
 import { IUserManager } from '../../store/interfaces/iuser-manager';
 import { UserManager } from '../../store/user-manager/user-manager';
@@ -42,6 +44,10 @@ export class DiContainer {
     this.inversifyContainer
       .bind<IUserManager>(DependencyType.UserManager)
       .to(UserManager);
+
+    this.inversifyContainer
+      .bind<IToastManager>(DependencyType.ToastManager)
+      .to(ToastManager);
   }
 
   public get storeExampleOne(): IStoreExampleOne {
