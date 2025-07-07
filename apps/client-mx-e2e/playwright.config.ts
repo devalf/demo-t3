@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
+import * as dotenv from 'dotenv';
+
+dotenv.config({ path: '../../.env' });
 
 const CLIENT_MX_PORT = process.env['NX_PUBLIC_CLIENT_MX_PORT'];
 const appUrl = `http://localhost:${CLIENT_MX_PORT || 8082}`;

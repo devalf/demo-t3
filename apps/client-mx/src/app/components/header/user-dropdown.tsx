@@ -27,7 +27,11 @@ export const UserDropdown: FC = observer(() => {
 
   return (
     <>
-      <IconButton color="inherit" onClick={handleMenu}>
+      <IconButton
+        color="inherit"
+        onClick={handleMenu}
+        data-testid={'user_header_icon'}
+      >
         <AccountCircleIcon />
       </IconButton>
       <Menu
