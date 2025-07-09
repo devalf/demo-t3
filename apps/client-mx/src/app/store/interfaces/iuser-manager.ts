@@ -6,4 +6,5 @@ export interface IUserManager {
   checkAuthStatusOnLoad: () => Promise<void>;
   setIsSignedIn(isSignedIn: boolean): void;
   setIsLoading(isLoading: boolean): void;
+  handleTokenRefreshFailure: () => void;
 }

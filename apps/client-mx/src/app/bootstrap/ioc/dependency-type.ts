@@ -5,4 +5,5 @@ export const DependencyType = {
   ModalManager: Symbol.for('ModalManager'),
   UserManager: Symbol.for('UserManager'),
   ToastManager: Symbol.for('ToastManager'),
+  RefreshTokenManager: Symbol.for('RefreshTokenManager'),
 } as const;

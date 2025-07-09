@@ -1,8 +1,9 @@
 import { makeAutoObservable } from 'mobx';
 import { injectable } from 'inversify';
 
-import { IUserManager } from '../interfaces/iuser-manager';
+import { IUserManager } from '../interfaces';
 import { checkAuthStatusRequest, logoutRequest } from '../../repository';
+import { diContainer } from '../../bootstrap/ioc/di-container';
 
 @injectable()
 export class UserManager implements IUserManager {
@@ -13,11 +14,12 @@ export class UserManager implements IUserManager {
   }
 
   private _isSignedIn = false;
-  private _isLoading = true;
 
   get isSignedIn(): boolean {
     return this._isSignedIn;
   }
+
+  private _isLoading = true;
 
   get isLoading(): boolean {
     return this._isLoading;
@@ -29,6 +31,16 @@ export class UserManager implements IUserManager {
 
   setIsSignedIn = (isSignedIn: boolean): void => {
     this._isSignedIn = isSignedIn;
+
+    if (isSignedIn) {
+      try {
+        const refreshTokenManager = diContainer.refreshTokenManager;
+
+        refreshTokenManager.resetRefreshFailureState();
+      } catch (diError) {
+        console.warn('Could not reset refresh failure state:', diError);
+      }
+    }
   };
 
   setIsLoading = (isLoading: boolean): void => {
@@ -48,6 +60,10 @@ export class UserManager implements IUserManager {
   logout = async (): Promise<void> => {
     await logoutRequest();
 
+    this.setIsSignedIn(false);
+  };
+
+  handleTokenRefreshFailure = (): void => {
     this.setIsSignedIn(false);
   };
 }

@@ -3,6 +3,7 @@ import { Container } from 'inversify';
 import {
   CartManager,
   ModalManager,
+  RefreshTokenManager,
   StoreExampleOne,
   StoreExampleTwo,
   ToastManager,
@@ -10,11 +11,12 @@ import {
 import {
   ICartManager,
   IModalManager,
+  IRefreshTokenManager,
   IStoreExampleOne,
   IStoreExampleTwo,
   IToastManager,
+  IUserManager,
 } from '../../store/interfaces';
-import { IUserManager } from '../../store/interfaces/iuser-manager';
 import { UserManager } from '../../store/user-manager/user-manager';
 
 import { DependencyType } from './dependency-type';
@@ -48,11 +50,27 @@ export class DiContainer {
     this.inversifyContainer
       .bind<IToastManager>(DependencyType.ToastManager)
       .to(ToastManager);
+
+    this.inversifyContainer
+      .bind<IRefreshTokenManager>(DependencyType.RefreshTokenManager)
+      .to(RefreshTokenManager);
   }
 
   public get storeExampleOne(): IStoreExampleOne {
     return this.inversifyContainer.get<IStoreExampleOne>(
       DependencyType.StoreExampleOne
+    );
+  }
+
+  public get refreshTokenManager(): IRefreshTokenManager {
+    return this.inversifyContainer.get<IRefreshTokenManager>(
+      DependencyType.RefreshTokenManager
+    );
+  }
+
+  public get userManager(): IUserManager {
+    return this.inversifyContainer.get<IUserManager>(
+      DependencyType.UserManager
     );
   }
 }

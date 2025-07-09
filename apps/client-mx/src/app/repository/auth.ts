@@ -27,14 +27,18 @@ export const sighInRequest = async (
 
 export const checkAuthStatusRequest = async (): Promise<boolean> => {
   try {
-    await axiosClient.get('/auth/me', { withCredentials: true });
+    await axiosClient.get('/auth/me');
 
     return true;
-  } catch (error: unknown) {
+  } catch {
     return false;
   }
 };
 
 export const logoutRequest = async (): Promise<void> => {
-  await axiosClient.post('/auth/logout', {}, { withCredentials: true });
+  await axiosClient.post('/auth/logout', {});
+};
+
+export const refreshTokenRequest = async (): Promise<void> => {
+  await axiosClient.post('/auth/refresh', {});
 };
