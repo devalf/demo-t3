@@ -80,6 +80,48 @@ export class AuthController {
     return res.status(200).send();
   }
 
+  @Post('refresh')
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description:
+      'Refresh the access token using the refresh token from cookies.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Token refreshed successfully. New tokens are set as cookies.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired refresh token.',
+  })
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: false }) res: Response
+  ) {
+    const refreshToken = request.cookies?.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: 'Refresh token not found' });
+    }
+
+    const deviceInfo = extractDeviceInfo(request);
+
+    try {
+      const result = await this.authService.refreshToken(
+        refreshToken,
+        deviceInfo
+      );
+
+      this.setCookiesFromTokens(res, result);
+
+      return res.status(200).send();
+    } catch (error) {
+      return res
+        .status(401)
+        .json({ message: error.message || 'Invalid refresh token' });
+    }
+  }
+
   @Post('logout')
   @ApiOperation({
     summary: 'Logout',

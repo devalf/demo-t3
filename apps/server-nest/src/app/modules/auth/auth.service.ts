@@ -145,6 +145,38 @@ export class AuthService {
     }
   }
 
+  async refreshToken(
+    refreshToken: string,
+    deviceInfo: ApiDeviceInfo
+  ): Promise<ApiTokenResponse> {
+    const url = `${this.authServiceUrl}/refresh`;
+
+    try {
+      const requestPayload = {
+        refreshToken,
+        deviceInfo,
+      };
+
+      const response = await this.makeHttpRequest<ApiTokenResponse>(
+        url,
+        requestPayload
+      );
+
+      if (!this.isValidRefreshResponse(response)) {
+        throw new Error(response.data?.message || 'Invalid refresh token');
+      }
+
+      return response.data;
+    } catch (error) {
+      this.logger.error('Token refresh failed', {
+        error: error.message,
+        deviceInfo,
+      });
+
+      throw error;
+    }
+  }
+
   prepareCookieData(tokenResponse: ApiTokenResponse): PreparedCookieData {
     const accessTokenDecoded = jwtDecode(tokenResponse.accessToken);
     const accessTokenMaxAge = Math.max(
@@ -224,6 +256,13 @@ export class AuthService {
     data?: ApiUser | ApiAuthResponseError;
   }): boolean {
     return response.status === 201 && Boolean((response.data as ApiUser)?.id);
+  }
+
+  private isValidRefreshResponse(response: {
+    status: number;
+    data?: ApiTokenResponse;
+  }): boolean {
+    return response.status === 200 && Boolean(response.data?.accessToken);
   }
 
   private async getCachedTokenPayload(token: string): Promise<unknown | null> {
