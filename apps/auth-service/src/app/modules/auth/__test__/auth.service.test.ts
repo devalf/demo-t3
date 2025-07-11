@@ -38,6 +38,9 @@ jest.mock('../../../constants', () => ({
       JWT_EXPIRY: '7d',
       MILLISECONDS: 604800000,
     },
+    TOKEN_LIMITS: {
+      MAX_REFRESH_TOKENS_PER_USER: 5,
+    },
   },
 }));
 
@@ -66,6 +69,7 @@ describe('AuthService', () => {
       refreshToken: {
         create: jest.fn(),
         findUnique: jest.fn(),
+        findMany: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
         deleteMany: jest.fn(),

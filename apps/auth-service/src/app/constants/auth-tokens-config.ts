@@ -29,4 +29,7 @@ export const TOKEN_CONFIG = {
       return `${this.DAYS}d`;
     },
   },
+  TOKEN_LIMITS: {
+    MAX_REFRESH_TOKENS_PER_USER: 5, // the maximum allowed number of devices/browsers to keep the user logged in
+  },
 } as const;
