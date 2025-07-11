@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
 import { PrismaService } from '../../prisma/prisma.service';
+import { TOKEN_CONFIG } from '../../../constants';
 
 @Injectable()
 export class TokenCleanupService {
@@ -28,10 +29,7 @@ export class TokenCleanupService {
 
     try {
       await this.cleanupExpiredTokens();
-
-      await this.cleanupUnusedTokens(30);
-
-      await this.cleanupOrphanedTokens();
+      await this.cleanupUnusedTokens(TOKEN_CONFIG.REFRESH_TOKEN.DAYS);
     } catch (error) {
       this.logger.error(`Weekly cleanup failed: ${error.message}`);
     }
@@ -98,36 +96,6 @@ export class TokenCleanupService {
       return result.count;
     } catch (error) {
       this.logger.error(`Failed to cleanup unused tokens: ${error.message}`);
-      throw error;
-    }
-  }
-
-  async cleanupOrphanedTokens(): Promise<number> {
-    try {
-      const orphanedTokens = await this.prisma.refreshToken.findMany({
-        where: {
-          user: null,
-        },
-        select: {
-          id: true,
-        },
-      });
-
-      if (orphanedTokens.length === 0) {
-        return 0;
-      }
-
-      const result = await this.prisma.refreshToken.deleteMany({
-        where: {
-          id: {
-            in: orphanedTokens.map((token) => token.id),
-          },
-        },
-      });
-
-      return result.count;
-    } catch (error) {
-      this.logger.error(`Failed to cleanup orphaned tokens: ${error.message}`);
       throw error;
     }
   }

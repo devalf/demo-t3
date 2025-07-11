@@ -233,10 +233,88 @@ export class AuthService {
     }
   }
 
+  private async bulkDeleteTokens(tokenIds: string[]): Promise<number> {
+    if (tokenIds.length === 0) {
+      return 0;
+    }
+
+    const result = await this.prisma.refreshToken.deleteMany({
+      where: {
+        id: { in: tokenIds },
+      },
+    });
+
+    return result.count;
+  }
+
+  private async enforceTokenLimit(userId: number): Promise<void> {
+    try {
+      const activeTokens = await this.prisma.refreshToken.findMany({
+        where: {
+          user_id: userId,
+          expires_at: { gt: new Date() },
+        },
+        orderBy: { last_used_at: 'asc' },
+      });
+
+      if (
+        activeTokens.length >=
+        TOKEN_CONFIG.TOKEN_LIMITS.MAX_REFRESH_TOKENS_PER_USER
+      ) {
+        const tokensToRemove = activeTokens.slice(
+          0,
+          activeTokens.length -
+            TOKEN_CONFIG.TOKEN_LIMITS.MAX_REFRESH_TOKENS_PER_USER +
+            1
+        );
+
+        const tokenIdsToRemove = tokensToRemove.map((token) => token.id);
+
+        await this.bulkDeleteTokens(tokenIdsToRemove);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to enforce token limit for user ${userId}: ${error.message}`
+      );
+
+      throw error;
+    }
+  }
+
+  private async cleanupExistingDeviceToken(
+    userId: number,
+    deviceInfo: ApiDeviceInfo
+  ): Promise<void> {
+    try {
+      const existingTokens = await this.prisma.refreshToken.findMany({
+        where: {
+          user_id: userId,
+          AND: [
+            { user_agent: deviceInfo.userAgent },
+            { ip_address: deviceInfo.ip },
+          ],
+        },
+      });
+
+      if (existingTokens.length > 0) {
+        const tokenIdsToRemove = existingTokens.map((token) => token.id);
+
+        await this.bulkDeleteTokens(tokenIdsToRemove);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to cleanup existing device token for user ${userId}: ${error.message}`
+      );
+    }
+  }
+
   private async generateTokenPair(
     user: UserEntity,
     deviceInfo: ApiDeviceInfo
   ): Promise<AuthTokensDto> {
+    await this.cleanupExistingDeviceToken(user.id, deviceInfo);
+    await this.enforceTokenLimit(user.id);
+
     const accessTokenPayload: ApiJwtPayload = {
       id: user.id,
       email: user.email,

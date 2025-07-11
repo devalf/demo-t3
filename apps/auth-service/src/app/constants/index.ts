@@ -1,2 +1,2 @@
 export * from './crypto';
-export * from './timing';
+export * from './auth-tokens-config';

@@ -37,6 +37,9 @@ jest.mock('../../../constants', () => ({
       JWT_EXPIRY: '7d',
       MILLISECONDS: 604800000,
     },
+    TOKEN_LIMITS: {
+      MAX_REFRESH_TOKENS_PER_USER: 5,
+    },
   },
 }));
 
@@ -65,6 +68,7 @@ describe('AuthService part 2', () => {
       refreshToken: {
         create: jest.fn(),
         findUnique: jest.fn(),
+        findMany: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
         deleteMany: jest.fn(),
@@ -543,6 +547,13 @@ describe('AuthService part 2', () => {
       mockJwtService.signAsync.mockResolvedValueOnce('mock-access-token');
       mockJwtService.signAsync.mockResolvedValueOnce('mock-refresh-token');
       mockPrismaService.refreshToken.create.mockResolvedValue({});
+
+      jest
+        .spyOn(authService as any, 'cleanupExistingDeviceToken')
+        .mockResolvedValue(undefined);
+      jest
+        .spyOn(authService as any, 'enforceTokenLimit')
+        .mockResolvedValue(undefined);
       jest
         .spyOn(authService as any, 'getRefreshTokenSecret')
         .mockReturnValue('refresh-secret');
@@ -550,6 +561,14 @@ describe('AuthService part 2', () => {
       const result = await (authService as any).generateTokenPair(
         mockPayload,
         mockDeviceInfo
+      );
+
+      expect(authService['cleanupExistingDeviceToken']).toHaveBeenCalledWith(
+        mockPayload.id,
+        mockDeviceInfo
+      );
+      expect(authService['enforceTokenLimit']).toHaveBeenCalledWith(
+        mockPayload.id
       );
 
       expect(mockJwtService.signAsync).toHaveBeenCalledWith(
