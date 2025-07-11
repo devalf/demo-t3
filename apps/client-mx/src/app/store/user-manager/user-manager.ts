@@ -29,17 +29,27 @@ export class UserManager implements IUserManager {
     return undefined;
   }
 
-  setIsSignedIn = (isSignedIn: boolean): void => {
+  setIsSignedIn = (isSignedIn: boolean, expiresInSeconds?: number): void => {
     this._isSignedIn = isSignedIn;
 
-    if (isSignedIn) {
-      try {
-        const refreshTokenManager = diContainer.refreshTokenManager;
+    try {
+      const refreshTokenManager = diContainer.refreshTokenManager;
 
+      if (isSignedIn) {
         refreshTokenManager.resetRefreshFailureState();
-      } catch (diError) {
-        console.warn('Could not reset refresh failure state:', diError);
+
+        if (expiresInSeconds) {
+          refreshTokenManager.startProactiveRefresh(expiresInSeconds);
+        } else {
+          console.warn(
+            'No expiration time provided, proactive refresh not started'
+          );
+        }
+      } else {
+        refreshTokenManager.stopProactiveRefresh();
       }
+    } catch (diError) {
+      console.warn('Could not manage refresh token state:', diError);
     }
   };
 

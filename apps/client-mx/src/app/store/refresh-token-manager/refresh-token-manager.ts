@@ -17,6 +17,8 @@ export class RefreshTokenManager implements IRefreshTokenManager {
   private isRefreshing = false;
   private failedQueue: QueuedRequest[] = [];
   private hasRefreshFailed = false;
+  private proactiveRefreshInterval: NodeJS.Timeout | null = null;
+  private readonly REFRESH_BUFFER_MS = 10 * 1000; // 10 seconds
 
   async handleTokenRefresh(
     originalRequest: InternalAxiosRequestConfig
@@ -34,9 +36,10 @@ export class RefreshTokenManager implements IRefreshTokenManager {
     this.isRefreshing = true;
 
     try {
-      await refreshTokenRequest();
+      const refreshResponse = await refreshTokenRequest();
 
       this.processQueue(null);
+      this.scheduleNextProactiveRefresh(refreshResponse.accessTokenExpiresIn);
 
       return axiosClient(originalRequest);
     } catch (error) {
@@ -59,6 +62,48 @@ export class RefreshTokenManager implements IRefreshTokenManager {
 
   resetRefreshFailureState(): void {
     this.hasRefreshFailed = false;
+  }
+
+  startProactiveRefresh(expiresInSeconds: number): void {
+    this.stopProactiveRefresh();
+    this.scheduleNextProactiveRefresh(expiresInSeconds);
+  }
+
+  stopProactiveRefresh(): void {
+    if (this.proactiveRefreshInterval) {
+      clearTimeout(this.proactiveRefreshInterval);
+      this.proactiveRefreshInterval = null;
+    }
+  }
+
+  private async performProactiveRefresh(): Promise<void> {
+    this.isRefreshing = true;
+
+    try {
+      const refreshResponse = await refreshTokenRequest();
+
+      this.scheduleNextProactiveRefresh(refreshResponse.accessTokenExpiresIn);
+    } finally {
+      this.isRefreshing = false;
+    }
+  }
+
+  private scheduleNextProactiveRefresh(expiresInSeconds: number): void {
+    const expiresInMs = expiresInSeconds * 1000;
+    const refreshIntervalMs = Math.max(
+      expiresInMs - this.REFRESH_BUFFER_MS,
+      1000
+    );
+
+    this.proactiveRefreshInterval = setTimeout(async () => {
+      try {
+        if (!this.hasRefreshFailed && !this.isRefreshing) {
+          await this.performProactiveRefresh();
+        }
+      } catch (error) {
+        console.warn('Proactive token refresh failed:', error);
+      }
+    }, refreshIntervalMs);
   }
 
   private processQueue(error: AxiosError | null) {

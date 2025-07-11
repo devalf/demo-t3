@@ -23,3 +23,7 @@ export type ApiAuthTokens = {
   refreshToken: string;
   expiresIn: number;
 };
+
+export type ApiAccessTokenExpiresIn = {
+  accessTokenExpiresIn: number;
+};

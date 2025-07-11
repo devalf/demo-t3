@@ -5,4 +5,6 @@ export interface IRefreshTokenManager {
     originalRequest: InternalAxiosRequestConfig
   ): Promise<unknown>;
   resetRefreshFailureState(): void;
+  startProactiveRefresh(expiresInSeconds: number): void;
+  stopProactiveRefresh(): void;
 }
