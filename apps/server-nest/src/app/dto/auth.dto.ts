@@ -1,6 +1,10 @@
-import { IsEmail, IsStrongPassword } from 'class-validator';
+import { IsEmail, IsNumber, IsStrongPassword } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { ApiAuthSignInParams, ApiCreateUserParams } from '@demo-t3/models';
+import {
+  ApiAccessTokenExpiresIn,
+  ApiAuthSignInParams,
+  ApiCreateUserParams,
+} from '@demo-t3/models';
 
 export class CreateUserDto implements ApiCreateUserParams {
   @ApiProperty()
@@ -20,4 +24,10 @@ export class AuthSignInDto implements ApiAuthSignInParams {
   @ApiProperty()
   @IsStrongPassword()
   password: string;
+}
+
+export class AccessTokenExpiresInDto implements ApiAccessTokenExpiresIn {
+  @ApiProperty()
+  @IsNumber()
+  accessTokenExpiresIn: number;
 }

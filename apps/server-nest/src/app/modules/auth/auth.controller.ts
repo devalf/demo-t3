@@ -10,11 +10,16 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { plainToInstance } from 'class-transformer';
 import { extractDeviceInfo } from '@demo-t3/utils';
 import { ApiTokenResponse } from '@demo-t3/models';
 
 import { JwtAuthGuard } from '../../common/guards';
-import { AuthSignInDto, CreateUserDto } from '../../dto/auth.dto';
+import {
+  AccessTokenExpiresInDto,
+  AuthSignInDto,
+  CreateUserDto,
+} from '../../dto/auth.dto';
 
 import { AuthService } from './auth.service';
 
@@ -46,12 +51,13 @@ export class AuthController {
     status: 200,
     description:
       'User signed in successfully. accessToken token is set as a cookie.',
+    type: AccessTokenExpiresInDto,
   })
   async signIn(
     @Body() body: AuthSignInDto,
     @Req() request: Request,
-    @Res({ passthrough: false }) res: Response
-  ) {
+    @Res({ passthrough: true }) res: Response
+  ): Promise<AccessTokenExpiresInDto> {
     const deviceInfo = extractDeviceInfo(request);
 
     try {
@@ -59,9 +65,17 @@ export class AuthController {
 
       this.setCookiesFromTokens(res, result);
 
-      return res.status(200).send();
+      const responseDto = plainToInstance(AccessTokenExpiresInDto, {
+        accessTokenExpiresIn: result.expiresIn,
+      });
+
+      res.status(200);
+
+      return responseDto;
     } catch (error) {
-      return res.status(401).json({ message: error.message || 'Unauthorized' });
+      res.status(401);
+
+      throw new Error(error.message || 'Unauthorized');
     }
   }
 
@@ -78,6 +92,57 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async getMe(@Res() res: Response) {
     return res.status(200).send();
+  }
+
+  @Post('refresh')
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description:
+      'Refresh the access token using the refresh token from cookies.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Token refreshed successfully. New tokens are set as cookies.',
+    type: AccessTokenExpiresInDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired refresh token.',
+  })
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) res: Response
+  ): Promise<AccessTokenExpiresInDto> {
+    const refreshToken = request.cookies?.refreshToken;
+
+    if (!refreshToken) {
+      res.status(401);
+
+      throw new Error('Refresh token not found');
+    }
+
+    const deviceInfo = extractDeviceInfo(request);
+
+    try {
+      const result = await this.authService.refreshToken(
+        refreshToken,
+        deviceInfo
+      );
+
+      this.setCookiesFromTokens(res, result);
+
+      const responseDto = plainToInstance(AccessTokenExpiresInDto, {
+        accessTokenExpiresIn: result.expiresIn,
+      });
+
+      res.status(200);
+
+      return responseDto;
+    } catch (error) {
+      res.status(401);
+
+      throw new Error(error.message || 'Invalid refresh token');
+    }
   }
 
   @Post('logout')

@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { ApiAuthSignInParams, ApiAuthTokens } from '@demo-t3/models';
+import { ApiAccessTokenExpiresIn, ApiAuthSignInParams } from '@demo-t3/models';
 
 import { axiosClient } from '../http';
 
@@ -16,25 +16,31 @@ export const signUpRequest = async (
 
 export const sighInRequest = async (
   params: ApiAuthSignInParams
-): Promise<ApiAuthTokens> => {
-  const { data }: AxiosResponse<ApiAuthTokens> = await axiosClient.post(
-    '/auth/sign-in',
-    params
-  );
+): Promise<ApiAccessTokenExpiresIn> => {
+  const { data }: AxiosResponse<ApiAccessTokenExpiresIn> =
+    await axiosClient.post('/auth/sign-in', params);
 
   return data;
 };
 
 export const checkAuthStatusRequest = async (): Promise<boolean> => {
   try {
-    await axiosClient.get('/auth/me', { withCredentials: true });
+    await axiosClient.get('/auth/me');
 
     return true;
-  } catch (error: unknown) {
+  } catch {
     return false;
   }
 };
 
 export const logoutRequest = async (): Promise<void> => {
-  await axiosClient.post('/auth/logout', {}, { withCredentials: true });
+  await axiosClient.post('/auth/logout', {});
 };
+
+export const refreshTokenRequest =
+  async (): Promise<ApiAccessTokenExpiresIn> => {
+    const { data }: AxiosResponse<ApiAccessTokenExpiresIn> =
+      await axiosClient.post('/auth/refresh', {});
+
+    return data;
+  };
