@@ -138,6 +138,6 @@
     "crypto-js": "^4.2.0",
     "ws": "^8.17.1",
     "multer": "^2.0.1",
-    "stylus": "0.0.1-security"
+    "form-data": "4.0.4"
   }
 }
