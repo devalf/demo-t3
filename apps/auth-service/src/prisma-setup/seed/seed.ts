@@ -3,14 +3,20 @@ import process from 'process';
 import * as bcrypt from 'bcrypt';
 
 import { PrismaClient } from '../generated/index';
-import { SALT_ROUNDS } from '../../app/constants';
 
+const SALT_ROUNDS = 10;
 const prisma = new PrismaClient();
 
 const { NX_PUBLIC_ALPHA_USER_EMAIL, NX_PUBLIC_ALPHA_USER_PASSWORD } =
   process.env;
 
 async function main() {
+  if (!NX_PUBLIC_ALPHA_USER_EMAIL || !NX_PUBLIC_ALPHA_USER_PASSWORD) {
+    throw new Error(
+      'Missing required environment variables: NX_PUBLIC_ALPHA_USER_EMAIL, NX_PUBLIC_ALPHA_USER_PASSWORD'
+    );
+  }
+
   const hashedPassword = await bcrypt.hash(
     NX_PUBLIC_ALPHA_USER_PASSWORD,
     SALT_ROUNDS
