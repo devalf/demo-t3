@@ -1,0 +1,123 @@
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  # Frontend (React + NGINX)
+  client-mx:
+    build:
+      context: .
+      dockerfile: apps/client-mx/Dockerfile
+    depends_on:
+      - server-nest
+    ports:
+      - '${NX_PUBLIC_CLIENT_MX_PORT:-8082}:80'
+    env_file:
+      - .env.production
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost/']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # API Service (NestJS)
+  server-nest:
+    build:
+      context: .
+      dockerfile: apps/server-nest/Dockerfile
+    ports:
+      - '${NX_PUBLIC_SERVER_NEST_PORT:-8083}:${NX_PUBLIC_SERVER_NEST_PORT:-8083}'
+    depends_on:
+      - redis
+      - auth-service
+    env_file:
+      - .env.production
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '-f',
+          'http://localhost:${NX_PUBLIC_SERVER_NEST_PORT:-8083}/api/health-check',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Auth Service (NestJS + Prisma) - Internal only
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+      args:
+        NX_PUBLIC_AUTH_SERVICE_PORT: ${NX_PUBLIC_AUTH_SERVICE_PORT:-8084}
+    depends_on:
+      - postgres
+    env_file:
+      - .env.production
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '-f',
+          'http://localhost:${NX_PUBLIC_AUTH_SERVICE_PORT:-8084}/api/health-check',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${NX_PUBLIC_AUTH_DB_POSTGRES_DB}
+      POSTGRES_USER: ${NX_PUBLIC_AUTH_DB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '8060:5432'
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${NX_PUBLIC_AUTH_DB_POSTGRES_USER} -d ${NX_PUBLIC_AUTH_DB_POSTGRES_DB}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis Cache
+  redis:
+    image: redis:8-alpine
+    ports:
+      - '${NX_PUBLIC_REDIS_PORT:-8050}:6379'
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  postgres_data:
