@@ -8,6 +8,16 @@ This demo project showcases a monorepo architecture built with NX, containing mu
 
 **auth-service** - A dedicated NestJS microservice handling user authentication and authorization
 
+## Database & Caching Infrastructure
+
+This project utilizes a robust data persistence and caching layer:
+
+**PostgreSQL Database** - Primary relational database for the auth-service, handling user authentication data, session management, and authorization records with full ACID compliance.
+
+**Redis Cache** - In-memory data store running in a separate container, providing shared caching capabilities across all applications in the monorepo. Used for session management, temporary data storage, and performance optimization.
+
+Both services are containerized and orchestrated through Docker Compose, ensuring consistent development and production environments with proper service dependencies and health checks.
+
 ## Technical Stack
 
 **Server API** is built using NestJS, RXDB, Jest, Swagger, class-validator, and class-transformer. Currently implements basic READ operations due to time constraints - additional CRUD examples are available in my other repositories.
