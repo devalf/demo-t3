@@ -306,6 +306,7 @@ export class AuthService {
         error: error.message,
         tokenLength: accessToken.length,
       });
+
       throw error;
     }
   }

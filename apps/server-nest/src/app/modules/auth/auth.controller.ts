@@ -60,23 +60,17 @@ export class AuthController {
   ): Promise<AccessTokenExpiresInDto> {
     const deviceInfo = extractDeviceInfo(request);
 
-    try {
-      const result = await this.authService.signIn(body, deviceInfo);
+    const result = await this.authService.signIn(body, deviceInfo);
 
-      this.setCookiesFromTokens(res, result);
+    this.setCookiesFromTokens(res, result);
 
-      const responseDto = plainToInstance(AccessTokenExpiresInDto, {
-        accessTokenExpiresIn: result.expiresIn,
-      });
+    const responseDto = plainToInstance(AccessTokenExpiresInDto, {
+      accessTokenExpiresIn: result.expiresIn,
+    });
 
-      res.status(200);
+    res.status(200);
 
-      return responseDto;
-    } catch (error) {
-      res.status(401);
-
-      throw new Error(error.message || 'Unauthorized');
-    }
+    return responseDto;
   }
 
   @Get('me')
@@ -116,33 +110,25 @@ export class AuthController {
     const refreshToken = request.cookies?.refreshToken;
 
     if (!refreshToken) {
-      res.status(401);
-
       throw new Error('Refresh token not found');
     }
 
     const deviceInfo = extractDeviceInfo(request);
 
-    try {
-      const result = await this.authService.refreshToken(
-        refreshToken,
-        deviceInfo
-      );
+    const result = await this.authService.refreshToken(
+      refreshToken,
+      deviceInfo
+    );
 
-      this.setCookiesFromTokens(res, result);
+    this.setCookiesFromTokens(res, result);
 
-      const responseDto = plainToInstance(AccessTokenExpiresInDto, {
-        accessTokenExpiresIn: result.expiresIn,
-      });
+    const responseDto = plainToInstance(AccessTokenExpiresInDto, {
+      accessTokenExpiresIn: result.expiresIn,
+    });
 
-      res.status(200);
+    res.status(200);
 
-      return responseDto;
-    } catch (error) {
-      res.status(401);
-
-      throw new Error(error.message || 'Invalid refresh token');
-    }
+    return responseDto;
   }
 
   @Post('logout')
@@ -213,21 +199,11 @@ export class AuthController {
   ) {
     const deviceInfo = extractDeviceInfo(request);
 
-    try {
-      const result = await this.authService.registerAndSignIn(body, deviceInfo);
+    const result = await this.authService.registerAndSignIn(body, deviceInfo);
 
-      this.setCookiesFromTokens(res, result);
+    this.setCookiesFromTokens(res, result);
 
-      return res.status(201).send();
-    } catch (error) {
-      if (error.message?.includes('already exists')) {
-        return res.status(409).json({ message: error.message });
-      }
-
-      return res
-        .status(400)
-        .json({ message: error.message || 'Registration failed' });
-    }
+    return res.status(201).send();
   }
 
   private setCookiesFromTokens(
