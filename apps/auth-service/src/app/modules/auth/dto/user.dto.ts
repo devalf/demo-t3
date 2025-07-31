@@ -17,6 +17,8 @@ import {
 } from '@demo-t3/models';
 import { Exclude, Expose, Transform } from 'class-transformer';
 
+import { IsNotDangerous, Sanitize } from '../../../common/decorators';
+
 export class CreateUserDto implements ApiCreateUserParams {
   @ApiProperty({
     description: 'User email address',
@@ -37,9 +39,13 @@ export class CreateUserDto implements ApiCreateUserParams {
     description: 'User display name',
     example: 'John Doe',
     required: false,
+    maxLength: 100,
   })
   @IsOptional()
   @IsString()
+  @MaxLength(100, { message: 'Name must not exceed 100 characters' })
+  @IsNotDangerous({ message: 'Name contains potentially dangerous content' })
+  @Sanitize()
   name?: string;
 }
 

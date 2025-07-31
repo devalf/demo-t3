@@ -236,19 +236,110 @@ describe('Register endpoint E2E', () => {
         expect(res.data).not.toHaveProperty('hashedPassword');
       });
 
-      it('should handle special characters in name', async () => {
-        const specialCharName =
+      it('should sanitize XSS content in name field', async () => {
+        const maliciousName =
           "John O'Connor-Smith <script>alert('xss')</script>";
-        const specialCharEmail = `special_char_${Date.now()}@example.com`;
+        const sanitizedName = "John O'Connor-Smith";
+        const xssTestEmail = `xss_test_${Date.now()}@example.com`;
 
         const res = await axios.post(apiRegisterEndpoint, {
-          email: specialCharEmail,
+          email: xssTestEmail,
           password,
-          name: specialCharName,
+          name: maliciousName,
         });
 
         expect(res.status).toBe(201);
-        expect(res.data.name).toBe(specialCharName);
+        expect(res.data.name).toBe(sanitizedName);
+        expect(res.data.name).not.toContain('<script>');
+        expect(res.data.name).not.toContain('alert');
+      });
+
+      it('should sanitize various XSS attack vectors in name', async () => {
+        const testCases = [
+          {
+            input: '<img src=x onerror=alert(1)>',
+            expected: '',
+            description: 'img tag with onerror',
+          },
+          {
+            input: 'javascript:alert(1)',
+            expected: 'alert(1)',
+            description: 'javascript protocol',
+          },
+          {
+            input: '<iframe src="javascript:alert(1)"></iframe>',
+            expected: '',
+            description: 'iframe with javascript',
+          },
+          {
+            input: 'John<script>alert("xss")</script>Doe',
+            expected: 'JohnDoe',
+            description: 'script tag in middle',
+          },
+          {
+            input: 'Valid Name 123',
+            expected: 'Valid Name 123',
+            description: 'legitimate name with numbers',
+          },
+        ];
+
+        for (const testCase of testCases) {
+          const testEmail = `xss_vector_${Date.now()}_${Math.random()
+            .toString(36)
+            .substr(2, 5)}@example.com`;
+
+          const res = await axios.post(apiRegisterEndpoint, {
+            email: testEmail,
+            password,
+            name: testCase.input,
+          });
+
+          expect(res.status).toBe(201);
+          expect(res.data.name).toBe(testCase.expected);
+
+          expect(res.data.name).not.toMatch(
+            /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi
+          );
+          expect(res.data.name).not.toMatch(/javascript:/gi);
+          expect(res.data.name).not.toMatch(/on\w+\s*=/gi);
+        }
+      });
+
+      it('should enforce maximum length for name field', async () => {
+        const longName = 'A'.repeat(101);
+        const longNameEmail = `long_name_${Date.now()}@example.com`;
+
+        try {
+          await axios.post(apiRegisterEndpoint, {
+            email: longNameEmail,
+            password,
+            name: longName,
+          });
+
+          throw new Error('Expected 400 Bad Request');
+        } catch (error: any) {
+          expect(error.response.status).toBe(400);
+          expect(error.response.data.message).toEqual(
+            expect.arrayContaining([
+              expect.stringContaining('Name must not exceed 100 characters'),
+            ])
+          );
+        }
+      });
+
+      it('should accept maximum allowed length for name field', async () => {
+        const maxLengthName = 'A'.repeat(100);
+        const maxLengthEmail = `max_length_${Date.now()}@example.com`;
+
+        const res = await axios.post(apiRegisterEndpoint, {
+          email: maxLengthEmail,
+          password,
+          name: maxLengthName,
+        });
+
+        expect(res.status).toBe(201);
+        expect(res.data.name).toBe(maxLengthName);
+        expect(res.data.name.length).toBe(100);
       });
     });
 

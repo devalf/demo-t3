@@ -6,7 +6,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthCheckModule } from './modules/health-check/health-check.module';
 import { TOKEN_CONFIG } from './constants';
-import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
+import { PrismaExceptionFilter } from './common/filters';
 
 @Module({
   imports: [

@@ -60,6 +60,7 @@
     "rxjs": "^7.8.1",
     "swc-loader": "^0.2.6",
     "tslib": "^2.6.1",
+    "xss": "^1.0.15",
     "yup": "^1.6.1"
   },
   "devDependencies": {

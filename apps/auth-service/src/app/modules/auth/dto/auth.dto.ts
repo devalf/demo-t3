@@ -1,22 +1,34 @@
 import {
   IsEmail,
+  IsIP,
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { ApiAuthSignInParams } from '@demo-t3/models';
+import { ApiAuthSignInParams, ApiDeviceInfo } from '@demo-t3/models';
 
-export class DeviceInfoDto {
+import { IsNotDangerous, Sanitize } from '../../../common/decorators';
+
+type DeviceInfoOptionalParams = Partial<ApiDeviceInfo>;
+
+export class DeviceInfoDto implements DeviceInfoOptionalParams {
   @ApiProperty({
     description: 'User agent string from the client browser/app',
     example: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     required: false,
+    maxLength: 1000,
   })
   @IsOptional()
   @IsString()
+  @MaxLength(1000, { message: 'User agent must not exceed 1000 characters' })
+  @IsNotDangerous({
+    message: 'User agent contains potentially dangerous content',
+  })
+  @Sanitize()
   userAgent?: string;
 
   @ApiProperty({
@@ -25,7 +37,7 @@ export class DeviceInfoDto {
     required: false,
   })
   @IsOptional()
-  @IsString()
+  @IsIP(undefined, { message: 'Invalid IP address format' })
   ip?: string;
 }
 
