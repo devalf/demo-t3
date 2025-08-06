@@ -1,12 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ApiLogoutAllResponse, ApiLogoutResponse } from '@demo-t3/models';
 import { IsNumber } from 'class-validator';
+import { IntersectionType } from '@nestjs/mapped-types';
+import { ApiLogoutAllResponse, ApiLogoutResponse } from '@demo-t3/models';
 
-export class LogoutAllRequestDto {
-  @ApiProperty({ description: 'User ID', example: 1 })
+import { VerifyAccessTokenParamsDto } from './verify-token.dto';
+
+class LogoutAllParamsDto {
+  @ApiProperty({ description: 'User ID to logout', example: 1 })
   @IsNumber()
   userId: number;
 }
+
+export class LogoutAllRequestDto extends IntersectionType(
+  VerifyAccessTokenParamsDto,
+  LogoutAllParamsDto
+) {}
 
 export class LogoutResponseDto implements ApiLogoutResponse {
   @ApiProperty({ example: 'Logged out successfully' })

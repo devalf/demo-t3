@@ -49,8 +49,8 @@ export class AuthController {
     status: 409,
     description: 'User with this email already exists',
   })
-  async register(@Body() authParams: CreateUserDto): Promise<UserDto> {
-    return this.authService.createUser(authParams);
+  async register(@Body() body: CreateUserDto): Promise<UserDto> {
+    return this.authService.createUser(body);
   }
 
   @Post('sign-in')
@@ -108,11 +108,9 @@ export class AuthController {
     status: 200,
     description: 'Logged out successfully',
   })
-  async logout(
-    @Body() refreshTokenDto: RefreshTokenDto
-  ): Promise<LogoutResponseDto> {
+  async logout(@Body() body: RefreshTokenDto): Promise<LogoutResponseDto> {
     try {
-      await this.authService.revokeRefreshToken(refreshTokenDto.refreshToken);
+      await this.authService.revokeRefreshToken(body.refreshToken);
 
       return {
         message: 'Logged out successfully',
@@ -132,25 +130,31 @@ export class AuthController {
   @ApiOperation({
     summary: 'Logout from all devices',
     description:
-      'This endpoint is intended for internal microservice use only. The consumer of this endpoint is responsible for ' +
-      'securely extracting the userId from the authenticated user context and providing it in the request body.',
+      'Logout a user from all devices. Requires valid access token and proper authorization to perform this action on the target user.',
   })
   @ApiResponse({
     status: 200,
     description: 'Logged out from all devices successfully',
   })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired access token',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Insufficient permissions to logout this user',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Target user not found',
+  })
   async logoutAll(
     @Body() body: LogoutAllRequestDto
   ): Promise<LogoutAllResponseDto> {
-    const revokedCount = await this.authService.revokeAllRefreshTokens(
+    return await this.authService.logoutAllDevices(
+      body.accessToken,
       body.userId
     );
-
-    return {
-      message: 'Logged out from all devices successfully',
-      devicesLoggedOut: revokedCount,
-      timestamp: new Date().toISOString(),
-    };
   }
 
   @Post('verify')
@@ -168,9 +172,9 @@ export class AuthController {
     type: VerifyTokenDto,
   })
   async verifyToken(
-    @Body() verifyTokenRequest: VerifyAccessTokenParamsDto
+    @Body() body: VerifyAccessTokenParamsDto
   ): Promise<VerifyTokenDto> {
-    return this.authService.verifyToken(verifyTokenRequest.accessToken);
+    return this.authService.verifyToken(body.accessToken);
   }
 
   @Patch('user/soft-delete')
@@ -194,12 +198,9 @@ export class AuthController {
     description: 'User not found',
   })
   async softDeleteUser(
-    @Body() params: DeleteUserParamsDto
+    @Body() body: DeleteUserParamsDto
   ): Promise<DeleteUserDto> {
-    await this.authService.softDeleteUser(
-      params.targetUserId,
-      params.accessToken
-    );
+    await this.authService.softDeleteUser(body.targetUserId, body.accessToken);
 
     return { message: 'User soft deleted successfully' };
   }
@@ -224,11 +225,8 @@ export class AuthController {
     description: 'User not found',
   })
   async hardDeleteUser(
-    @Body() params: DeleteUserParamsDto
+    @Body() body: DeleteUserParamsDto
   ): Promise<DeleteUserDto> {
-    return this.authService.hardDeleteUser(
-      params.targetUserId,
-      params.accessToken
-    );
+    return this.authService.hardDeleteUser(body.targetUserId, body.accessToken);
   }
 }

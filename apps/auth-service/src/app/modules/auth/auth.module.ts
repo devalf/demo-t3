@@ -2,10 +2,15 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { JwtUserUtil } from '../../common/utils';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { TokenCleanupService, UserDeletionService } from './services';
+import {
+  TokenCleanupService,
+  UserDeletionService,
+  UserOperationPermissionService,
+} from './services';
 
 @Module({
   imports: [ScheduleModule.forRoot()],
@@ -15,6 +20,8 @@ import { TokenCleanupService, UserDeletionService } from './services';
     PrismaService,
     UserDeletionService,
     TokenCleanupService,
+    UserOperationPermissionService,
+    JwtUserUtil,
   ],
   exports: [AuthService],
 })
