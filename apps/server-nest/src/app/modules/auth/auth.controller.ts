@@ -159,6 +159,8 @@ export class AuthController {
       path: '/',
     });
 
+    // TODO perform `logout` request to the auth-service
+
     return res.status(200).send();
   }
 

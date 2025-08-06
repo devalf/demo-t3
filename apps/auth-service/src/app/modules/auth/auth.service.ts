@@ -22,9 +22,13 @@ import { plainToInstance } from 'class-transformer';
 import { PrismaService } from '../prisma/prisma.service';
 import { SALT_ROUNDS, TOKEN_CONFIG } from '../../constants';
 import { User as UserEntity } from '../../../prisma-setup/generated';
+import { JwtUserUtil } from '../../common/utils';
 
-import { AuthTokensDto, UserDto } from './dto';
-import { UserDeletionService } from './services';
+import { AuthTokensDto, LogoutAllResponseDto, UserDto } from './dto';
+import {
+  UserDeletionService,
+  UserOperationPermissionService,
+} from './services';
 
 @Injectable()
 export class AuthService {
@@ -34,7 +38,9 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly userDeletionService: UserDeletionService
+    private readonly userDeletionService: UserDeletionService,
+    private readonly userOperationPermissionService: UserOperationPermissionService,
+    private readonly jwtUserUtil: JwtUserUtil
   ) {}
 
   async createUser(userData: ApiCreateUserParams): Promise<UserDto> {
@@ -231,6 +237,47 @@ export class AuthService {
 
       throw error;
     }
+  }
+
+  async logoutAllDevices(
+    accessToken: string,
+    targetUserId: number
+  ): Promise<LogoutAllResponseDto> {
+    const currentUser = await this.jwtUserUtil.extractUserFromAccessToken(
+      accessToken
+    );
+
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        is_active: true,
+      },
+    });
+
+    if (!targetUser || !targetUser.is_active) {
+      throw new NotFoundException('Target user not found');
+    }
+
+    const canPerformAction =
+      this.userOperationPermissionService.canUserPerformActionOnUser(
+        currentUser,
+        targetUser
+      );
+
+    if (!canPerformAction.allowed) {
+      throw new ForbiddenException(canPerformAction.reason);
+    }
+
+    const revokedCount = await this.revokeAllRefreshTokens(targetUserId);
+
+    return {
+      message: 'Logged out from all devices successfully',
+      devicesLoggedOut: revokedCount,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   private async bulkDeleteTokens(tokenIds: string[]): Promise<number> {
