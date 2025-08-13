@@ -51,13 +51,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const { status, message } = this.getErrorDetails(exception);
 
-    this.logger.error(`HTTP ${status} Error: ${message}`, {
-      path: request.url,
-      method: request.method,
-      statusCode: status,
-      timestamp: new Date().toISOString(),
-      exception: exception instanceof Error ? exception.stack : exception,
-    });
+    if (status >= 500) {
+      this.logger.error(`HTTP ${status} Error: ${message}`, {
+        path: request.url,
+        method: request.method,
+        statusCode: status,
+        timestamp: new Date().toISOString(),
+        exception: exception instanceof Error ? exception.stack : exception,
+      });
+    }
 
     response.status(status).json({
       statusCode: status,

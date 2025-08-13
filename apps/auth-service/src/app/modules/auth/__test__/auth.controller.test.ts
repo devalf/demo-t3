@@ -4,8 +4,12 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
 import { AuthController } from '../auth.controller';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UserDeletionService } from '../services';
+import {
+  UserDeletionService,
+  UserOperationPermissionService,
+} from '../services';
 import { UserDto } from '../dto';
+import { JwtUserUtil } from '../../../common/utils';
 
 describe('AuthController', () => {
   let authService: AuthService;
@@ -14,6 +18,8 @@ describe('AuthController', () => {
   let configServiceMock: jest.Mocked<ConfigService>;
   let prismaServiceMock: jest.Mocked<PrismaService>;
   let userDeletionServiceMock: jest.Mocked<UserDeletionService>;
+  let userOperationPermissionServiceMock: jest.Mocked<UserOperationPermissionService>;
+  let jwtUserUtilMock: jest.Mocked<JwtUserUtil>;
 
   beforeEach(() => {
     jwtServiceMock = {
@@ -42,11 +48,21 @@ describe('AuthController', () => {
       hardDeleteUser: jest.fn(),
     } as unknown as jest.Mocked<UserDeletionService>;
 
+    userOperationPermissionServiceMock = {
+      canDeleteUser: jest.fn().mockResolvedValue(true),
+    } as unknown as jest.Mocked<UserOperationPermissionService>;
+
+    jwtUserUtilMock = {
+      extractUserFromJwt: jest.fn(),
+    } as unknown as jest.Mocked<JwtUserUtil>;
+
     authService = new AuthService(
       jwtServiceMock,
       configServiceMock,
       prismaServiceMock,
-      userDeletionServiceMock
+      userDeletionServiceMock,
+      userOperationPermissionServiceMock,
+      jwtUserUtilMock
     );
 
     authController = new AuthController(authService);

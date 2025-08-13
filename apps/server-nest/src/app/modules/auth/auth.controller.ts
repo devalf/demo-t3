@@ -14,7 +14,8 @@ import { plainToInstance } from 'class-transformer';
 import { extractDeviceInfo } from '@demo-t3/utils';
 import { ApiTokenResponse } from '@demo-t3/models';
 
-import { JwtAuthGuard } from '../../common/guards';
+import { AccessTokenGuard, RefreshTokenGuard } from '../../common/guards';
+import { RefreshToken } from '../../common/decorators';
 import {
   AccessTokenExpiresInDto,
   AuthSignInDto,
@@ -83,12 +84,13 @@ export class AuthController {
     status: 401,
     description: 'Unauthorized. accessToken token missing or invalid.',
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   async getMe(@Res() res: Response) {
     return res.status(200).send();
   }
 
   @Post('refresh')
+  @UseGuards(RefreshTokenGuard)
   @ApiOperation({
     summary: 'Refresh access token',
     description:
@@ -104,15 +106,10 @@ export class AuthController {
     description: 'Invalid or expired refresh token.',
   })
   async refresh(
+    @RefreshToken() refreshToken: string,
     @Req() request: Request,
     @Res({ passthrough: true }) res: Response
   ): Promise<AccessTokenExpiresInDto> {
-    const refreshToken = request.cookies?.refreshToken;
-
-    if (!refreshToken) {
-      throw new Error('Refresh token not found');
-    }
-
     const deviceInfo = extractDeviceInfo(request);
 
     const result = await this.authService.refreshToken(
@@ -132,6 +129,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @UseGuards(RefreshTokenGuard)
   @ApiOperation({
     summary: 'Logout',
     description: 'Clears the authentication cookie.',
@@ -140,7 +138,10 @@ export class AuthController {
     status: 200,
     description: 'User logged out successfully. accessToken cookie cleared.',
   })
-  async logout(@Res({ passthrough: false }) res: Response) {
+  async logout(
+    @RefreshToken() refreshToken: string,
+    @Res({ passthrough: false }) res: Response
+  ) {
     const isProduction = this.configService.get<boolean>('NX_PUBLIC_MODE');
 
     res.cookie('accessToken', '', {
@@ -159,7 +160,7 @@ export class AuthController {
       path: '/',
     });
 
-    // TODO perform `logout` request to the auth-service
+    await this.authService.logout(refreshToken);
 
     return res.status(200).send();
   }

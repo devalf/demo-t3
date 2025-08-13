@@ -1,12 +1,12 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '../../common/guards';
+import { AccessTokenGuard } from '../../common/guards';
 
 @ApiTags('User data TBD')
 @Controller('user')
 export class UserController {
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   @Get()
   getUser() {
     return { message: 'OK' };
