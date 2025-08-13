@@ -12,6 +12,7 @@ import {
   ApiCreateUserParams,
   ApiDeviceInfo,
   ApiDeviceInfoParams,
+  ApiLogoutResponse,
   ApiTokenResponse,
   ApiUser,
   ApiVerifyToken,
@@ -177,6 +178,33 @@ export class AuthService {
     }
   }
 
+  async logout(refreshToken: string): Promise<boolean> {
+    const url = `${this.authServiceUrl}/logout`;
+
+    try {
+      const requestPayload = {
+        refreshToken,
+      };
+
+      const response = await this.makeHttpRequest<ApiLogoutResponse>(
+        url,
+        requestPayload
+      );
+
+      if (!this.isValidLogoutResponse(response)) {
+        throw new Error(response.data?.message || 'Logout failed');
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.error('Logout failed', {
+        error: error.message,
+      });
+
+      throw error;
+    }
+  }
+
   prepareCookieData(tokenResponse: ApiTokenResponse): PreparedCookieData {
     const accessTokenDecoded = jwtDecode(tokenResponse.accessToken);
     const accessTokenMaxAge = Math.max(
@@ -263,6 +291,13 @@ export class AuthService {
     data?: ApiTokenResponse;
   }): boolean {
     return response.status === 200 && Boolean(response.data?.accessToken);
+  }
+
+  private isValidLogoutResponse(response: {
+    status: number;
+    data?: ApiLogoutResponse;
+  }): boolean {
+    return response.status === 200 && Boolean(response.data?.message);
   }
 
   private async getCachedTokenPayload(token: string): Promise<unknown | null> {

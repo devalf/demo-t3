@@ -5,7 +5,11 @@ import { generateApiJwtPayload } from '@demo-t3/utils';
 
 import { AuthService } from '../auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UserDeletionService } from '../services';
+import {
+  UserDeletionService,
+  UserOperationPermissionService,
+} from '../services';
+import { JwtUserUtil } from '../../../common/utils';
 
 jest.mock('bcrypt');
 const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
@@ -51,6 +55,8 @@ describe('AuthService - Token Management Features', () => {
   let mockJwtService: any;
   let mockConfigService: any;
   let mockUserDeletionService: any;
+  let mockUserOperationPermissionService: any;
+  let mockJwtUserUtil: any;
 
   beforeEach(() => {
     mockPrismaService = {
@@ -90,6 +96,14 @@ describe('AuthService - Token Management Features', () => {
       hardDeleteUser: jest.fn(),
     };
 
+    mockUserOperationPermissionService = {
+      canDeleteUser: jest.fn().mockResolvedValue(true),
+    };
+
+    mockJwtUserUtil = {
+      extractUserFromJwt: jest.fn(),
+    };
+
     mockedBcrypt.hash.mockResolvedValue('hashed_password' as never);
     mockedBcrypt.compare.mockResolvedValue(true as never);
 
@@ -97,7 +111,9 @@ describe('AuthService - Token Management Features', () => {
       mockJwtService as JwtService,
       mockConfigService as ConfigService,
       mockPrismaService as PrismaService,
-      mockUserDeletionService as UserDeletionService
+      mockUserDeletionService as UserDeletionService,
+      mockUserOperationPermissionService as UserOperationPermissionService,
+      mockJwtUserUtil as JwtUserUtil
     );
 
     jest.clearAllMocks();
