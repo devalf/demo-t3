@@ -60,12 +60,11 @@ describe('AuthController', () => {
       jwtServiceMock,
       configServiceMock,
       prismaServiceMock,
-      userDeletionServiceMock,
       userOperationPermissionServiceMock,
       jwtUserUtilMock
     );
 
-    authController = new AuthController(authService);
+    authController = new AuthController(authService, userDeletionServiceMock);
   });
 
   describe('register', () => {

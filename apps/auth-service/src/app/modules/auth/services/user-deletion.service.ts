@@ -20,7 +20,7 @@ export class UserDeletionService {
     private readonly jwtUserUtil: JwtUserUtil
   ) {}
 
-  async softDeleteUser(targetUserId: number, accessToken: string) {
+  async softDeleteUser(accessToken: string, targetUserId: number) {
     const currentUser = await this.jwtUserUtil.extractUserFromAccessToken(
       accessToken
     );
@@ -78,7 +78,7 @@ export class UserDeletionService {
     }
   }
 
-  async hardDeleteUser(targetUserId: number, accessToken: string) {
+  async hardDeleteUser(accessToken: string, targetUserId: number) {
     const currentUser = await this.jwtUserUtil.extractUserFromAccessToken(
       accessToken
     );

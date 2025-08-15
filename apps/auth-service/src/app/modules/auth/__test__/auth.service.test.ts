@@ -2,14 +2,11 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
-import { ForbiddenException } from '@nestjs/common';
+import { generateOrmUser } from '@demo-t3/utils';
 
 import { AuthService } from '../auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  UserDeletionService,
-  UserOperationPermissionService,
-} from '../services';
+import { UserOperationPermissionService } from '../services';
 import { UserDto } from '../dto';
 import { JwtUserUtil } from '../../../common/utils';
 
@@ -59,7 +56,6 @@ describe('AuthService', () => {
   let mockPrismaService: any;
   let mockJwtService: any;
   let mockConfigService: any;
-  let mockUserDeletionService: any;
   let mockUserOperationPermissionService: any;
   let mockJwtUserUtil: any;
 
@@ -96,11 +92,6 @@ describe('AuthService', () => {
       }),
     };
 
-    mockUserDeletionService = {
-      softDeleteUser: jest.fn(),
-      hardDeleteUser: jest.fn(),
-    };
-
     mockUserOperationPermissionService = {
       canDeleteUser: jest.fn().mockResolvedValue(true),
     };
@@ -116,7 +107,6 @@ describe('AuthService', () => {
       mockJwtService as JwtService,
       mockConfigService as ConfigService,
       mockPrismaService as PrismaService,
-      mockUserDeletionService as UserDeletionService,
       mockUserOperationPermissionService as UserOperationPermissionService,
       mockJwtUserUtil as JwtUserUtil
     );
@@ -132,19 +122,10 @@ describe('AuthService', () => {
         name: 'Test User',
       };
 
-      const mockCreatedUser = {
-        id: 1,
+      const mockCreatedUser = generateOrmUser({
         email: 'test@example.com',
-        password: 'hashed_password',
         name: 'Test User',
-        role: 'CLIENT',
-        original_email: 'test@example.com',
-        created_at: new Date(),
-        updated_at: new Date(),
-        deleted_at: null,
-        settings: null,
-        is_active: true,
-      };
+      });
 
       const expectedUserDto = {
         id: 1,
@@ -180,19 +161,10 @@ describe('AuthService', () => {
         password: 'SecurePassword123!',
       };
 
-      const mockCreatedUser = {
-        id: 1,
+      const mockCreatedUser = generateOrmUser({
         email: 'test@example.com',
-        password: 'hashed_password',
         name: null,
-        role: 'CLIENT',
-        original_email: 'test@example.com',
-        created_at: new Date(),
-        updated_at: new Date(),
-        deleted_at: null,
-        settings: null,
-        is_active: true,
-      };
+      });
 
       const expectedUserDto = {
         id: 1,
@@ -222,19 +194,10 @@ describe('AuthService', () => {
       const userId = 1;
       const updateData = { email: 'new.email@example.com' };
 
-      const mockUpdatedUser = {
-        id: userId,
+      const mockUpdatedUser = generateOrmUser({
         email: 'new.email@example.com',
-        password: 'hashed_password',
         name: 'Test User',
-        role: 'CLIENT',
-        original_email: 'test@example.com',
-        created_at: new Date(),
-        updated_at: new Date(),
-        deleted_at: null,
-        settings: null,
-        is_active: true,
-      };
+      });
 
       mockPrismaService.user.update.mockResolvedValue(mockUpdatedUser);
 
@@ -251,19 +214,10 @@ describe('AuthService', () => {
       const userId = 1;
       const updateData = {};
 
-      const mockUpdatedUser = {
-        id: userId,
+      const mockUpdatedUser = generateOrmUser({
         email: 'test@example.com',
-        password: 'hashed_password',
         name: 'Test User',
-        role: 'CLIENT',
-        original_email: 'test@example.com',
-        created_at: new Date(),
-        updated_at: new Date(),
-        deleted_at: null,
-        settings: null,
-        is_active: true,
-      };
+      });
 
       mockPrismaService.user.update.mockResolvedValue(mockUpdatedUser);
 
@@ -293,87 +247,6 @@ describe('AuthService', () => {
     });
   });
 
-  describe('soft delete user', () => {
-    it('should call userDeletionService.softDeleteUser with correct parameters', async () => {
-      const targetUserId = 1;
-      const accessToken = 'valid.jwt.token';
-      const expectedResult = {
-        id: targetUserId,
-        email: 'test@example.com',
-        name: 'Test User',
-        is_active: false,
-      };
-
-      mockUserDeletionService.softDeleteUser.mockResolvedValue(expectedResult);
-
-      const result = await authService.softDeleteUser(
-        targetUserId,
-        accessToken
-      );
-
-      expect(mockUserDeletionService.softDeleteUser).toHaveBeenCalledWith(
-        targetUserId,
-        accessToken
-      );
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('should propagate errors from userDeletionService', async () => {
-      const targetUserId = 1;
-      const accessToken = 'valid.jwt.token';
-      const expectedError = new ForbiddenException('Insufficient permissions');
-
-      mockUserDeletionService.softDeleteUser.mockRejectedValue(expectedError);
-
-      await expect(
-        authService.softDeleteUser(targetUserId, accessToken)
-      ).rejects.toThrow(ForbiddenException);
-
-      expect(mockUserDeletionService.softDeleteUser).toHaveBeenCalledWith(
-        targetUserId,
-        accessToken
-      );
-    });
-  });
-
-  describe('hard delete user', () => {
-    it('should call userDeletionService.hardDeleteUser with correct parameters', async () => {
-      const targetUserId = 1;
-      const accessToken = 'valid.jwt.token';
-      const expectedResult = { message: 'User hard deleted successfully' };
-
-      mockUserDeletionService.hardDeleteUser.mockResolvedValue(expectedResult);
-
-      const result = await authService.hardDeleteUser(
-        targetUserId,
-        accessToken
-      );
-
-      expect(mockUserDeletionService.hardDeleteUser).toHaveBeenCalledWith(
-        targetUserId,
-        accessToken
-      );
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('should propagate errors from userDeletionService', async () => {
-      const targetUserId = 1;
-      const accessToken = 'valid.jwt.token';
-      const expectedError = new ForbiddenException('Insufficient permissions');
-
-      mockUserDeletionService.hardDeleteUser.mockRejectedValue(expectedError);
-
-      await expect(
-        authService.hardDeleteUser(targetUserId, accessToken)
-      ).rejects.toThrow(ForbiddenException);
-
-      expect(mockUserDeletionService.hardDeleteUser).toHaveBeenCalledWith(
-        targetUserId,
-        accessToken
-      );
-    });
-  });
-
   describe('sign in', () => {
     const mockDeviceInfo = {
       ip: '127.0.0.1',
@@ -386,19 +259,7 @@ describe('AuthService', () => {
         password: 'SecurePassword123!',
       };
 
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        password: 'hashed_password',
-        name: 'Test User',
-        role: 'CLIENT',
-        original_email: 'test@example.com',
-        created_at: new Date(),
-        updated_at: new Date(),
-        deleted_at: null,
-        settings: null,
-        is_active: true,
-      };
+      const mockUser = generateOrmUser();
 
       const mockTokens = {
         accessToken: 'mock-access-token',
@@ -419,8 +280,8 @@ describe('AuthService', () => {
         where: { email: 'test@example.com' },
       });
       expect(mockedBcrypt.compare).toHaveBeenCalledWith(
-        'SecurePassword123!',
-        'hashed_password'
+        credentials.password,
+        mockUser.password
       );
       expect((authService as any).generateTokenPair).toHaveBeenCalledWith(
         mockUser,
@@ -435,19 +296,7 @@ describe('AuthService', () => {
         password: 'SecurePassword123!',
       };
 
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        password: 'hashed_password',
-        name: 'Test User',
-        role: 'CLIENT',
-        original_email: 'test@example.com',
-        created_at: new Date(),
-        updated_at: new Date(),
-        deleted_at: null,
-        settings: null,
-        is_active: true,
-      };
+      const mockUser = generateOrmUser();
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockedBcrypt.compare.mockResolvedValue(true as never);
@@ -482,25 +331,35 @@ describe('AuthService', () => {
       expect(mockedBcrypt.compare).not.toHaveBeenCalled();
     });
 
+    it('should throw NotFoundException when user is soft deleted', async () => {
+      const credentials = {
+        email: 'test@example.com',
+        password: 'SecurePassword123!',
+      };
+
+      const mockUser = generateOrmUser({
+        is_active: false,
+      });
+
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+
+      await expect(
+        authService.signIn(credentials, mockDeviceInfo)
+      ).rejects.toThrow('User not found');
+
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { email: 'test@example.com' },
+      });
+      expect(mockedBcrypt.compare).not.toHaveBeenCalled();
+    });
+
     it('should throw UnauthorizedException when password is incorrect', async () => {
       const credentials = {
         email: 'test@example.com',
         password: 'WrongPassword123!',
       };
 
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        password: 'hashed_password',
-        name: 'Test User',
-        role: 'CLIENT',
-        original_email: 'test@example.com',
-        created_at: new Date(),
-        updated_at: new Date(),
-        deleted_at: null,
-        settings: null,
-        is_active: true,
-      };
+      const mockUser = generateOrmUser();
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockedBcrypt.compare.mockResolvedValue(false as never);
@@ -514,7 +373,7 @@ describe('AuthService', () => {
       });
       expect(mockedBcrypt.compare).toHaveBeenCalledWith(
         'WrongPassword123!',
-        'hashed_password'
+        mockUser.password
       );
     });
   });

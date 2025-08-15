@@ -25,10 +25,7 @@ import { User as UserEntity } from '../../../prisma-setup/generated';
 import { JwtUserUtil } from '../../common/utils';
 
 import { AuthTokensDto, LogoutAllResponseDto, UserDto } from './dto';
-import {
-  UserDeletionService,
-  UserOperationPermissionService,
-} from './services';
+import { UserOperationPermissionService } from './services';
 
 @Injectable()
 export class AuthService {
@@ -38,7 +35,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly userDeletionService: UserDeletionService,
     private readonly userOperationPermissionService: UserOperationPermissionService,
     private readonly jwtUserUtil: JwtUserUtil
   ) {}
@@ -67,14 +63,6 @@ export class AuthService {
     });
   }
 
-  async softDeleteUser(targetUserId: number, accessToken: string) {
-    return this.userDeletionService.softDeleteUser(targetUserId, accessToken);
-  }
-
-  async hardDeleteUser(targetUserId: number, accessToken: string) {
-    return this.userDeletionService.hardDeleteUser(targetUserId, accessToken);
-  }
-
   async signIn(
     credentials: ApiAuthSignInParams,
     deviceInfo: ApiDeviceInfo
@@ -86,7 +74,7 @@ export class AuthService {
       where: { email: normalizedEmail },
     });
 
-    if (!user) {
+    if (!user || !user.is_active) {
       throw new NotFoundException('User not found');
     }
 

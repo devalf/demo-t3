@@ -8,7 +8,6 @@ import {
   Patch,
   Post,
   Req,
-  UnauthorizedException,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -16,6 +15,7 @@ import { Request } from 'express';
 import { extractDeviceInfo } from '@demo-t3/utils';
 
 import { AuthService } from './auth.service';
+import { UserDeletionService } from './services';
 import {
   AuthSignInDto,
   AuthTokensDto,
@@ -36,7 +36,10 @@ import {
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userDeletionService: UserDeletionService
+  ) {}
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
@@ -109,20 +112,12 @@ export class AuthController {
     description: 'Logged out successfully',
   })
   async logout(@Body() body: RefreshTokenDto): Promise<LogoutResponseDto> {
-    try {
-      await this.authService.revokeRefreshToken(body.refreshToken);
+    await this.authService.revokeRefreshToken(body.refreshToken);
 
-      return {
-        message: 'Logged out successfully',
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw new UnauthorizedException('Invalid or expired refresh token');
-      }
-
-      throw error;
-    }
+    return {
+      message: 'Logged out successfully',
+      timestamp: new Date().toISOString(),
+    };
   }
 
   @Post('logout-all')
@@ -200,7 +195,10 @@ export class AuthController {
   async softDeleteUser(
     @Body() body: DeleteUserParamsDto
   ): Promise<DeleteUserDto> {
-    await this.authService.softDeleteUser(body.targetUserId, body.accessToken);
+    await this.userDeletionService.softDeleteUser(
+      body.accessToken,
+      body.targetUserId
+    );
 
     return { message: 'User soft deleted successfully' };
   }
@@ -227,6 +225,9 @@ export class AuthController {
   async hardDeleteUser(
     @Body() body: DeleteUserParamsDto
   ): Promise<DeleteUserDto> {
-    return this.authService.hardDeleteUser(body.targetUserId, body.accessToken);
+    return this.userDeletionService.hardDeleteUser(
+      body.accessToken,
+      body.targetUserId
+    );
   }
 }
