@@ -1,14 +1,11 @@
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { generateApiJwtPayload } from '@demo-t3/utils';
+import { generateOrmUser } from '@demo-t3/utils';
 
 import { AuthService } from '../auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  UserDeletionService,
-  UserOperationPermissionService,
-} from '../services';
+import { UserOperationPermissionService } from '../services';
 import { JwtUserUtil } from '../../../common/utils';
 
 jest.mock('bcrypt');
@@ -54,9 +51,9 @@ describe('AuthService - Token Management Features', () => {
   let mockPrismaService: any;
   let mockJwtService: any;
   let mockConfigService: any;
-  let mockUserDeletionService: any;
   let mockUserOperationPermissionService: any;
   let mockJwtUserUtil: any;
+  let mockLogger: any;
 
   beforeEach(() => {
     mockPrismaService = {
@@ -91,17 +88,20 @@ describe('AuthService - Token Management Features', () => {
       }),
     };
 
-    mockUserDeletionService = {
-      softDeleteUser: jest.fn(),
-      hardDeleteUser: jest.fn(),
-    };
-
     mockUserOperationPermissionService = {
       canDeleteUser: jest.fn().mockResolvedValue(true),
     };
 
     mockJwtUserUtil = {
       extractUserFromJwt: jest.fn(),
+    };
+
+    mockLogger = {
+      error: jest.fn(),
+      warn: jest.fn(),
+      log: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
     };
 
     mockedBcrypt.hash.mockResolvedValue('hashed_password' as never);
@@ -111,10 +111,12 @@ describe('AuthService - Token Management Features', () => {
       mockJwtService as JwtService,
       mockConfigService as ConfigService,
       mockPrismaService as PrismaService,
-      mockUserDeletionService as UserDeletionService,
       mockUserOperationPermissionService as UserOperationPermissionService,
       mockJwtUserUtil as JwtUserUtil
     );
+
+    // Mock the logger to prevent console output during tests
+    (authService as any).logger = mockLogger;
 
     jest.clearAllMocks();
   });
@@ -343,7 +345,7 @@ describe('AuthService - Token Management Features', () => {
   });
 
   describe('generateTokenPair integration with new methods', () => {
-    const mockUser = generateApiJwtPayload();
+    const mockUser = generateOrmUser();
     const mockDeviceInfo = {
       ip: '192.168.1.1',
       userAgent: 'Mozilla/5.0 Test Browser',

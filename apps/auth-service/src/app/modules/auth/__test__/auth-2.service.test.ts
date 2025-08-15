@@ -5,6 +5,7 @@ import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import {
   generateApiJwtPayload,
   generateApiRefreshTokenPayload,
+  generateOrmUser,
 } from '@demo-t3/utils';
 
 import { AuthService } from '../auth.service';
@@ -115,7 +116,6 @@ describe('AuthService part 2', () => {
       mockJwtService as JwtService,
       mockConfigService as ConfigService,
       mockPrismaService as PrismaService,
-      mockUserDeletionService as UserDeletionService,
       mockUserOperationPermissionService as UserOperationPermissionService,
       mockJwtUserUtil as JwtUserUtil
     );
@@ -133,19 +133,7 @@ describe('AuthService part 2', () => {
     it('should refresh tokens successfully', async () => {
       const mockPayload = generateApiRefreshTokenPayload();
 
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        password: 'hashed_password',
-        name: 'Test User',
-        role: 'CLIENT',
-        original_email: 'test@example.com',
-        created_at: new Date(),
-        updated_at: new Date(),
-        deleted_at: null,
-        settings: null,
-        is_active: true,
-      };
+      const mockUser = generateOrmUser();
 
       const mockStoredToken = {
         id: 'mock-token-id',
