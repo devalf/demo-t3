@@ -9,18 +9,24 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { plainToInstance } from 'class-transformer';
 import { extractDeviceInfo } from '@demo-t3/utils';
 import { ApiTokenResponse } from '@demo-t3/models';
 
-import { AccessTokenGuard, RefreshTokenGuard } from '../../common/guards';
+import {
+  AccessTokenGuard,
+  EmailThrottlerGuard,
+  RefreshTokenGuard,
+} from '../../common/guards';
 import { RefreshToken } from '../../common/decorators';
 import {
   AccessTokenExpiresInDto,
   AuthSignInDto,
   CreateUserDto,
 } from '../../dto/auth.dto';
+import { THROTTLER_CONFIG } from '../../constants';
 
 import { AuthService } from './auth.service';
 
@@ -33,6 +39,13 @@ export class AuthController {
   ) {}
 
   @Post('sign-in')
+  @UseGuards(EmailThrottlerGuard)
+  @Throttle({
+    default: {
+      limit: THROTTLER_CONFIG.STRICT.LIMIT,
+      ttl: THROTTLER_CONFIG.STRICT.TTL_MILLISECONDS,
+    },
+  })
   @ApiOperation({
     summary: 'Sign in',
     description:
@@ -53,6 +66,11 @@ export class AuthController {
     description:
       'User signed in successfully. accessToken token is set as a cookie.',
     type: AccessTokenExpiresInDto,
+  })
+  @ApiResponse({
+    status: 429,
+    description:
+      'Too many sign-in attempts for this email address. Please try again later.',
   })
   async signIn(
     @Body() body: AuthSignInDto,
@@ -91,6 +109,12 @@ export class AuthController {
 
   @Post('refresh')
   @UseGuards(RefreshTokenGuard)
+  @Throttle({
+    default: {
+      limit: THROTTLER_CONFIG.STRICT.LIMIT,
+      ttl: THROTTLER_CONFIG.STRICT.TTL_MILLISECONDS,
+    },
+  })
   @ApiOperation({
     summary: 'Refresh access token',
     description:
@@ -104,6 +128,10 @@ export class AuthController {
   @ApiResponse({
     status: 401,
     description: 'Invalid or expired refresh token.',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too many refresh attempts. Please try again later.',
   })
   async refresh(
     @RefreshToken() refreshToken: string,
@@ -130,6 +158,12 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(RefreshTokenGuard)
+  @Throttle({
+    default: {
+      limit: THROTTLER_CONFIG.STRICT.LIMIT,
+      ttl: THROTTLER_CONFIG.STRICT.TTL_MILLISECONDS,
+    },
+  })
   @ApiOperation({
     summary: 'Logout',
     description: 'Clears the authentication cookie.',
@@ -166,6 +200,12 @@ export class AuthController {
   }
 
   @Post('register')
+  @Throttle({
+    default: {
+      limit: THROTTLER_CONFIG.RIGID.LIMIT,
+      ttl: THROTTLER_CONFIG.RIGID.TTL_MILLISECONDS,
+    },
+  })
   @ApiOperation({
     summary: 'Register and sign in user',
     description:
@@ -194,6 +234,10 @@ export class AuthController {
   @ApiResponse({
     status: 409,
     description: 'Conflict. User with this email already exists.',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too many registration attempts. Please try again later.',
   })
   async registerAndSignIn(
     @Body() body: CreateUserDto,
