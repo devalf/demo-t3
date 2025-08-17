@@ -3,7 +3,7 @@ import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
 import { mockProductList } from '@demo-t3/dummy-data';
 
-import { providers } from '../../constants';
+import { providers } from '../constants';
 
 import { productSchema } from './schemas';
 
