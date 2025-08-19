@@ -28,6 +28,14 @@
       "options": {
         "jestConfig": "libs/dummy-data/jest.config.ts"
       }
+    },
+    "tscheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["tsc -p tsconfig.lib.json --noEmit"],
+        "cwd": "libs/dummy-data",
+        "forwardAllArgs": false
+      }
     }
   },
   "tags": ["scope:shared"]

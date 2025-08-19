@@ -31,6 +31,14 @@
       "options": {
         "jestConfig": "libs/utils-ui/jest.config.ts"
       }
+    },
+    "tscheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["tsc -p tsconfig.lib.json --noEmit"],
+        "cwd": "libs/utils-ui",
+        "forwardAllArgs": false
+      }
     }
   },
   "tags": ["scope:shared", "type:util-ui"]

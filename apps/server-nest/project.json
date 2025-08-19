@@ -56,6 +56,14 @@
       "options": {
         "jestConfig": "apps/server-nest/jest.config.ts"
       }
+    },
+    "tscheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["tsc -p tsconfig.app.json --noEmit"],
+        "cwd": "apps/server-nest",
+        "forwardAllArgs": false
+      }
     }
   },
   "tags": ["scope:server-nest"]
