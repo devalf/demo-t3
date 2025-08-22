@@ -7,6 +7,21 @@ set -e
 FORCE_DEPLOY=${1:-false}
 BASE_REF=${2:-HEAD~1}
 
+# Ensure BASE_REF exists (handles force-push scenarios where before SHA is gone)
+if ! git cat-file -e "${BASE_REF}^{commit}" 2>/dev/null; then
+  echo "⚠️ Base ref ${BASE_REF} not found. Attempting fallbacks..."
+  if git rev-parse --verify --quiet origin/master >/dev/null; then
+    BASE_REF=origin/master
+    echo "↩️ Falling back to ${BASE_REF}"
+  elif git rev-parse --verify --quiet origin/main >/dev/null; then
+    BASE_REF=origin/main
+    echo "↩️ Falling back to ${BASE_REF}"
+  else
+    BASE_REF=HEAD~1
+    echo "↩️ Falling back to ${BASE_REF}"
+  fi
+fi
+
 # Force deploy if requested or if this is the first deployment
 if [[ "$FORCE_DEPLOY" == "true" ]]; then
   echo "apps=client-mx,server-nest,auth-service" >> $GITHUB_OUTPUT
