@@ -1,0 +1,94 @@
+name: Deploy to VPS
+
+on:
+  workflow_call:
+    inputs:
+      force_deploy:
+        description: 'Force deploy all services (ignore affected)'
+        required: false
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deploy all services (ignore affected)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.15.1'
+
+      - name: Install dependencies
+        run: |
+          corepack enable
+          yarn --version
+          yarn install --frozen-lockfile
+
+      - name: Start ssh-agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Add host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via Git Pull
+        env:
+          # Support both reusable workflow inputs and manual dispatch inputs
+          FORCE_INPUT: ${{ inputs.force_deploy || github.event.inputs.force_deploy || false }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          AFFECTED_APPS=""
+          FORCE_DEPLOY="${FORCE_INPUT:-false}"
+
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
+            set -e
+            cd /opt/demo-t3
+
+            echo "🔄 Pulling latest changes from GitHub..."
+            echo "📍 Deploying specific commit: ${COMMIT_SHA}"
+            git fetch origin
+            git reset --hard ${COMMIT_SHA}
+
+            echo "🐳 Starting blue-green deployment..."
+            chmod +x .github/scripts/blue-green-deploy.sh
+
+            FORCE_DEPLOY_GH="${FORCE_DEPLOY}"
+            AFFECTED_APPS_GH="${AFFECTED_APPS}"
+
+            if [[ "$FORCE_DEPLOY_GH" == "true" ]]; then
+              echo "🚀 Force deploy - building all services"
+              ./.github/scripts/blue-green-deploy.sh --force-all
+            elif [[ -n "$AFFECTED_APPS_GH" ]]; then
+              echo "📦 Building affected apps: $AFFECTED_APPS_GH"
+              ./.github/scripts/blue-green-deploy.sh --apps="$AFFECTED_APPS_GH"
+            else
+              echo "📚 No apps specified, building all for safety"
+              ./.github/scripts/blue-green-deploy.sh --force-all
+            fi
+          EOF
+
+      - name: Deployment notification
+        if: always()
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            echo "✅ Deployment completed successfully!"
+          else
+            echo "❌ Deployment failed!"
+            echo "🔄 Previous version should be automatically restored"
+          fi

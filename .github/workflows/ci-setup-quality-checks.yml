@@ -88,3 +88,12 @@ jobs:
             echo "📦 Running ${{ matrix.check }} on affected projects"
             yarn nx affected --target=${{ matrix.check }} --base=origin/master --parallel=3
           fi
+
+  deploy:
+    name: Deploy
+    needs: quality-checks
+    if: github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      force_deploy: ${{ github.event.inputs.force_deploy || false }}
+    secrets: inherit
