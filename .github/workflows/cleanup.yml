@@ -1,0 +1,80 @@
+name: Docker Cleanup
+
+on:
+  workflow_run:
+    workflows: ['Deploy to VPS']
+    types:
+      - completed
+    branches: [master]
+
+  workflow_dispatch:
+    inputs:
+      aggressive:
+        description: 'Aggressive cleanup (remove all unused images)'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  cleanup:
+    name: Cleanup Docker Resources
+    runs-on: ubuntu-latest
+    environment: production
+
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Add host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Cleanup Docker Resources
+        env:
+          AGGRESSIVE: ${{ github.event.inputs.aggressive || 'true' }}
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            set -e
+            cd /opt/demo-t3
+            
+            echo "🧹 Starting Docker cleanup..."
+            
+            # Check disk usage before
+            echo "📊 Disk usage before cleanup:"
+            df -h /
+            docker system df
+            
+            # Run cleanup script
+            chmod +x .github/scripts/docker-cleanup.sh
+            ./.github/scripts/docker-cleanup.sh --aggressive="${AGGRESSIVE}"
+            
+            # Check disk usage after
+            echo "📊 Disk usage after cleanup:"
+            df -h /
+            docker system df
+            
+            # Alert if still low on space (less than 10GB)
+            AVAILABLE=$(df / | tail -1 | awk '{print $4}')
+            if [ "$AVAILABLE" -lt 10485760 ]; then  # 10GB in KB
+              echo "⚠️  WARNING: Less than 10GB free space remaining!"
+              echo "Available: ${AVAILABLE}KB"
+              exit 1
+            fi
+            
+            echo "✅ Cleanup completed successfully"
+          EOF
+
+      - name: Cleanup notification
+        if: always()
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            echo "✅ Docker cleanup completed successfully!"
+          else
+            echo "❌ Docker cleanup failed!"
+            echo "🚨 Manual intervention may be required"
+          fi

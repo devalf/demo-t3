@@ -3,7 +3,7 @@ networks:
     driver: bridge
 
 services:
-  # Frontend (React + NGINX)
+  # Frontend (React + NGINX) - Only service with external access
   client-mx:
     build:
       context: .
@@ -11,7 +11,8 @@ services:
     depends_on:
       - server-nest
     ports:
-      - '${NX_PUBLIC_CLIENT_MX_PORT:-8082}:80'
+      - '80:80' # Standard HTTP port
+      - '443:443' # Standard HTTPS port
     env_file:
       - .env.production
     networks:
@@ -24,13 +25,12 @@ services:
       retries: 3
       start_period: 40s
 
-  # API Service (NestJS)
+  # API Service (NestJS) - Internal only, no external ports
   server-nest:
     build:
       context: .
       dockerfile: apps/server-nest/Dockerfile
-    ports:
-      - '${NX_PUBLIC_SERVER_NEST_PORT:-8083}:${NX_PUBLIC_SERVER_NEST_PORT:-8083}'
+    # No external ports - only accessible via nginx proxy
     depends_on:
       - redis
       - auth-service
@@ -52,13 +52,14 @@ services:
       retries: 3
       start_period: 40s
 
-  # Auth Service (NestJS + Prisma) - Internal only
+  # Auth Service (NestJS + Prisma) - Internal only, no external ports
   auth-service:
     build:
       context: .
       dockerfile: apps/auth-service/Dockerfile
       args:
         NX_PUBLIC_AUTH_SERVICE_PORT: ${NX_PUBLIC_AUTH_SERVICE_PORT:-8084}
+    # No external ports - internal service only
     depends_on:
       - postgres
     env_file:

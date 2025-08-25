@@ -8,6 +8,7 @@
     "target": "ES2019",
     "module": "esNext",
     "lib": ["dom", "ESNext"],
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@demo-t3/dummy-data": ["libs/dummy-data/src/index.ts"],
