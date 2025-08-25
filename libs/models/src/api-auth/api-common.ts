@@ -21,4 +21,5 @@ export type ApiRefreshTokenPayload = {
 
 export type ApiMessagePayload = {
   message: string;
+  dummy?: string; // TODO delete me
 };
