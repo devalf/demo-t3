@@ -11,3 +11,5 @@ export type ApiQueryParams = {
   sort?: 'name' | 'price' | 'company';
   order?: 'asc' | 'desc';
 };
+
+export type Dummy = string; // TODO delete me

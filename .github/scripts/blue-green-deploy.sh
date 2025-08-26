@@ -26,10 +26,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Configuration
-DEPLOY_DIR="/opt/demo-t3"
+SOURCE_DIR="/opt/demo-t3"
+DEPLOY_DIR="/opt/demo-t3-deploy"
 BACKUP_DIR="/opt/demo-t3-backup"
-BLUE_DIR="${DEPLOY_DIR}/blue"
-GREEN_DIR="${DEPLOY_DIR}/green"
 CURRENT_LINK="${DEPLOY_DIR}/current"
 
 # Space management for limited VPS
@@ -61,7 +60,7 @@ warn() {
 
 # Determine current and target environments
 if [[ -L "$CURRENT_LINK" ]]; then
-  CURRENT_ENV=$(basename $(readlink "$CURRENT_LINK"))
+  CURRENT_ENV=$(basename "$(readlink "$CURRENT_LINK")")
   if [[ "$CURRENT_ENV" == "blue" ]]; then
     TARGET_ENV="green"
   else
@@ -90,60 +89,67 @@ if [[ $AVAILABLE_GB -lt $MIN_FREE_SPACE_GB ]]; then
 fi
 
 # Create directories
-sudo mkdir -p "$BLUE_DIR" "$GREEN_DIR" "$BACKUP_DIR"
-sudo chown -R $USER:$USER "$DEPLOY_DIR" "$BACKUP_DIR"
+sudo mkdir -p "$DEPLOY_DIR" "$BACKUP_DIR" "/opt/demo-t3-shared/postgres-data"
+sudo chown -R $USER:$USER "$DEPLOY_DIR" "$BACKUP_DIR" "/opt/demo-t3-shared"
 
-# Copy source code to target environment (git-based deployment)
-log "Preparing source code in $TARGET_DIR..."
-rm -rf "$TARGET_DIR"
-cp -r "$DEPLOY_DIR" "$TARGET_DIR"
-
-# Ensure we have the latest code (should already be pulled by GitHub Actions)
-cd "$TARGET_DIR"
-log "Verifying latest code is present..."
+# Ensure source directory has latest code (pulled by GitHub Actions)
+log "Verifying source code in $SOURCE_DIR..."
+cd "$SOURCE_DIR"
 git status --porcelain || warn "Git status check failed"
 
-# Ensure .env.production is present in target directory
-if [[ -f "$TARGET_DIR/.env.production" ]]; then
-  log "Using existing .env.production in target directory"
-elif [[ -f "/opt/demo-t3/.env.production" ]]; then
-  log "Copying /opt/demo-t3/.env.production into target directory"
-  cp /opt/demo-t3/.env.production "$TARGET_DIR/.env.production"
-elif [[ -f "/tmp/.env.production" ]]; then
-  log "Copying /tmp/.env.production into target directory"
-  cp /tmp/.env.production "$TARGET_DIR/.env.production"
-else
-  error ".env.production not found in target, /opt/demo-t3, or /tmp. Deployment cannot continue."
+# Ensure .env.production exists in source
+if [[ ! -f "$SOURCE_DIR/.env.production" ]]; then
+  error ".env.production not found in $SOURCE_DIR. Deployment cannot continue."
   exit 1
 fi
+
+# Copy complete source code to target environment
+log "Copying source code from $SOURCE_DIR to $TARGET_DIR..."
+rm -rf "$TARGET_DIR"
+cp -r "$SOURCE_DIR" "$TARGET_DIR"
+
+# Remove .git directory from deployment (optional, saves space)
+rm -rf "$TARGET_DIR/.git"
 
 # Change to target directory
 cd "$TARGET_DIR"
 
+# Absolute paths to avoid cwd issues
+COMPOSE_FILE_PATH="$TARGET_DIR/docker-compose.production.yml"
+ENV_FILE_PATH="$TARGET_DIR/.env.production"
+
 # Stop current services if they exist
 if [[ -n "$CURRENT_ENV" ]]; then
-  log "Stopping current services..."
-  cd "${DEPLOY_DIR}/${CURRENT_ENV}"
-  docker-compose -f docker-compose.production.yml down --remove-orphans || warn "Failed to stop some services"
-  cd "$TARGET_DIR"
+  CURRENT_DIR="${DEPLOY_DIR}/${CURRENT_ENV}"
+  if [[ -d "$CURRENT_DIR" ]]; then
+    log "Stopping current services in $CURRENT_ENV..."
+    cd "$CURRENT_DIR"
+    docker compose --env-file .env.production -f docker-compose.production.yml down --remove-orphans || warn "Failed to stop some services"
+  fi
 fi
+
+cd "$TARGET_DIR"
+
+# Build base image required by app Dockerfiles
+log "Building base image demo-base:latest from Dockerfile.base..."
+docker build -t demo-base:latest -f Dockerfile.base .
 
 # Build Docker images (Docker handles all dependencies, builds, and Prisma generation)
 if [[ "$FORCE_ALL" == "true" ]]; then
   log "Building all Docker images..."
-  docker-compose -f docker-compose.production.yml build --no-cache
+  docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" build --no-cache
 elif [[ -n "$AFFECTED_APPS" ]]; then
   log "Building affected services: $AFFECTED_APPS"
   # Convert comma-separated apps to space-separated for docker-compose
   SERVICES=$(echo "$AFFECTED_APPS" | tr ',' ' ')
-  docker-compose -f docker-compose.production.yml build --no-cache $SERVICES
+  docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" build --no-cache "$SERVICES"
 else
   log "No affected apps specified, building all services for safety..."
-  docker-compose -f docker-compose.production.yml build --no-cache
+  docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" build --no-cache
 fi
 
 log "Starting services in $TARGET_ENV environment..."
-docker-compose -f docker-compose.production.yml up -d
+docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" up -d
 
 # Wait for services to be healthy
 log "Waiting for services to become healthy..."
@@ -152,13 +158,25 @@ ELAPSED=0
 INTERVAL=10
 
 while [[ $ELAPSED -lt $TIMEOUT ]]; do
-  if docker-compose -f docker-compose.production.yml ps --format json | jq -r '.[].Health' | grep -q "unhealthy"; then
-    warn "Some services are unhealthy, waiting..."
-  elif docker-compose -f docker-compose.production.yml ps --format json | jq -r '.[].Health' | grep -qv "healthy\|starting"; then
-    warn "Services still starting, waiting..."
-  else
+  ALL_HEALTHY=true
+  for SVC in client-mx server-nest auth-service postgres redis; do
+    CID=$(docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" ps -q "$SVC" || true)
+    if [[ -z "$CID" ]]; then
+      ALL_HEALTHY=false
+      break
+    fi
+    STATUS=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}healthy{{end}}' "$CID" 2>/dev/null || echo starting)
+    if [[ "$STATUS" != "healthy" ]]; then
+      ALL_HEALTHY=false
+      break
+    fi
+  done
+
+  if [[ "$ALL_HEALTHY" == "true" ]]; then
     success "All services are healthy!"
     break
+  else
+    warn "Services not healthy yet, waiting..."
   fi
 
   sleep $INTERVAL
@@ -170,13 +188,13 @@ if [[ $ELAPSED -ge $TIMEOUT ]]; then
   error "Health check timeout! Rolling back..."
 
   # Stop failed deployment
-  docker-compose -f docker-compose.production.yml down --remove-orphans
+  docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" down --remove-orphans
 
   # Restore previous deployment if it exists
   if [[ -n "$CURRENT_ENV" ]]; then
     log "Restoring previous deployment..."
     cd "${DEPLOY_DIR}/${CURRENT_ENV}"
-    docker-compose -f docker-compose.production.yml up -d
+    docker compose --env-file .env.production -f docker-compose.production.yml up -d
     success "Rollback completed"
   fi
 
@@ -192,10 +210,10 @@ if curl -f -s http://localhost/ > /dev/null; then
   success "Application is responding correctly!"
 else
   error "Application health check failed! Rolling back..."
-  docker-compose -f docker-compose.production.yml down --remove-orphans
+  docker compose --env-file .env.production -f docker-compose.production.yml down --remove-orphans
   if [[ -n "$CURRENT_ENV" ]]; then
     cd "${DEPLOY_DIR}/${CURRENT_ENV}"
-    docker-compose -f docker-compose.production.yml up -d
+    docker compose --env-file .env.production -f docker-compose.production.yml up -d
   fi
   exit 1
 fi
@@ -229,12 +247,13 @@ success "Application is available at: http://$(hostname -I | awk '{print $1}')"
 
 # Display service status
 log "Service status:"
-docker-compose -f docker-compose.production.yml ps
+cd "$TARGET_DIR"
+docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" ps
 
 # VPS verification commands (for manual debugging):
 # ls -l /opt/demo-t3/current                                    # Check current symlink
 # ls -l /opt/demo-t3/.env.production                           # Check env file
-# docker-compose -f docker-compose.production.yml ps --format json | jq  # Health status
+# docker compose --env-file .env.production -f docker-compose.production.yml ps --format json | jq  # Health status
 # curl -sf http://localhost/                                   # Frontend check
 # docker logs client-mx --tail=50                             # Frontend logs
 # docker logs server-nest --tail=50                           # API logs

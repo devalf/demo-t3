@@ -88,9 +88,7 @@ services:
       POSTGRES_USER: ${NX_PUBLIC_AUTH_DB_POSTGRES_USER}
       POSTGRES_PASSWORD: ${NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - '8060:5432'
+      - /opt/demo-t3-shared/postgres-data:/var/lib/postgresql/data
     networks:
       - app-network
     restart: unless-stopped
@@ -108,8 +106,6 @@ services:
   # Redis Cache
   redis:
     image: redis:8-alpine
-    ports:
-      - '${NX_PUBLIC_REDIS_PORT:-8050}:6379'
     networks:
       - app-network
     restart: unless-stopped
@@ -119,6 +115,3 @@ services:
       timeout: 3s
       retries: 3
       start_period: 30s
-
-volumes:
-  postgres_data:
