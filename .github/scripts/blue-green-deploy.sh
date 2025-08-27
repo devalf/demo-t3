@@ -58,6 +58,45 @@ warn() {
   echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
+# Apply HTTPS nginx.conf to the active client-mx container (non-fatal)
+apply_https_config() {
+  local CONFIG_PATH="/opt/demo-t3-shared/nginx-https.conf"
+
+  if [[ ! -f "$CONFIG_PATH" ]]; then
+    warn "HTTPS config not found at $CONFIG_PATH. Run dev/ssl-setup.sh once to generate it. Skipping."
+    return 0
+  fi
+
+  # Use the current deployment's compose context to find the client-mx container
+  local CID
+  CID=$(docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" ps -q client-mx 2>/dev/null || true)
+
+  if [[ -z "$CID" ]]; then
+    warn "Could not find running client-mx container in current deployment context. Skipping HTTPS apply."
+    return 0
+  fi
+
+  log "Applying HTTPS nginx.conf to client-mx container ($CID)..."
+
+  if ! docker cp "$CONFIG_PATH" "$CID":/etc/nginx/nginx.conf; then
+    warn "Failed to copy nginx.conf into container $CID. Skipping HTTPS apply."
+    return 0
+  fi
+
+  # Validate NGINX config inside the container
+  if ! docker exec "$CID" nginx -t; then
+    warn "NGINX config test failed in container $CID. Skipping reload."
+    return 0
+  fi
+
+  # Reload NGINX to apply the HTTPS config
+  if docker exec "$CID" nginx -s reload; then
+    success "HTTPS config applied and NGINX reloaded for client-mx."
+  else
+    warn "Failed to reload NGINX in container $CID after applying config."
+  fi
+}
+
 # Determine current and target environments
 if [[ -L "$CURRENT_LINK" ]]; then
   CURRENT_ENV=$(basename "$(readlink "$CURRENT_LINK")")
@@ -240,6 +279,10 @@ docker container prune -f || warn "Failed to remove stopped containers"
 docker image prune -f || warn "Failed to remove dangling images"
 
 # Note: Aggressive cleanup runs automatically via GitHub Actions cleanup workflow
+
+# Apply HTTPS config to active client-mx container (if config exists)
+log "Ensuring HTTPS config is applied to the active client container..."
+apply_https_config
 
 success "Deployment completed successfully!"
 success "New environment: $TARGET_ENV"

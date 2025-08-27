@@ -5,7 +5,7 @@ on:
     workflows: ['Deploy to VPS']
     types:
       - completed
-    branches: [master]
+    branches: [master, dev]
 
   workflow_dispatch:
     inputs:

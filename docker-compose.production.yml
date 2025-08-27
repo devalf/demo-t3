@@ -13,6 +13,9 @@ services:
     ports:
       - '80:80' # Standard HTTP port
       - '443:443' # Standard HTTPS port
+    volumes:
+      - /opt/demo-t3-shared/letsencrypt:/etc/letsencrypt:ro
+      - /opt/demo-t3-shared/www-certbot:/var/www/certbot:ro
     env_file:
       - .env.production
     networks:
