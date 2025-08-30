@@ -26,8 +26,8 @@ fi
 if [[ "$FORCE_DEPLOY" == "true" ]]; then
   echo "apps=client-mx,server-nest,auth-service" >> $GITHUB_OUTPUT
   echo "libs=$(yarn --silent nx show projects --type=lib --json | jq -r '. | map(select(. | test("-e2e$") | not)) | join(",")')" >> $GITHUB_OUTPUT
-  echo "has-affected=true" >> $GITHUB_OUTPUT
-  echo "should-deploy=true" >> $GITHUB_OUTPUT
+  echo "has_affected=true" >> $GITHUB_OUTPUT
+  echo "should_deploy=true" >> $GITHUB_OUTPUT
   echo "🚀 Force deploy requested - deploying all apps"
 else
   # Get affected apps and libs (excluding e2e projects)
@@ -39,18 +39,18 @@ else
   
   # Check if we have any affected projects
   if [[ -n "$AFFECTED_APPS" || -n "$AFFECTED_LIBS" ]]; then
-    echo "has-affected=true" >> $GITHUB_OUTPUT
+    echo "has_affected=true" >> $GITHUB_OUTPUT
     # Deploy if any app is affected or if shared libs are affected
     if [[ -n "$AFFECTED_APPS" ]] || echo "$AFFECTED_LIBS" | grep -E "(models|utils|utils-ui)" > /dev/null; then
-      echo "should-deploy=true" >> $GITHUB_OUTPUT
+      echo "should_deploy=true" >> $GITHUB_OUTPUT
       echo "📦 Affected projects detected - deployment needed"
     else
-      echo "should-deploy=false" >> $GITHUB_OUTPUT
+      echo "should_deploy=false" >> $GITHUB_OUTPUT
       echo "📚 Only non-critical libs affected - skipping deployment"
     fi
   else
-    echo "has-affected=false" >> $GITHUB_OUTPUT
-    echo "should-deploy=false" >> $GITHUB_OUTPUT
+    echo "has_affected=false" >> $GITHUB_OUTPUT
+    echo "should_deploy=false" >> $GITHUB_OUTPUT
     echo "✅ No affected projects - skipping deployment"
   fi
 fi
