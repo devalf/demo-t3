@@ -8,6 +8,11 @@ on:
         required: false
         type: boolean
         default: false
+      affected_apps:
+        description: 'Comma-separated list of affected apps to deploy'
+        required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       force_deploy:
@@ -53,9 +58,10 @@ jobs:
         env:
           # Support both reusable workflow inputs and manual dispatch inputs
           FORCE_INPUT: ${{ inputs.force_deploy || github.event.inputs.force_deploy || false }}
+          AFFECTED_APPS_INPUT: ${{ inputs.affected_apps || '' }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
-          AFFECTED_APPS=""
+          AFFECTED_APPS="${AFFECTED_APPS_INPUT}"
           FORCE_DEPLOY="${FORCE_INPUT:-false}"
 
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
