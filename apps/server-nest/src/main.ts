@@ -7,6 +7,8 @@ import { AppModule } from './app/app.module';
 import { HttpExceptionFilter } from './app/common/filters';
 
 async function bootstrap() {
+  process.env.SERVICE_NAME = 'server-nest';
+
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';
 

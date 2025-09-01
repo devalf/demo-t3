@@ -5,6 +5,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
+  process.env.SERVICE_NAME = 'auth-service';
+
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';
 
