@@ -1,0 +1,62 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - 'alert_rules.yml'
+
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # System metrics (Node Exporter)
+  # - job_name: 'node-exporter'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
+
+  # Docker container metrics (cAdvisor)
+  # - job_name: 'cadvisor'
+  #   static_configs:
+  #     - targets: ['cadvisor:8080']
+
+  # PostgreSQL metrics
+  # - job_name: 'postgres-exporter'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+
+  # Redis metrics
+  # - job_name: 'redis-exporter'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+
+  # NGINX metrics
+  # - job_name: 'nginx-exporter'
+  #   static_configs:
+  #     - targets: ['nginx-exporter:9113']
+
+  # NestJS server-nest service
+  - job_name: 'server-nest'
+    static_configs:
+      - targets: ['server-nest:8083']
+    metrics_path: '/metrics'
+
+  # NestJS auth-service
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-service:8084']
+    metrics_path: '/metrics'
+
+  # Client-side metrics (if implemented)
+  # - job_name: 'client-mx'
+  #   static_configs:
+  #     - targets: ['client-mx:80']
+  #   metrics_path: '/metrics'
+  #   scrape_interval: 30s
