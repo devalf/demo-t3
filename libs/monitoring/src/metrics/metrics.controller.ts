@@ -1,7 +1,9 @@
 import { Controller, Get, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { register as promRegister } from 'prom-client';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller()
 export class MetricsController {
   @Get('metrics')

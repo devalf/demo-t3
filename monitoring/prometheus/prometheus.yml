@@ -46,13 +46,13 @@ scrape_configs:
   - job_name: 'server-nest'
     static_configs:
       - targets: ['server-nest:8083']
-    metrics_path: '/metrics'
+    metrics_path: '/api/metrics'
 
   # NestJS auth-service
   - job_name: 'auth-service'
     static_configs:
       - targets: ['auth-service:8084']
-    metrics_path: '/metrics'
+    metrics_path: '/api/metrics'
 
   # Client-side metrics (if implemented)
   # - job_name: 'client-mx'
