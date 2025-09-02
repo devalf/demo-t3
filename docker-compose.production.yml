@@ -90,6 +90,8 @@ services:
       POSTGRES_DB: ${NX_PUBLIC_AUTH_DB_POSTGRES_DB}
       POSTGRES_USER: ${NX_PUBLIC_AUTH_DB_POSTGRES_USER}
       POSTGRES_PASSWORD: ${NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD}
+    ports:
+      - '127.0.0.1:15432:5432'
     volumes:
       - /opt/demo-t3-shared/postgres-data:/var/lib/postgresql/data
     networks:
