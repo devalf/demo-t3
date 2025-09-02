@@ -58,12 +58,12 @@ warn() {
   echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-# Apply HTTPS nginx.conf to the active client-mx container (non-fatal)
+# Apply HTTPS nginx.conf from repository to the active client-mx container (non-fatal)
 apply_https_config() {
-  local CONFIG_PATH="/opt/demo-t3-shared/nginx-https.conf"
-
-  if [[ ! -f "$CONFIG_PATH" ]]; then
-    warn "HTTPS config not found at $CONFIG_PATH. Run dev/ssl-setup.sh once to generate it. Skipping."
+  # Only apply HTTPS if certs are present (first-time SSL setup may not be done yet)
+  local CERT_DIR_HOST="/opt/demo-t3-shared/letsencrypt/live/d-t3.mooo.com"
+  if [[ ! -d "$CERT_DIR_HOST" ]]; then
+    warn "TLS certificates not found at $CERT_DIR_HOST. Skipping HTTPS config apply."
     return 0
   fi
 
@@ -76,24 +76,24 @@ apply_https_config() {
     return 0
   fi
 
-  log "Applying HTTPS nginx.conf to client-mx container ($CID)..."
+  # The HTTPS config is packaged with the image at /etc/nginx/nginx.https.conf
+  log "Switching client-mx container ($CID) to packaged HTTPS config..."
 
-  if ! docker cp "$CONFIG_PATH" "$CID":/etc/nginx/nginx.conf; then
-    warn "Failed to copy nginx.conf into container $CID. Skipping HTTPS apply."
+  # Validate packaged HTTPS config
+  if ! docker exec "$CID" nginx -t -c /etc/nginx/nginx.https.conf; then
+    warn "Packaged nginx.https.conf failed validation. Skipping HTTPS switch."
     return 0
   fi
 
-  # Validate NGINX config inside the container
-  if ! docker exec "$CID" nginx -t; then
-    warn "NGINX config test failed in container $CID. Skipping reload."
-    return 0
-  fi
-
-  # Reload NGINX to apply the HTTPS config
-  if docker exec "$CID" nginx -s reload; then
-    success "HTTPS config applied and NGINX reloaded for client-mx."
+  # Replace active config with HTTPS config
+  if docker exec "$CID" sh -c 'cp /etc/nginx/nginx.https.conf /etc/nginx/nginx.conf && nginx -t'; then
+    if docker exec "$CID" nginx -s reload; then
+      success "HTTPS config applied and NGINX reloaded for client-mx."
+    else
+      warn "Failed to reload NGINX after applying HTTPS config."
+    fi
   else
-    warn "Failed to reload NGINX in container $CID after applying config."
+    warn "Failed to activate HTTPS config inside container."
   fi
 }
 
