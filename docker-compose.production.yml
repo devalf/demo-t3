@@ -163,16 +163,41 @@ services:
   # alertmanager:
   #   image: prom/alertmanager:latest
   #   ports:
-  #     - "9093:9093"
+  #     - '127.0.0.1:${NX_PUBLIC_ALERTMANAGER_PORT:-9093}:9093'
   #   volumes:
   #     - ./monitoring/alertmanager:/etc/alertmanager
   #   command:
   #     - '--config.file=/etc/alertmanager/alertmanager.yml'
   #     - '--storage.path=/alertmanager'
-  #     - '--web.external-url=http://localhost:9093'
+  #     - '--web.external-url=http://localhost:${NX_PUBLIC_ALERTMANAGER_PORT:-9093}'
   #   networks:
   #     - app-network
   #   restart: unless-stopped
+
+  # Loki - Log aggregation (production)
+  loki:
+    image: grafana/loki:2.9.0
+    command: ['-config.file=/etc/loki/config.yaml', '-config.expand-env=true']
+    volumes:
+      - ./monitoring/loki:/etc/loki
+      - loki_data:/loki
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Promtail - Log collection agent
+  promtail:
+    image: grafana/promtail:2.9.0
+    command: ['-config.file=/etc/promtail/config.yaml']
+    volumes:
+      - ./monitoring/promtail:/etc/promtail
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+    depends_on:
+      - loki
 
   # # Node Exporter - System metrics
   # node-exporter:
@@ -252,3 +277,4 @@ services:
 volumes:
   prometheus_data:
   grafana_data:
+  loki_data:
