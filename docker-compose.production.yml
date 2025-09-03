@@ -129,13 +129,13 @@ services:
       - '127.0.0.1:${NX_PUBLIC_PROMETHEUS_PORT}:9090'
     volumes:
       - ./monitoring/prometheus:/etc/prometheus
-      - prometheus_data:/prometheus
+      - /opt/demo-t3-shared/prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
+      - '--storage.tsdb.retention.time=168h'
       - '--web.enable-lifecycle'
     networks:
       - app-network
@@ -150,7 +150,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${NX_PUBLIC_GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
-      - grafana_data:/var/lib/grafana
+      - /opt/demo-t3-shared/grafana-data:/var/lib/grafana
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
     networks:
@@ -176,18 +176,18 @@ services:
 
   # Loki - Log aggregation (production)
   loki:
-    image: grafana/loki:2.9.0
+    image: grafana/loki:3.5.3
     command: ['-config.file=/etc/loki/config.yaml', '-config.expand-env=true']
     volumes:
       - ./monitoring/loki:/etc/loki
-      - loki_data:/loki
+      - /opt/demo-t3-shared/loki-data:/loki
     networks:
       - app-network
     restart: unless-stopped
 
   # Promtail - Log collection agent
   promtail:
-    image: grafana/promtail:2.9.0
+    image: grafana/promtail:3.5.3
     command: ['-config.file=/etc/promtail/config.yaml']
     volumes:
       - ./monitoring/promtail:/etc/promtail
@@ -273,8 +273,3 @@ services:
   #   restart: unless-stopped
   #   depends_on:
   #     - client-mx
-
-volumes:
-  prometheus_data:
-  grafana_data:
-  loki_data:

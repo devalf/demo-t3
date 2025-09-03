@@ -1,6 +1,6 @@
 server:
+  disable: false
   http_listen_port: 9080
-  grpc_listen_port: 0
 
 clients:
   - url: http://loki:3100/loki/api/v1/push
@@ -16,13 +16,11 @@ scrape_configs:
     pipeline_stages:
       - docker: {}
       - match:
-          selector: '{container_name=~".+"}'
+          selector: '{container=~".+"}'
           stages:
-            - regex:
-                expression: '(?i)(authorization|password|token|set-cookie)'
-                source: log
-            - labeldrop:
-                - __match_group_1
+            - drop:
+                expression: '(?i).*(authorization|password|token|set-cookie|secret|key).*'
+                drop_counter_reason: 'sensitive_data_filtered'
     relabel_configs:
       - source_labels: ['__meta_docker_container_name']
         target_label: 'container'
