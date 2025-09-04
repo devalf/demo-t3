@@ -128,8 +128,32 @@ if [[ $AVAILABLE_GB -lt $MIN_FREE_SPACE_GB ]]; then
 fi
 
 # Create directories
-sudo mkdir -p "$DEPLOY_DIR" "$BACKUP_DIR" "/opt/demo-t3-shared/postgres-data"
+sudo mkdir -p "$DEPLOY_DIR" "$BACKUP_DIR" \
+  "/opt/demo-t3-shared/postgres-data" \
+  "/opt/demo-t3-shared/prometheus-data" \
+  "/opt/demo-t3-shared/grafana-data" \
+  "/opt/demo-t3-shared/loki-data" \
+  "/opt/demo-t3-shared/promtail-data"
+
+# Ensure base shared dir owned by deploy user so we can manage subdirs
 sudo chown -R $USER:$USER "$DEPLOY_DIR" "$BACKUP_DIR" "/opt/demo-t3-shared"
+
+# Fix permissions for monitoring volumes to match container users
+# Prometheus (official image runs as uid 65534:nogroup)
+sudo chown -R 65534:65534 /opt/demo-t3-shared/prometheus-data || true
+sudo chmod -R 755 /opt/demo-t3-shared/prometheus-data || true
+
+# Grafana (official image runs as uid 472)
+sudo chown -R 472:472 /opt/demo-t3-shared/grafana-data || true
+sudo chmod -R 755 /opt/demo-t3-shared/grafana-data || true
+
+# Loki (official image runs as uid 10001)
+sudo chown -R 10001:10001 /opt/demo-t3-shared/loki-data || true
+sudo chmod -R 755 /opt/demo-t3-shared/loki-data || true
+
+# Promtail (runs as root in official image). Keep readable/writable by root
+sudo chown -R 0:0 /opt/demo-t3-shared/promtail-data || true
+sudo chmod -R 755 /opt/demo-t3-shared/promtail-data || true
 
 # Ensure source directory has latest code (pulled by GitHub Actions)
 log "Verifying source code in $SOURCE_DIR..."
