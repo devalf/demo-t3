@@ -2,7 +2,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { MetricsInterceptor, MetricsModule } from '@demo-t3/monitoring';
+import {
+  AppLoggingModule,
+  LoggingInterceptor,
+  MetricsInterceptor,
+  MetricsModule,
+} from '@demo-t3/monitoring';
 
 import { DatabaseModule } from './database/database.module';
 import { ProductsModule } from './modules/products/products.module';
@@ -28,6 +33,7 @@ import { THROTTLER_CONFIG } from './constants';
     AuthModule,
     HealthCheckModule,
     MetricsModule,
+    AppLoggingModule.forRoot(),
   ],
   providers: [
     {
@@ -37,6 +43,10 @@ import { THROTTLER_CONFIG } from './constants';
     {
       provide: APP_INTERCEPTOR,
       useClass: MetricsInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
     },
   ],
 })
