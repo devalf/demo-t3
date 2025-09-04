@@ -2,6 +2,12 @@ networks:
   app-network:
     driver: bridge
 
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '72'
+
 services:
   # Frontend (React + NGINX) - Only service with external access
   client-mx:
@@ -21,6 +27,7 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    logging: *default-logging
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost/']
       interval: 30s
@@ -39,9 +46,12 @@ services:
       - auth-service
     env_file:
       - .env.production
+    environment:
+      SERVICE_NAME: server-nest
     networks:
       - app-network
     restart: unless-stopped
+    logging: *default-logging
     healthcheck:
       test:
         [
@@ -67,9 +77,12 @@ services:
       - postgres
     env_file:
       - .env.production
+    environment:
+      SERVICE_NAME: auth-service
     networks:
       - app-network
     restart: unless-stopped
+    logging: *default-logging
     healthcheck:
       test:
         [
@@ -97,6 +110,7 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    logging: *default-logging
     healthcheck:
       test:
         [
@@ -114,6 +128,7 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    logging: *default-logging
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
@@ -140,6 +155,7 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    logging: *default-logging
 
   # Grafana - Metrics visualization
   grafana:
@@ -156,6 +172,7 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    logging: *default-logging
     depends_on:
       - prometheus
 
@@ -184,6 +201,7 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    logging: *default-logging
 
   # Promtail - Log collection agent
   promtail:
@@ -193,9 +211,11 @@ services:
       - ./monitoring/promtail:/etc/promtail
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /opt/demo-t3-shared/promtail-data:/data
     networks:
       - app-network
     restart: unless-stopped
+    logging: *default-logging
     depends_on:
       - loki
 

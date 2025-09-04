@@ -2,7 +2,12 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { MetricsInterceptor, MetricsModule } from '@demo-t3/monitoring';
+import {
+  MetricsInterceptor,
+  MetricsModule,
+  AppLoggingModule,
+  LoggingInterceptor,
+} from '@demo-t3/monitoring';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthCheckModule } from './modules/health-check/health-check.module';
@@ -23,6 +28,7 @@ import { PrismaExceptionFilter } from './common/filters';
     AuthModule,
     HealthCheckModule,
     MetricsModule,
+    AppLoggingModule.forRoot(),
   ],
   controllers: [],
   providers: [
@@ -33,6 +39,10 @@ import { PrismaExceptionFilter } from './common/filters';
     {
       provide: APP_INTERCEPTOR,
       useClass: MetricsInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
     },
   ],
 })
