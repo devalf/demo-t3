@@ -1,0 +1,98 @@
+name: E2E Tests
+
+on:
+  workflow_run:
+    workflows: ['CI Setup and Quality Checks']
+    types: [completed]
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: |
+          yarn config set network-timeout 600000 -g
+          yarn install --frozen-lockfile --ignore-engines
+
+      - name: Prepare env file for tests
+        run: |
+          cp .env.example .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build base image (demo-base)
+        run: |
+          docker build -t demo-base:latest -f Dockerfile.base .
+
+      - name: Build and start e2e stack
+        run: |
+          docker compose -f docker-compose.e2e.yml --env-file .env build
+          docker compose -f docker-compose.e2e.yml --env-file .env up -d
+
+      - name: Wait for services to be healthy
+        run: |
+          set -e
+          # Load env vars from .env for host-side checks
+          set -a
+          . ./.env
+          set +a
+          echo "Waiting for Postgres health..."
+          for i in {1..60}; do
+            if docker inspect -f '{{json .State.Health.Status}}' $(docker compose -f docker-compose.e2e.yml ps -q postgres) | grep -q 'healthy'; then
+              echo "Postgres healthy"; break; fi; sleep 2; done
+
+          echo "Waiting for Redis health..."
+          for i in {1..60}; do
+            if docker inspect -f '{{json .State.Health.Status}}' $(docker compose -f docker-compose.e2e.yml ps -q demo_t3_redis) | grep -q 'healthy'; then
+              echo "Redis healthy"; break; fi; sleep 2; done
+
+          echo "Waiting for auth-service health endpoint..."
+          for i in {1..120}; do
+            if curl -fsS "http://localhost:${NX_PUBLIC_AUTH_SERVICE_PORT}/api/health-check" >/dev/null; then echo ok; break; fi; sleep 2; done
+
+          echo "Waiting for server-nest health endpoint..."
+          for i in {1..120}; do
+            if curl -fsS "http://localhost:${NX_PUBLIC_SERVER_NEST_PORT}/api/health-check" >/dev/null; then echo ok; break; fi; sleep 2; done
+
+          echo "Waiting for client-mx to be reachable..."
+          for i in {1..60}; do
+            if curl -fsS "http://localhost:${NX_PUBLIC_CLIENT_MX_PORT}/" >/dev/null; then echo ok; break; fi; sleep 2; done
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run E2E tests (nx)
+        run: |
+          # Ensure .env is loaded for processes spawned by yarn
+          set -a
+          . ./.env
+          set +a
+          yarn test:e2e
+
+      - name: Show container logs on failure
+        if: failure()
+        run: |
+          docker compose -f docker-compose.e2e.yml logs --no-color --tail=200
+
+      - name: Tear down e2e stack
+        if: always()
+        run: |
+          docker compose -f docker-compose.e2e.yml down -v
