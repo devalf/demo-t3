@@ -1,0 +1,148 @@
+networks:
+  app-network:
+    driver: bridge
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '10'
+
+services:
+  client-mx:
+    build:
+      context: .
+      dockerfile: apps/client-mx/Dockerfile
+    depends_on:
+      server-nest:
+        condition: service_healthy
+    ports:
+      - '${NX_PUBLIC_CLIENT_MX_PORT:-8082}:80'
+    volumes:
+      - ./dev/nginx-local.conf:/etc/nginx/conf.d/default.conf:ro
+    env_file:
+      - .env
+    environment:
+      SERVER_NEST_HOST: server-nest
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost/']
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  server-nest:
+    build:
+      context: .
+      dockerfile: apps/server-nest/Dockerfile
+    env_file:
+      - .env
+    environment:
+      SERVICE_NAME: server-nest
+      NX_PUBLIC_AUTH_SERVICE_HOST: auth-service
+      NX_PUBLIC_REDIS_HOST: demo_t3_redis
+    depends_on:
+      demo_t3_redis:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    ports:
+      - '${NX_PUBLIC_SERVER_NEST_PORT:-8083}:${NX_PUBLIC_SERVER_NEST_PORT:-8083}'
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '-f',
+          'http://localhost:${NX_PUBLIC_SERVER_NEST_PORT:-8083}/api/health-check',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+      args:
+        NX_PUBLIC_AUTH_SERVICE_PORT: ${NX_PUBLIC_AUTH_SERVICE_PORT:-8084}
+    env_file:
+      - .env
+    environment:
+      SERVICE_NAME: auth-service
+      NX_PUBLIC_AUTH_DB_POSTGRES_HOST: postgres
+      NX_PUBLIC_REDIS_HOST: demo_t3_redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '${NX_PUBLIC_AUTH_SERVICE_PORT:-8084}:${NX_PUBLIC_AUTH_SERVICE_PORT:-8084}'
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '-f',
+          'http://localhost:${NX_PUBLIC_AUTH_SERVICE_PORT:-8084}/api/health-check',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${NX_PUBLIC_AUTH_DB_POSTGRES_DB}
+      POSTGRES_USER: ${NX_PUBLIC_AUTH_DB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD}
+    volumes:
+      - auth_postgres_data_e2e:/var/lib/postgresql/data
+    ports:
+      - '${NX_PUBLIC_AUTH_DB_POSTGRES_PORT}:5432'
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${NX_PUBLIC_AUTH_DB_POSTGRES_USER} -d ${NX_PUBLIC_AUTH_DB_POSTGRES_DB}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  demo_t3_redis:
+    container_name: demo_t3_redis
+    image: redis:8-alpine
+    ports:
+      - '${NX_PUBLIC_REDIS_PORT}:6379'
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  auth_postgres_data_e2e:
