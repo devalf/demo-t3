@@ -34,26 +34,79 @@ jobs:
       - name: Prepare env file for tests
         run: |
           cp .env.example .env
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+          echo "✅ Created .env file from .env.example"
+          echo "📋 .env file contents:"
+          cat .env
+          echo ""
+          echo "🔍 Verifying .env file exists:"
+          ls -la .env
 
       - name: Build base image (demo-base)
         run: |
-          docker build -t demo-base:latest -f Dockerfile.base .
+          DOCKER_BUILDKIT=0 docker build -t demo-base:latest -f Dockerfile.base .
+          docker images | grep demo-base || true
 
-      - name: Build and start e2e stack
+      - name: Build e2e images
         run: |
-          docker compose -f docker-compose.e2e.yml --env-file .env build
+          export DOCKER_BUILDKIT=0
+          export COMPOSE_DOCKER_CLI_BUILD=0
+          docker compose -f docker-compose.e2e.yml --env-file .env build --progress=plain
+
+      - name: Start e2e stack
+        run: |
+          echo "🔍 Verifying .env file before starting stack:"
+          ls -la .env || echo "❌ .env file not found!"
+          if [ -f .env ]; then
+            echo "✅ .env file exists, first few lines:"
+            head -5 .env
+          fi
+          export DOCKER_BUILDKIT=0
+          export COMPOSE_DOCKER_CLI_BUILD=0
+          set +e
           docker compose -f docker-compose.e2e.yml --env-file .env up -d
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            echo "docker compose up failed with code $rc"
+            echo "==== docker compose ps (all) ===="
+            docker compose -f docker-compose.e2e.yml ps -a || true
+            echo "==== auth-service logs (last 200) ===="
+            docker compose -f docker-compose.e2e.yml logs --no-color --tail=200 auth-service || true
+            echo "==== auth-service inspect (State) ===="
+            cid=$(docker compose -f docker-compose.e2e.yml ps -q auth-service)
+            if [ -n "$cid" ]; then
+              docker inspect "$cid" --format '{{json .State}}' || true
+            fi
+            exit $rc
+          fi
 
       - name: Wait for services to be healthy
         run: |
           set -e
           # Load env vars from .env for host-side checks
-          set -a
-          . ./.env
-          set +a
+          if [ -f .env ]; then
+            set -a
+            . ./.env
+            set +a
+          else
+            echo ".env not found; proceeding with default env values for health checks."
+          fi
+
+          echo "Checking auth-service container state during startup..."
+          auth_cid=$(docker compose -f docker-compose.e2e.yml ps -q auth-service)
+          if [ -z "$auth_cid" ]; then
+            echo "auth-service container ID not found (compose may have failed)."
+          else
+            for i in {1..30}; do
+              state=$(docker inspect "$auth_cid" --format '{{.State.Status}}' || echo unknown)
+              if [ "$state" = "exited" ] || [ "$state" = "dead" ]; then
+                echo "auth-service container exited early (state: $state). Dumping logs and state:"
+                docker logs "$auth_cid" --tail=200 || true
+                docker inspect "$auth_cid" --format '{{json .State}}' || true
+                exit 1
+              fi
+              sleep 2
+            done
+          fi
           echo "Waiting for Postgres health..."
           for i in {1..60}; do
             if docker inspect -f '{{json .State.Health.Status}}' $(docker compose -f docker-compose.e2e.yml ps -q postgres) | grep -q 'healthy'; then
@@ -82,9 +135,13 @@ jobs:
       - name: Run E2E tests (nx)
         run: |
           # Ensure .env is loaded for processes spawned by yarn
-          set -a
-          . ./.env
-          set +a
+          if [ -f .env ]; then
+            set -a
+            . ./.env
+            set +a
+          else
+            echo ".env not found; proceeding with default env values for tests."
+          fi
           yarn test:e2e
 
       - name: Show container logs on failure
@@ -92,7 +149,27 @@ jobs:
         run: |
           docker compose -f docker-compose.e2e.yml logs --no-color --tail=200
 
+      - name: Extra diagnostics on failure
+        if: failure()
+        run: |
+          echo "==== Docker info ===="
+          docker info
+          echo "==== Compose config (resolved) ===="
+          docker compose -f docker-compose.e2e.yml --env-file .env config
+          echo "==== Images (top 50) ===="
+          docker images | head -n 50
+
       - name: Tear down e2e stack
         if: always()
         run: |
-          docker compose -f docker-compose.e2e.yml down -v
+          # Load env vars for teardown
+          if [ -f .env ]; then
+            set -a
+            . ./.env
+            set +a
+            echo "Using .env file for teardown"
+            docker compose -f docker-compose.e2e.yml --env-file .env down -v
+          else
+            echo ".env not found; tearing down stack without env overrides."
+            docker compose -f docker-compose.e2e.yml down -v
+          fi

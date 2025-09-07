@@ -81,6 +81,10 @@ services:
       SERVICE_NAME: auth-service
       NX_PUBLIC_AUTH_DB_POSTGRES_HOST: postgres
       NX_PUBLIC_REDIS_HOST: demo_t3_redis
+      LOG_LEVEL: debug
+      # Force internal network connection details inside containers
+      NX_PUBLIC_AUTH_DB_URL: postgresql://${NX_PUBLIC_AUTH_DB_POSTGRES_USER}:${NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD}@postgres:5432/${NX_PUBLIC_AUTH_DB_POSTGRES_DB}?schema=public
+      NX_PUBLIC_REDIS_PORT: 6379
     depends_on:
       postgres:
         condition: service_healthy
