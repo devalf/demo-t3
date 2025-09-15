@@ -8,6 +8,12 @@ This demo project showcases a monorepo architecture built with NX, containing mu
 
 **auth-service** - A dedicated NestJS microservice handling user authentication and authorization
 
+### Live Demo / Production URL
+
+The production deployment is available at: https://d-t3.mooo.com/
+
+Note: Availability may change in the future; the link above is confirmed to be relevant and maintained during Autumn 2025. 
+
 ## Database & Caching Infrastructure
 
 This project utilizes a robust data persistence and caching layer:
@@ -28,8 +34,10 @@ Both services are containerized and orchestrated through Docker Compose, ensurin
 
 The architecture includes Redis running in a separate container, making it accessible and shareable across all applications in the monorepo for session management and caching.
 
-All applications are developed in TypeScript and include exemplary test coverage with representative unit tests, integration tests, and end-to-end tests..
+All applications are developed in TypeScript and include exemplary test coverage with representative unit tests, integration tests, and end-to-end tests.
 The server APIs are fully documented and accessible through Swagger documentation. Navigate to the `/docs` path for each service, for example: http://localhost:8084/docs
+
+This project includes production-grade monitoring with Prometheus for metrics collection and Grafana for dashboards and visualization.
 
 ## Installation
 
