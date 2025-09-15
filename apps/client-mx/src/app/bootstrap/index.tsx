@@ -5,7 +5,7 @@ import App from '../app';
 
 import { initApp } from './init-app';
 
-export async function bootstrap(): Promise<void> {
+export const bootstrap = async (): Promise<void> => {
   await initApp();
 
   const rootElement = document.getElementById('app');
@@ -19,4 +19,4 @@ export async function bootstrap(): Promise<void> {
       <App />
     </React.StrictMode>
   );
-}
+};

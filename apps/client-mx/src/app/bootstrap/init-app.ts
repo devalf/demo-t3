@@ -1,5 +1,5 @@
 import { loadGTM } from '../utils';
 
-export async function initApp() {
+export const initApp = async () => {
   loadGTM();
-}
+};

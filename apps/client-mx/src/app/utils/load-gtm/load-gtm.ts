@@ -1,9 +1,13 @@
 export const loadGTM = () => {
   const GA_ID = 'G-5FLGZWGM0Y';
 
-  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return;
+  }
 
-  if (document.querySelector(`script[data-ga-id="${GA_ID}"]`)) return;
+  if (document.querySelector(`script[data-ga-id="${GA_ID}"]`)) {
+    return;
+  }
 
   const loader = document.createElement('script');
 

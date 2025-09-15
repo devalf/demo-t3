@@ -194,6 +194,14 @@ export class AuthController {
       path: '/',
     });
 
+    res.cookie('sessionPresent', '', {
+      httpOnly: false,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      maxAge: 0,
+      path: '/',
+    });
+
     await this.authService.logout(refreshToken);
 
     return res.status(200).send();
@@ -278,5 +286,15 @@ export class AuthController {
         maxAge: cookieData.refreshToken.maxAge,
       });
     }
+
+    res.cookie('sessionPresent', '1', {
+      httpOnly: false,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      path: '/',
+      maxAge: cookieData.refreshToken
+        ? cookieData.refreshToken.maxAge
+        : cookieData.accessToken.maxAge,
+    });
   }
 }
