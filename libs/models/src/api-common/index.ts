@@ -1,4 +1,4 @@
 export * from './api-models';
 export * from './error';
 export * from './general';
-export * from './product';
+export * from './api-product';

@@ -1,11 +1,11 @@
+import { ApiOrderParams } from '@demo-t3/models';
+
 import { axiosClient } from '../http';
 
-/**
- * Since this is simulation of order creation, I don't need to pass any data.
- * and I don't need to create a general model for this.
- */
-export const createOrder = async (): Promise<{ id: number }> => {
-  const { data } = await axiosClient.post('/order');
+export const createOrder = async (
+  params: ApiOrderParams
+): Promise<{ id: number }> => {
+  const { data } = await axiosClient.post('/order', params);
 
   return data;
 };

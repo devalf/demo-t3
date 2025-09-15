@@ -1,6 +1,6 @@
 import React, { FC, ReactElement, ReactNode } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 
 export type WithPath = { path?: string };
@@ -17,7 +17,7 @@ export const SharedMockProviders: FC<WithChildren> = ({ children }) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        cacheTime: Infinity,
+        gcTime: Infinity,
         retry: false,
       },
     },

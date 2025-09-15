@@ -1,7 +1,7 @@
-import { Product, ProductDetailed } from '@demo-t3/models';
+import { ApiProduct, ProductDetailed } from '@demo-t3/models';
 import { faker } from '@faker-js/faker';
 
-export const mockProduct = (overrides?: Partial<Product>): Product => ({
+export const mockProduct = (overrides?: Partial<ApiProduct>): ApiProduct => ({
   id: '1',
   name: 'Product 1',
   price: 100,
@@ -12,14 +12,16 @@ export const mockProduct = (overrides?: Partial<Product>): Product => ({
   ...overrides,
 });
 
-export const mockProductWithTags = (overrides?: Partial<Product>): Product => ({
+export const mockProductWithTags = (
+  overrides?: Partial<ApiProduct>
+): ApiProduct => ({
   ...mockProduct(),
   tags: ['tag1', 'tag2'],
   ...overrides,
 });
 
-export const mockProductList = (count = 1): Product[] => {
-  const list: Product[] = [];
+export const mockProductList = (count = 1): ApiProduct[] => {
+  const list: ApiProduct[] = [];
 
   for (let i = 0; i < count; i++) {
     const isEven = i % 2 === 0;

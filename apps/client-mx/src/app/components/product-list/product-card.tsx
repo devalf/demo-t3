@@ -9,12 +9,12 @@ import {
   CardMedia,
   Typography,
 } from '@mui/material';
-import { Product } from '@demo-t3/models';
+import { ApiProduct } from '@demo-t3/models';
 
 import { routes } from '../../constants';
 
 type ProductCardProps = {
-  product: Product;
+  product: ApiProduct;
 };
 
 export const ProductCard: FC<ProductCardProps> = ({ product }) => {

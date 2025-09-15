@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Product } from '@demo-t3/models';
+import { ApiProduct } from '@demo-t3/models';
 import { Grid } from '@mui/material';
 
 import { InfiniteLoader } from '../infinite-loader/infinite-loader';
@@ -8,7 +8,7 @@ import { FetchNextPage } from '../../types';
 import { ProductCard } from './product-card';
 
 type ProductListProps = {
-  products?: Product[];
+  products?: ApiProduct[];
   fetchNextPage: FetchNextPage;
   isCompleted: boolean;
 };
