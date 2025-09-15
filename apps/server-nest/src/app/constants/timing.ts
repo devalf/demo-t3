@@ -1,18 +1,20 @@
-const { NX_TASK_TARGET } = process.env;
+const { NX_PUBLIC_MODE, NX_PUBLIC_ENABLE_RATE_LIMITS } = process.env;
 
-const isTestEnvironment = NX_TASK_TARGET === 'e2e';
+const isProduction = NX_PUBLIC_MODE === 'production';
+const isRateLimitingEnabled =
+  isProduction || NX_PUBLIC_ENABLE_RATE_LIMITS === 'true';
 
 export const THROTTLER_CONFIG = {
   DEFAULT: {
     TTL_MILLISECONDS: 60000,
-    LIMIT: isTestEnvironment ? 10000 : 300,
+    LIMIT: isRateLimitingEnabled ? 300 : 10000,
   },
   STRICT: {
     TTL_MILLISECONDS: 60000,
-    LIMIT: isTestEnvironment ? 10000 : 10,
+    LIMIT: isRateLimitingEnabled ? 10 : 10000,
   },
   RIGID: {
     TTL_MILLISECONDS: 60000,
-    LIMIT: isTestEnvironment ? 10000 : 3,
+    LIMIT: isRateLimitingEnabled ? 3 : 10000,
   },
 } as const;

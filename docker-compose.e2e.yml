@@ -45,7 +45,7 @@ services:
       SERVICE_NAME: server-nest
       NX_PUBLIC_AUTH_SERVICE_HOST: auth-service
       NX_PUBLIC_REDIS_HOST: demo_t3_redis
-      NX_TASK_TARGET: e2e
+      NX_PUBLIC_ENABLE_RATE_LIMITS: 'false'
     depends_on:
       demo_t3_redis:
         condition: service_healthy
@@ -86,7 +86,7 @@ services:
       # Force internal network connection details inside containers
       NX_PUBLIC_AUTH_DB_URL: postgresql://${NX_PUBLIC_AUTH_DB_POSTGRES_USER}:${NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD}@postgres:5432/${NX_PUBLIC_AUTH_DB_POSTGRES_DB}?schema=public
       NX_PUBLIC_REDIS_PORT: 6379
-      NX_TASK_TARGET: e2e
+      NX_PUBLIC_ENABLE_RATE_LIMITS: 'false'
     depends_on:
       postgres:
         condition: service_healthy
