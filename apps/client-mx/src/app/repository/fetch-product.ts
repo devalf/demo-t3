@@ -1,11 +1,11 @@
 import { AxiosResponse } from 'axios';
-import { ID, Product } from '@demo-t3/models';
+import { ApiProduct, ID } from '@demo-t3/models';
 import { parseProduct } from '@demo-t3/utils';
 
 import { axiosClient } from '../http';
 
-export const fetchProduct = async (id: ID): Promise<Product> => {
-  const { data }: AxiosResponse<Product> = await axiosClient.get(
+export const fetchProduct = async (id: ID): Promise<ApiProduct> => {
+  const { data }: AxiosResponse<ApiProduct> = await axiosClient.get(
     `/products/${id}`
   );
 

@@ -1,6 +1,6 @@
 import { ID, ProductCondition } from './general';
 
-export type Product = {
+export type ApiProduct = {
   id: ID;
   name: string;
   price: number;
@@ -11,9 +11,9 @@ export type Product = {
   about?: string;
 };
 
-export type DBProduct = Record<string, unknown> & Product;
+export type DBProduct = Record<string, unknown> & ApiProduct;
 
-export type ProductDetailed = Product & {
+export type ProductDetailed = ApiProduct & {
   specification?: string;
   condition: ProductCondition;
   seller?: string;

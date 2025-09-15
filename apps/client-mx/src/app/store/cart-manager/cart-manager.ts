@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { injectable } from 'inversify';
-import { Product } from '@demo-t3/models';
+import { ApiProduct } from '@demo-t3/models';
 
 import { CartItem, ICartManager } from '../interfaces';
 
@@ -22,7 +22,7 @@ export class CartManager implements ICartManager {
     }, 0);
   }
 
-  addProductToCart = (item: Product): void => {
+  addProductToCart = (item: ApiProduct): void => {
     if (this.isProductInCart(item)) {
       throw new Error('Product is already in cart');
     }
@@ -30,7 +30,7 @@ export class CartManager implements ICartManager {
     this.productsInCart.push({ product: item, quantity: 1 });
   };
 
-  removeProductFromCart = (item: Product): void => {
+  removeProductFromCart = (item: ApiProduct): void => {
     const foundItem = this.productsInCart.find(
       (cartItem) => cartItem.product.id === item.id
     );
@@ -42,7 +42,7 @@ export class CartManager implements ICartManager {
     this.productsInCart.splice(this.productsInCart.indexOf(foundItem), 1);
   };
 
-  updateCartItemQuantity = (item: Product, quantity: number): void => {
+  updateCartItemQuantity = (item: ApiProduct, quantity: number): void => {
     const foundItem = this.productsInCart.find(
       (cartItem) => cartItem.product.id === item.id
     );
@@ -62,7 +62,7 @@ export class CartManager implements ICartManager {
     return this.productsInCart.length;
   };
 
-  isProductInCart = (item: Product): boolean => {
+  isProductInCart = (item: ApiProduct): boolean => {
     const foundItem = this.productsInCart.find(
       (cartItem) => cartItem.product.id === item.id
     );

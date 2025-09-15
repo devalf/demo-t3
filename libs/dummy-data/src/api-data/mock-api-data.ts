@@ -1,4 +1,4 @@
-import { ApiEntryList, ApiListMeta, Product } from '@demo-t3/models';
+import { ApiEntryList, ApiListMeta, ApiProduct } from '@demo-t3/models';
 
 import { mockProduct } from '../product';
 
@@ -8,7 +8,7 @@ export const mockApiListMeta = (): ApiListMeta => ({
   offset: 0,
 });
 
-export const mockApiProductList = (): ApiEntryList<Product> => ({
+export const mockApiProductList = (): ApiEntryList<ApiProduct> => ({
   metadata: mockApiListMeta(),
   entries: [mockProduct()],
 });

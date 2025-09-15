@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { parseProductDetailed, parseProducts } from '@demo-t3/utils';
-import { ApiEntryList, Product, ProductDetailed } from '@demo-t3/models';
+import { ApiEntryList, ApiProduct, ProductDetailed } from '@demo-t3/models';
 
 import { LIMIT_ITEMS, OFFSET_ITEMS, providers } from '../../constants';
 import { ProductQueryParamsDto } from '../../dto';
@@ -14,7 +14,7 @@ export class ProductsService {
     limit = LIMIT_ITEMS,
     sort: sortQuery,
     order = 'asc',
-  }: ProductQueryParamsDto): Promise<ApiEntryList<Product>> {
+  }: ProductQueryParamsDto): Promise<ApiEntryList<ApiProduct>> {
     const total = await this.db.products.count().exec();
 
     const requestedOffsetToBig = offset >= total;

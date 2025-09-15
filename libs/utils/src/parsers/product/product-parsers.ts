@@ -1,11 +1,11 @@
 import type {
+  ApiProduct,
   DBProduct,
   DBProductDetailed,
-  Product,
   ProductDetailed,
 } from '@demo-t3/models';
 
-export const parseProduct = (dbProductDocument: DBProduct): Product => ({
+export const parseProduct = (dbProductDocument: DBProduct): ApiProduct => ({
   id: dbProductDocument.id,
   name: dbProductDocument.name,
   price: dbProductDocument.price,
@@ -16,7 +16,7 @@ export const parseProduct = (dbProductDocument: DBProduct): Product => ({
   about: dbProductDocument.about,
 });
 
-export const parseProducts = (dbProductDocuments: DBProduct[]): Product[] =>
+export const parseProducts = (dbProductDocuments: DBProduct[]): ApiProduct[] =>
   dbProductDocuments.map(parseProduct);
 
 export const parseProductDetailed = (
