@@ -60,6 +60,12 @@ export class UserManager implements IUserManager {
   checkAuthStatusOnLoad = async (): Promise<void> => {
     this.setIsLoading(true);
     try {
+      if (!this.hasSessionCookie()) {
+        this.setIsSignedIn(false);
+
+        return;
+      }
+
       const isSignedIn = await checkAuthStatusRequest();
       this.setIsSignedIn(isSignedIn);
     } finally {
@@ -75,5 +81,15 @@ export class UserManager implements IUserManager {
 
   handleTokenRefreshFailure = (): void => {
     this.setIsSignedIn(false);
+  };
+
+  private hasSessionCookie = (): boolean => {
+    try {
+      const cookies = document.cookie ? document.cookie.split('; ') : [];
+
+      return cookies.some((c) => c.startsWith('sessionPresent='));
+    } catch {
+      return false;
+    }
   };
 }
