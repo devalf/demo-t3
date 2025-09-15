@@ -1,4 +1,4 @@
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 
 import { signUpRequest } from '../../repository';
 import { useInjection } from '../../bootstrap/ioc/use-injection';
@@ -10,8 +10,13 @@ export const useSignUpMutation = () => {
     DependencyType.UserManager
   );
 
-  const { mutateAsync, isLoading } = useMutation(signUpRequest, {
-    mutationKey: 'sign-up',
+  const { mutateAsync, isPending } = useMutation<
+    void,
+    unknown,
+    Parameters<typeof signUpRequest>[0]
+  >({
+    mutationFn: signUpRequest,
+    mutationKey: ['sign-up'],
     onSuccess: () => {
       setIsSignedIn(true);
     },
@@ -19,6 +24,6 @@ export const useSignUpMutation = () => {
 
   return {
     signUp: mutateAsync,
-    isLoading,
+    isLoading: isPending,
   };
 };

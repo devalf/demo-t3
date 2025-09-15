@@ -25,9 +25,12 @@ export const CartForm: FC = observer(() => {
 
   const { createOrder, isLoading } = useOrderMutation();
 
-  // simulation of requesting order creation
   const handleCreateOrder = async () => {
-    const { id: orderId } = await createOrder();
+    const orderData = cartItems.map((item) => ({
+      id: item.product.id,
+      quantity: item.quantity,
+    }));
+    const { id: orderId } = await createOrder({ items: orderData });
 
     if (orderId) {
       const searchParams = new URLSearchParams({ order_id: String(orderId) });

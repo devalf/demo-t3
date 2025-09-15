@@ -1,4 +1,5 @@
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
+import { ApiAccessTokenExpiresIn, ApiAuthSignInParams } from '@demo-t3/models';
 
 import { sighInRequest } from '../../repository';
 import { useInjection } from '../../bootstrap/ioc/use-injection';
@@ -10,15 +11,20 @@ export const useSignInMutation = () => {
     DependencyType.UserManager
   );
 
-  const { mutateAsync, isLoading } = useMutation(sighInRequest, {
-    mutationKey: 'sign-in',
-    onSuccess: (response) => {
+  const { mutateAsync, isPending } = useMutation<
+    ApiAccessTokenExpiresIn,
+    unknown,
+    ApiAuthSignInParams
+  >({
+    mutationFn: sighInRequest,
+    mutationKey: ['sign-in'],
+    onSuccess: (response: ApiAccessTokenExpiresIn) => {
       setIsSignedIn(true, response.accessTokenExpiresIn);
     },
   });
 
   return {
     signIn: mutateAsync,
-    isLoading,
+    isLoading: isPending,
   };
 };
