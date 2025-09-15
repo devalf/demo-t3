@@ -39,7 +39,7 @@ jobs:
         env:
           AGGRESSIVE: ${{ github.event.inputs.aggressive || 'true' }}
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
             set -e
             cd /opt/demo-t3
             
@@ -52,7 +52,7 @@ jobs:
             
             # Run cleanup script
             chmod +x .github/scripts/docker-cleanup.sh
-            ./.github/scripts/docker-cleanup.sh --aggressive="${AGGRESSIVE}"
+            ./.github/scripts/docker-cleanup.sh --aggressive=${AGGRESSIVE}
             
             # Check disk usage after
             echo "📊 Disk usage after cleanup:"
