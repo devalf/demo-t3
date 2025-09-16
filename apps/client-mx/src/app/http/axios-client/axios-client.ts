@@ -1,6 +1,7 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 import { diContainer } from '../../bootstrap/ioc/di-container';
+import { AppAuthRequestingOptions } from '../../types';
 
 export const axiosClient = axios.create({
   baseURL: '/api',
@@ -12,14 +13,16 @@ axiosClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config;
 
-    if (
-      error.response?.status === 401 &&
-      originalRequest &&
-      !originalRequest.url?.includes('/auth/refresh')
-    ) {
-      const refreshTokenManager = diContainer.refreshTokenManager;
+    if (error.response?.status === 401 && originalRequest) {
+      const req = originalRequest as AxiosRequestConfig &
+        Partial<AppAuthRequestingOptions>;
+      const skipAuthRefresh = req.skipAuthRefresh === true;
 
-      return refreshTokenManager.handleTokenRefresh(originalRequest);
+      if (!skipAuthRefresh) {
+        const refreshTokenManager = diContainer.refreshTokenManager;
+
+        return refreshTokenManager.handleTokenRefresh(originalRequest);
+      }
     }
 
     return Promise.reject(error);

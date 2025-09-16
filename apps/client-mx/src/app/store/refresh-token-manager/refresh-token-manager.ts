@@ -17,6 +17,7 @@ export class RefreshTokenManager implements IRefreshTokenManager {
   private isRefreshing = false;
   private failedQueue: QueuedRequest[] = [];
   private hasRefreshFailed = false;
+  private lastRefreshError: AxiosError | null = null;
   private proactiveRefreshInterval: NodeJS.Timeout | null = null;
   private readonly REFRESH_BUFFER_MS = 10 * 1000; // 10 seconds
 
@@ -24,6 +25,10 @@ export class RefreshTokenManager implements IRefreshTokenManager {
     originalRequest: InternalAxiosRequestConfig
   ): Promise<unknown> {
     if (this.hasRefreshFailed) {
+      if (this.lastRefreshError) {
+        throw this.lastRefreshError;
+      }
+
       throw new Error('Refresh token has already failed');
     }
 
@@ -44,7 +49,8 @@ export class RefreshTokenManager implements IRefreshTokenManager {
       return axiosClient(originalRequest);
     } catch (error) {
       this.hasRefreshFailed = true;
-      this.processQueue(error as AxiosError);
+      this.lastRefreshError = error as AxiosError;
+      this.processQueue(this.lastRefreshError);
 
       try {
         const userManager = diContainer.userManager;
@@ -62,6 +68,7 @@ export class RefreshTokenManager implements IRefreshTokenManager {
 
   resetRefreshFailureState(): void {
     this.hasRefreshFailed = false;
+    this.lastRefreshError = null;
   }
 
   startProactiveRefresh(expiresInSeconds: number): void {
