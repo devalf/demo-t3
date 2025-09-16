@@ -170,6 +170,12 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${NX_PUBLIC_GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SMTP_ENABLED=${NX_PUBLIC_GRAFANA_SMTP_ENABLED:-false}
+      - GF_SMTP_HOST=${NX_PUBLIC_GRAFANA_SMTP_HOST}
+      - GF_SMTP_USER=${NX_PUBLIC_GRAFANA_SMTP_USER}
+      - GF_SMTP_PASSWORD=${NX_PUBLIC_GRAFANA_SMTP_PASSWORD}
+      - GF_SMTP_FROM_ADDRESS=${NX_PUBLIC_GRAFANA_SMTP_FROM_ADDRESS}
+      - GF_SMTP_FROM_NAME=${NX_PUBLIC_GRAFANA_SMTP_FROM_NAME}
     volumes:
       - /opt/demo-t3-shared/grafana-data:/var/lib/grafana
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
