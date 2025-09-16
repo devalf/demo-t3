@@ -75,4 +75,18 @@ export class DiContainer {
   }
 }
 
-export const diContainer = new DiContainer();
+let diContainer: DiContainer;
+
+if (typeof module !== 'undefined' && module.hot?.data?.diContainer) {
+  diContainer = module.hot.data.diContainer;
+} else {
+  diContainer = new DiContainer();
+}
+
+if (typeof module !== 'undefined' && module.hot) {
+  module.hot.dispose((data) => {
+    data.diContainer = diContainer;
+  });
+}
+
+export { diContainer };
