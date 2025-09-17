@@ -140,8 +140,8 @@ sudo mkdir -p "$DEPLOY_DIR" "$BACKUP_DIR" \
 sudo chown -R $USER:$USER "$DEPLOY_DIR" "$BACKUP_DIR" "/opt/demo-t3-shared"
 
 # Fix permissions for monitoring volumes to match container users
-# Postgres (official image runs as uid 999)
-sudo chown -R 999:999 /opt/demo-t3-shared/postgres-data || true
+# Postgres (alpine image runs as uid 70)
+sudo chown -R 70:70 /opt/demo-t3-shared/postgres-data || true
 sudo chmod -R 700 /opt/demo-t3-shared/postgres-data || true
 
 # Prometheus (official image runs as uid 65534:nogroup)
