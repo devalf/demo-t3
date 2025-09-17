@@ -133,7 +133,8 @@ sudo mkdir -p "$DEPLOY_DIR" "$BACKUP_DIR" \
   "/opt/demo-t3-shared/prometheus-data" \
   "/opt/demo-t3-shared/grafana-data" \
   "/opt/demo-t3-shared/loki-data" \
-  "/opt/demo-t3-shared/promtail-data"
+  "/opt/demo-t3-shared/promtail-data" \
+  "/opt/demo-t3-shared/redis-data"
 
 # Ensure base shared dir owned by deploy user so we can manage subdirs
 sudo chown -R $USER:$USER "$DEPLOY_DIR" "$BACKUP_DIR" "/opt/demo-t3-shared"
@@ -154,6 +155,33 @@ sudo chmod -R 755 /opt/demo-t3-shared/loki-data || true
 # Promtail (runs as root in official image). Keep readable/writable by root
 sudo chown -R 0:0 /opt/demo-t3-shared/promtail-data || true
 sudo chmod -R 755 /opt/demo-t3-shared/promtail-data || true
+
+# Redis (official image typically runs as uid 999). Ensure directory is writable.
+sudo chown -R 999:999 /opt/demo-t3-shared/redis-data || true
+sudo chmod -R 755 /opt/demo-t3-shared/redis-data || true
+
+# Ensure shared external Docker network exists for cross-stack communication
+MONITORING_NETWORK_NAME="demo-t3-network"
+if ! docker network inspect "$MONITORING_NETWORK_NAME" >/dev/null 2>&1; then
+  log "Creating external Docker network: $MONITORING_NETWORK_NAME"
+  docker network create "$MONITORING_NETWORK_NAME"
+else
+  log "External network $MONITORING_NETWORK_NAME already exists"
+fi
+
+# Bring up monitoring stack if it's not already running (do not restart each deploy)
+MONITORING_COMPOSE_FILE="$SOURCE_DIR/docker-compose.monitoring.yml"
+if [[ -f "$MONITORING_COMPOSE_FILE" ]]; then
+  # Check if any Prometheus container is running on this host (compose names are project-prefixed)
+  if ! docker ps --format '{{.Image}} {{.Names}}' | grep -q 'prom/prometheus'; then
+    log "Starting monitoring stack (prometheus, grafana, loki, promtail) once..."
+    docker compose --env-file "$SOURCE_DIR/.env.production" -f "$MONITORING_COMPOSE_FILE" up -d
+  else
+    log "Monitoring stack already running; skipping restart"
+  fi
+else
+  warn "Monitoring compose file not found at $MONITORING_COMPOSE_FILE. Skipping monitoring startup."
+fi
 
 # Ensure source directory has latest code (pulled by GitHub Actions)
 log "Verifying source code in $SOURCE_DIR..."
