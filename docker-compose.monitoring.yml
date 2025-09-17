@@ -36,7 +36,7 @@ services:
     image: grafana/grafana:latest
     user: '472:472'
     ports:
-      - '127.0.0.1:${NX_PUBLIC_GRAFANA_PORT:-3000}:3000'
+      - '127.0.0.1:${NX_PUBLIC_GRAFANA_PORT:-3000}:${NX_PUBLIC_GRAFANA_PORT:-3000}'
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${NX_PUBLIC_GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
@@ -85,3 +85,62 @@ services:
     logging: *default-logging
     depends_on:
       - loki
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    environment:
+      DATA_SOURCE_NAME: ${NX_PUBLIC_AUTH_DB_URL}
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    environment:
+      REDIS_ADDR: redis://${NX_PUBLIC_REDIS_HOST}:${NX_PUBLIC_REDIS_PORT}
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    command:
+      - '-nginx.scrape-uri=http://client-mx/nginx_status'
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
