@@ -43,7 +43,6 @@ services:
       dockerfile: apps/server-nest/Dockerfile
     # No external ports - only accessible via nginx proxy
     depends_on:
-      - redis
       - auth-service
     env_file:
       - .env.production
@@ -74,8 +73,6 @@ services:
       args:
         NX_PUBLIC_AUTH_SERVICE_PORT: ${NX_PUBLIC_AUTH_SERVICE_PORT:-8084}
     # No external ports - internal service only
-    depends_on:
-      - postgres
     env_file:
       - .env.production
     environment:
@@ -96,48 +93,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
-  # PostgreSQL Database
-  postgres:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_DB: ${NX_PUBLIC_AUTH_DB_POSTGRES_DB}
-      POSTGRES_USER: ${NX_PUBLIC_AUTH_DB_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD}
-    ports:
-      - '127.0.0.1:15432:5432'
-    volumes:
-      - /opt/demo-t3-shared/postgres-data:/var/lib/postgresql/data
-    networks:
-      - app-network
-    restart: unless-stopped
-    logging: *default-logging
-    healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'pg_isready -U ${NX_PUBLIC_AUTH_DB_POSTGRES_USER} -d ${NX_PUBLIC_AUTH_DB_POSTGRES_DB}',
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  # Redis Cache
-  redis:
-    image: redis:8-alpine
-    volumes:
-      - /opt/demo-t3-shared/redis-data:/data
-    networks:
-      - app-network
-    restart: unless-stopped
-    logging: *default-logging
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 3s
-      retries: 3
-      start_period: 30s
 
   # # AlertManager - Alert notifications
   # alertmanager:

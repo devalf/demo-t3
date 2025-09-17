@@ -140,6 +140,10 @@ sudo mkdir -p "$DEPLOY_DIR" "$BACKUP_DIR" \
 sudo chown -R $USER:$USER "$DEPLOY_DIR" "$BACKUP_DIR" "/opt/demo-t3-shared"
 
 # Fix permissions for monitoring volumes to match container users
+# Postgres (official image runs as uid 999)
+sudo chown -R 999:999 /opt/demo-t3-shared/postgres-data || true
+sudo chmod -R 700 /opt/demo-t3-shared/postgres-data || true
+
 # Prometheus (official image runs as uid 65534:nogroup)
 sudo chown -R 65534:65534 /opt/demo-t3-shared/prometheus-data || true
 sudo chmod -R 755 /opt/demo-t3-shared/prometheus-data || true
@@ -181,6 +185,22 @@ if [[ -f "$MONITORING_COMPOSE_FILE" ]]; then
   fi
 else
   warn "Monitoring compose file not found at $MONITORING_COMPOSE_FILE. Skipping monitoring startup."
+fi
+
+# Bring up data stack (postgres, redis) if it's not already running (do not restart each deploy)
+DATA_COMPOSE_FILE="$SOURCE_DIR/docker-compose.data.production.yml"
+if [[ -f "$DATA_COMPOSE_FILE" ]]; then
+  # Using stable container names defined in docker-compose.data.production.yml
+  POSTGRES_RUNNING=$(docker ps --format '{{.Names}}' | grep -w '^postgres$' || true)
+  REDIS_RUNNING=$(docker ps --format '{{.Names}}' | grep -w '^redis$' || true)
+  if [[ -z "$POSTGRES_RUNNING" || -z "$REDIS_RUNNING" ]]; then
+    log "Starting data stack (postgres, redis) once..."
+    docker compose --env-file "$SOURCE_DIR/.env.production" -f "$DATA_COMPOSE_FILE" up -d
+  else
+    log "Data stack already running; skipping restart"
+  fi
+else
+  warn "Data compose file not found at $DATA_COMPOSE_FILE. Skipping data stack startup."
 fi
 
 # Ensure source directory has latest code (pulled by GitHub Actions)
@@ -250,7 +270,7 @@ INTERVAL=10
 
 while [[ $ELAPSED -lt $TIMEOUT ]]; do
   ALL_HEALTHY=true
-  for SVC in client-mx server-nest auth-service postgres redis; do
+  for SVC in client-mx server-nest auth-service; do
     CID=$(docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" ps -q "$SVC" || true)
     if [[ -z "$CID" ]]; then
       ALL_HEALTHY=false
