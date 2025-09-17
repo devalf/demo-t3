@@ -1,0 +1,57 @@
+networks:
+  app-network:
+    external: true
+    name: demo-t3-network
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '72'
+
+services:
+  # PostgreSQL Database - single, always-on (outside blue-green)
+  postgres:
+    container_name: postgres
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${NX_PUBLIC_AUTH_DB_POSTGRES_DB}
+      POSTGRES_USER: ${NX_PUBLIC_AUTH_DB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD}
+    # Localhost-only port for maintenance (optional)
+    ports:
+      - '127.0.0.1:15432:5432'
+    volumes:
+      - /opt/demo-t3-shared/postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${NX_PUBLIC_AUTH_DB_POSTGRES_USER} -d ${NX_PUBLIC_AUTH_DB_POSTGRES_DB}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis Cache - single, always-on (outside blue-green)
+  redis:
+    container_name: redis
+    image: redis:8-alpine
+    # No external ports; internal only on app-network
+    volumes:
+      - /opt/demo-t3-shared/redis-data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
