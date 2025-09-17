@@ -1,0 +1,87 @@
+networks:
+  app-network:
+    external: true
+    name: demo-t3-network
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '72'
+
+services:
+  # Prometheus - Metrics collection (single, always-on)
+  prometheus:
+    image: prom/prometheus:latest
+    user: '65534:65534'
+    ports:
+      - '127.0.0.1:${NX_PUBLIC_PROMETHEUS_PORT:-9090}:9090'
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus:ro
+      - /opt/demo-t3-shared/prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=168h'
+      - '--web.enable-lifecycle'
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+
+  # Grafana - Metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    user: '472:472'
+    ports:
+      - '127.0.0.1:${NX_PUBLIC_GRAFANA_PORT:-3000}:3000'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${NX_PUBLIC_GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SMTP_ENABLED=${NX_PUBLIC_GRAFANA_SMTP_ENABLED:-false}
+      - GF_SMTP_HOST=${NX_PUBLIC_GRAFANA_SMTP_HOST}
+      - GF_SMTP_USER=${NX_PUBLIC_GRAFANA_SMTP_USER}
+      - GF_SMTP_PASSWORD=${NX_PUBLIC_GRAFANA_SMTP_PASSWORD}
+      - GF_SMTP_FROM_ADDRESS=${NX_PUBLIC_GRAFANA_SMTP_FROM_ADDRESS}
+      - GF_SMTP_FROM_NAME=${NX_PUBLIC_GRAFANA_SMTP_FROM_NAME}
+    volumes:
+      - /opt/demo-t3-shared/grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    depends_on:
+      - prometheus
+
+  # Loki - Log aggregation
+  loki:
+    image: grafana/loki:3.5.3
+    user: '10001:10001'
+    command: ['-config.file=/etc/loki/config.yaml', '-config.expand-env=true']
+    volumes:
+      - ./monitoring/loki:/etc/loki:ro
+      - /opt/demo-t3-shared/loki-data:/loki
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+
+  # Promtail - Log collection agent
+  promtail:
+    image: grafana/promtail:3.5.3
+    command: ['-config.file=/etc/promtail/config.yaml']
+    volumes:
+      - ./monitoring/promtail:/etc/promtail:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /opt/demo-t3-shared/promtail-data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    depends_on:
+      - loki
