@@ -36,7 +36,7 @@ services:
     image: grafana/grafana:latest
     user: '472:472'
     ports:
-      - '127.0.0.1:${NX_PUBLIC_GRAFANA_PORT:-3000}:${NX_PUBLIC_GRAFANA_PORT:-3000}'
+      - '127.0.0.1:${NX_PUBLIC_GRAFANA_PORT:-3000}:3000'
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${NX_PUBLIC_GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
