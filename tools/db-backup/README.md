@@ -1,22 +1,16 @@
 # Database Backup Tools
 
-Simple PostgreSQL backup automation for the demo-t3 project.
+Simple PostgreSQL backup automation for the demo-t3 project using Docker.
 
 ## Setup on VPS
 
-1. **Install PostgreSQL client tools** (if not already installed):
+1. **Ensure PostgreSQL container is running**:
    ```bash
-   # Ubuntu/Debian
-   sudo apt update && sudo apt install postgresql-client
+   docker ps | grep postgres
+   # Should show: postgres container running on 127.0.0.1:15432->5432/tcp
    ```
 
-2. **Create backup and logs directories**:
-   ```bash
-   sudo mkdir -p /opt/demo-t3-shared/db-backup /opt/demo-t3-shared/db-backup-logs
-   sudo chown $USER:$USER /opt/demo-t3-shared/db-backup /opt/demo-t3-shared/db-backup-logs
-   ```
-
-3. **Install the cron job**:
+2. **Install the cron job** (creates directories automatically):
    ```bash
    cd /opt/demo-t3/tools/db-backup
    ./install-cron.sh
@@ -35,6 +29,7 @@ To run a backup manually:
 - **Schedule**: Daily at 2:30 AM
 - **Retention**: 7 days (configurable in `backup.sh`)
 - **Format**: PostgreSQL custom format with compression
+- **Method**: Uses `docker exec` on postgres container (no version conflicts)
 - **Environment**: Uses `.env.production` for database credentials
 
 ## Monitoring
@@ -48,31 +43,31 @@ To run a backup manually:
 To restore from a backup:
 ```bash
 # Stop application services that use the database (keep PostgreSQL running)
-docker compose -f docker-compose.production.yml down
+docker compose -f docker-compose.production.yml --env-file .env.production down
 
-# Restore database (PostgreSQL container stays running)
-PGPASSWORD="your_password" pg_restore \
-  -h localhost \
-  -p 15432 \
+# Restore database using Docker (same approach as backup)
+docker exec -i postgres pg_restore \
   -U your_user \
   -d your_database \
   --clean \
   --if-exists \
-  /opt/demo-t3-shared/db-backup/demo_t3_backup_YYYYMMDD_HHMMSS.sql
+  < /opt/demo-t3-shared/db-backup/demo_t3_backup_YYYYMMDD_HHMMSS.sql
 
 # Restart the application services
-docker compose -f docker-compose.production.yml up -d
+docker compose -f docker-compose.production.yml --env-file .env.production up -d
 ```
 
-**Why stop the apps?**
-- Prevents active database connections during restore
-- Avoids data corruption from concurrent writes
-- Ensures clean application startup with restored data
-- PostgreSQL container (in `docker-compose.data.production.yml`) continues running
+**Why this approach?**
+- Uses Docker exec for consistency (same method as backup)
+- No PostgreSQL client installation required on host
+- No version compatibility issues
+- PostgreSQL container stays running during restore
 
 ## Troubleshooting
 
 - **Permission denied**: Ensure backup script is executable (`chmod +x backup.sh`)
-- **Connection refused**: Verify PostgreSQL container is running and port 15432 is accessible
+- **Container not found**: Verify PostgreSQL container is running (`docker ps | grep postgres`)
+- **Docker exec failed**: Check that postgres container is healthy (`docker ps` shows "healthy" status)
 - **Environment variables**: Check that `.env.production` exists and contains required database variables
 - **Disk space**: Monitor `/opt/demo-t3-shared/db-backup/` directory size
+- **Backup fails**: Check container logs (`docker logs postgres`)

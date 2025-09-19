@@ -20,7 +20,6 @@ services:
       POSTGRES_PASSWORD: ${NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD}
     # Localhost-only port for maintenance (optional)
     ports:
-      #      - dummy
       - '127.0.0.1:15432:5432'
     volumes:
       - /opt/demo-t3-shared/postgres-data:/var/lib/postgresql/data

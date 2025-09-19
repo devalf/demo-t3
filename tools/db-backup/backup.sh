@@ -24,13 +24,17 @@ source "$ENV_FILE"
 set +a
 
 # Validate required environment variables
-if [ -z "$NX_PUBLIC_AUTH_DB_POSTGRES_DB" ] || [ -z "$NX_PUBLIC_AUTH_DB_POSTGRES_USER" ] || [ -z "$NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD" ]; then
+if [ -z "$NX_PUBLIC_AUTH_DB_POSTGRES_DB" ] || [ -z "$NX_PUBLIC_AUTH_DB_POSTGRES_USER" ] || [ -z "$NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD" ] || [ -z "$NX_PUBLIC_AUTH_DB_POSTGRES_HOST" ] || [ -z "$NX_PUBLIC_AUTH_DB_POSTGRES_PORT" ]; then
     echo "Error: Required database environment variables not set"
     exit 1
 fi
 
-# Create backup directory if it doesn't exist
+# Use Docker to run pg_dump with matching PostgreSQL version
+echo "Using Docker postgres container for pg_dump to ensure version compatibility"
+
+# Create backup and log directories if they don't exist
 mkdir -p "$BACKUP_DIR"
+mkdir -p "$(dirname "/opt/demo-t3-shared/db-backup-logs/demo-t3-backup.log")"
 
 # Generate backup filename
 BACKUP_FILE="$BACKUP_DIR/demo_t3_backup_$DATE.sql"
@@ -39,18 +43,16 @@ echo "Starting PostgreSQL backup..."
 echo "Database: $NX_PUBLIC_AUTH_DB_POSTGRES_DB"
 echo "Backup file: $BACKUP_FILE"
 
-# Perform backup using pg_dump via docker exec
-# The database is accessible on localhost:15432 as per docker-compose.data.production.yml
-PGPASSWORD="$NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD" pg_dump \
+# Perform backup using pg_dump via Docker exec
+# This uses the same PostgreSQL version as the server, avoiding version mismatch
+docker exec -e PGPASSWORD="$NX_PUBLIC_AUTH_DB_POSTGRES_PASSWORD" postgres pg_dump \
     -h localhost \
-    -p 15432 \
     -U "$NX_PUBLIC_AUTH_DB_POSTGRES_USER" \
     -d "$NX_PUBLIC_AUTH_DB_POSTGRES_DB" \
     --verbose \
     --no-password \
     --format=custom \
-    --compress=9 \
-    > "$BACKUP_FILE"
+    --compress=9 > "$BACKUP_FILE"
 
 # Check if backup was successful
 if [ $? -eq 0 ]; then

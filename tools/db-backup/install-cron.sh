@@ -11,6 +11,10 @@ BACKUP_SCRIPT="$SCRIPT_DIR/backup.sh"
 
 echo "Setting up daily database backup cron job..."
 
+# Create required directories
+sudo mkdir -p /opt/demo-t3-shared/db-backup /opt/demo-t3-shared/db-backup-logs
+sudo chown $USER:$USER /opt/demo-t3-shared/db-backup /opt/demo-t3-shared/db-backup-logs
+
 # Make backup script executable
 chmod +x "$BACKUP_SCRIPT"
 
