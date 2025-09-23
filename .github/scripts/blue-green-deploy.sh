@@ -358,7 +358,7 @@ apply_https_config
 
 success "Deployment completed successfully!"
 success "New environment: $TARGET_ENV"
-success "Application is available at: http://$(hostname -I | awk '{print $1}')"
+success "Application is available at: http://localhost and on the server's public IP"
 
 # Display service status
 log "Service status:"
