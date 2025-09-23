@@ -12,6 +12,7 @@ import { MetricsController } from './metrics.controller';
 @Module({
   imports: [
     PrometheusModule.register({
+      controller: MetricsController,
       defaultMetrics: {
         enabled: true,
       },
