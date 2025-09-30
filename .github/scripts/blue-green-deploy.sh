@@ -4,6 +4,21 @@ set -e
 # Blue-Green Deployment Script for VPS
 # Usage: ./blue-green-deploy.sh [--apps="app1,app2"] [--force-all]
 
+# Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SOURCE_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# Source common utilities
+source "${SCRIPT_DIR}/common.sh"
+
+DEPLOY_DIR="/opt/demo-t3-deploy"
+BACKUP_DIR="/opt/demo-t3-backup"
+CURRENT_LINK="${DEPLOY_DIR}/current"
+
+# Space management for limited VPS
+MIN_FREE_SPACE_GB=15  # Minimum 15GB free space required
+MAX_BACKUPS=2         # Keep only 2 backups to save space
+
 # Parse command line arguments
 AFFECTED_APPS=""
 FORCE_ALL=false
@@ -24,78 +39,6 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
-
-# Configuration
-SOURCE_DIR="/opt/demo-t3"
-DEPLOY_DIR="/opt/demo-t3-deploy"
-BACKUP_DIR="/opt/demo-t3-backup"
-CURRENT_LINK="${DEPLOY_DIR}/current"
-
-# Space management for limited VPS
-MIN_FREE_SPACE_GB=15  # Minimum 15GB free space required
-MAX_BACKUPS=2         # Keep only 2 backups (instead of 3) to save space
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-log() {
-  echo -e "${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
-}
-
-error() {
-  echo -e "${RED}[ERROR]${NC} $1" >&2
-}
-
-success() {
-  echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-warn() {
-  echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-# Apply HTTPS nginx.conf from repository to the active client-mx container (non-fatal)
-apply_https_config() {
-  # Only apply HTTPS if certs are present (first-time SSL setup may not be done yet)
-  local CERT_DIR_HOST="/opt/demo-t3-shared/letsencrypt/live/d-t3.mooo.com"
-  if [[ ! -d "$CERT_DIR_HOST" ]]; then
-    warn "TLS certificates not found at $CERT_DIR_HOST. Skipping HTTPS config apply."
-    return 0
-  fi
-
-  # Use the current deployment's compose context to find the client-mx container
-  local CID
-  CID=$(docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" ps -q client-mx 2>/dev/null || true)
-
-  if [[ -z "$CID" ]]; then
-    warn "Could not find running client-mx container in current deployment context. Skipping HTTPS apply."
-    return 0
-  fi
-
-  # The HTTPS config is packaged with the image at /etc/nginx/nginx.https.conf
-  log "Switching client-mx container ($CID) to packaged HTTPS config..."
-
-  # Validate packaged HTTPS config
-  if ! docker exec "$CID" nginx -t -c /etc/nginx/nginx.https.conf; then
-    warn "Packaged nginx.https.conf failed validation. Skipping HTTPS switch."
-    return 0
-  fi
-
-  # Replace active config with HTTPS config
-  if docker exec "$CID" sh -c 'cp /etc/nginx/nginx.https.conf /etc/nginx/nginx.conf && nginx -t'; then
-    if docker exec "$CID" nginx -s reload; then
-      success "HTTPS config applied and NGINX reloaded for client-mx."
-    else
-      warn "Failed to reload NGINX after applying HTTPS config."
-    fi
-  else
-    warn "Failed to activate HTTPS config inside container."
-  fi
-}
 
 # Determine current and target environments
 if [[ -L "$CURRENT_LINK" ]]; then
@@ -173,6 +116,29 @@ else
   log "External network $MONITORING_NETWORK_NAME already exists"
 fi
 
+# Bring up HAProxy infrastructure if not running (NEVER restart during deploys)
+HAPROXY_COMPOSE_FILE="$SOURCE_DIR/docker-compose.haproxy.yml"
+HAPROXY_CONTAINER="demo-t3-haproxy"
+if [[ -f "$HAPROXY_COMPOSE_FILE" ]]; then
+  if ! is_container_running "$HAPROXY_CONTAINER"; then
+    log "Starting HAProxy infrastructure (first time setup)..."
+
+    # Ensure certificates are combined for HAProxy
+    if [[ -f "$SOURCE_DIR/.github/scripts/combine-certs.sh" ]]; then
+      log "Combining SSL certificates for HAProxy..."
+      "$SOURCE_DIR/.github/scripts/combine-certs.sh" || warn "Failed to combine certs, HAProxy may not handle HTTPS"
+    fi
+
+    cd "$SOURCE_DIR"
+    docker compose -f "$HAPROXY_COMPOSE_FILE" up -d
+    log "HAProxy started. This service will NOT restart on subsequent deployments."
+  else
+    log "HAProxy already running; skipping (zero-downtime traffic routing active)"
+  fi
+else
+  warn "HAProxy compose file not found at $HAPROXY_COMPOSE_FILE. Deployment will continue without load balancer."
+fi
+
 # Bring up monitoring stack if it's not already running (do not restart each deploy)
 MONITORING_COMPOSE_FILE="$SOURCE_DIR/docker-compose.monitoring.yml"
 if [[ -f "$MONITORING_COMPOSE_FILE" ]]; then
@@ -229,15 +195,6 @@ cd "$TARGET_DIR"
 COMPOSE_FILE_PATH="$TARGET_DIR/docker-compose.production.yml"
 ENV_FILE_PATH="$TARGET_DIR/.env.production"
 
-# Stop current services if they exist
-if [[ -n "$CURRENT_ENV" ]]; then
-  CURRENT_DIR="${DEPLOY_DIR}/${CURRENT_ENV}"
-  if [[ -d "$CURRENT_DIR" ]]; then
-    log "Stopping current services in $CURRENT_ENV..."
-    cd "$CURRENT_DIR"
-    docker compose --env-file .env.production -f docker-compose.production.yml down --remove-orphans || warn "Failed to stop some services"
-  fi
-fi
 
 cd "$TARGET_DIR"
 
@@ -260,7 +217,8 @@ else
 fi
 
 log "Starting services in $TARGET_ENV environment..."
-docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" up -d
+# Use COMPOSE_PROJECT_NAME to create blue/green service names (e.g., blue-client-mx, green-client-mx)
+COMPOSE_PROJECT_NAME="$TARGET_ENV" docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" up -d
 
 # Wait for services to be healthy
 log "Waiting for services to become healthy..."
@@ -271,7 +229,7 @@ INTERVAL=10
 while [[ $ELAPSED -lt $TIMEOUT ]]; do
   ALL_HEALTHY=true
   for SVC in client-mx server-nest auth-service; do
-    CID=$(docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" ps -q "$SVC" || true)
+    CID=$(COMPOSE_PROJECT_NAME="$TARGET_ENV" docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" ps -q "$SVC" || true)
     if [[ -z "$CID" ]]; then
       ALL_HEALTHY=false
       break
@@ -299,43 +257,61 @@ if [[ $ELAPSED -ge $TIMEOUT ]]; then
   error "Health check timeout! Rolling back..."
 
   # Stop failed deployment
-  docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" down --remove-orphans
+  COMPOSE_PROJECT_NAME="$TARGET_ENV" docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" down --remove-orphans
 
-  # Restore previous deployment if it exists
-  if [[ -n "$CURRENT_ENV" ]]; then
-    log "Restoring previous deployment..."
-    cd "${DEPLOY_DIR}/${CURRENT_ENV}"
-    docker compose --env-file .env.production -f docker-compose.production.yml up -d
-    success "Rollback completed"
-  fi
+  # HAProxy keeps routing to old environment (no action needed for rollback)
+  success "Rollback completed - traffic remains on $CURRENT_ENV"
 
   exit 1
 fi
 
-# Final health check
-log "Performing final health check..."
+# Final health check - test new environment directly (bypassing HAProxy)
+log "Performing final health check on new $TARGET_ENV environment..."
 sleep 30
 
-# Check if main application is responding
-if curl -f -s http://localhost/ > /dev/null; then
-  success "Application is responding correctly!"
-else
-  error "Application health check failed! Rolling back..."
-  docker compose --env-file .env.production -f docker-compose.production.yml down --remove-orphans
-  if [[ -n "$CURRENT_ENV" ]]; then
-    cd "${DEPLOY_DIR}/${CURRENT_ENV}"
-    docker compose --env-file .env.production -f docker-compose.production.yml up -d
-  fi
+# Get the client-mx container ID from the new environment
+TARGET_CLIENT_CID=$(COMPOSE_PROJECT_NAME="$TARGET_ENV" docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" ps -q client-mx || true)
+
+if [[ -z "$TARGET_CLIENT_CID" ]]; then
+  error "Cannot find client-mx container in $TARGET_ENV! Rolling back..."
+  COMPOSE_PROJECT_NAME="$TARGET_ENV" docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" down --remove-orphans
   exit 1
+fi
+
+# Test the new environment directly via container IP
+TARGET_CLIENT_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$TARGET_CLIENT_CID" | head -n1)
+
+if curl -f -s "http://${TARGET_CLIENT_IP}/" > /dev/null; then
+  success "New $TARGET_ENV environment is responding correctly!"
+else
+  error "New environment health check failed! Rolling back..."
+  COMPOSE_PROJECT_NAME="$TARGET_ENV" docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" down --remove-orphans
+  exit 1
+fi
+
+# Shift HAProxy traffic to new environment
+log "Shifting HAProxy traffic from $CURRENT_ENV to $TARGET_ENV..."
+if [[ -f "$SOURCE_DIR/.github/scripts/haproxy-shift-traffic.sh" ]]; then
+  "$SOURCE_DIR/.github/scripts/haproxy-shift-traffic.sh" "$TARGET_ENV" || warn "Traffic shift completed with warnings"
+  success "Traffic shifted to $TARGET_ENV environment!"
+else
+  warn "Traffic shift script not found. HAProxy weights unchanged."
 fi
 
 # Update symlink to point to new environment
-log "Switching traffic to new environment..."
+log "Updating current environment symlink..."
 sudo rm -f "$CURRENT_LINK"
 sudo ln -sf "$TARGET_DIR" "$CURRENT_LINK"
 
-# Backup old environment
+# Stop old environment and backup
 if [[ -n "$CURRENT_ENV" ]]; then
+  log "Stopping old $CURRENT_ENV environment..."
+  CURRENT_DIR="${DEPLOY_DIR}/${CURRENT_ENV}"
+  if [[ -d "$CURRENT_DIR" ]]; then
+    cd "$CURRENT_DIR"
+    COMPOSE_PROJECT_NAME="$CURRENT_ENV" docker compose --env-file .env.production -f docker-compose.production.yml down --remove-orphans || warn "Failed to stop some old services"
+  fi
+
   log "Backing up previous environment..."
   BACKUP_NAME="backup-${CURRENT_ENV}-$(date +%Y%m%d-%H%M%S)"
   cp -r "${DEPLOY_DIR}/${CURRENT_ENV}" "${BACKUP_DIR}/${BACKUP_NAME}"
@@ -352,9 +328,6 @@ docker image prune -f || warn "Failed to remove dangling images"
 
 # Note: Aggressive cleanup runs automatically via GitHub Actions cleanup workflow
 
-# Apply HTTPS config to active client-mx container (if config exists)
-log "Ensuring HTTPS config is applied to the active client container..."
-apply_https_config
 
 success "Deployment completed successfully!"
 success "New environment: $TARGET_ENV"
@@ -363,7 +336,15 @@ success "Application is available at: http://$(hostname -I | awk '{print $1}')"
 # Display service status
 log "Service status:"
 cd "$TARGET_DIR"
-docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" ps
+COMPOSE_PROJECT_NAME="$TARGET_ENV" docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" ps
+
+# Show HAProxy backend status
+log "HAProxy backend status:"
+if is_container_running "demo-t3-haproxy"; then
+  haproxy_cmd "show stat" | \
+    grep "be_client_mx," | grep -E "(blue|green)" | \
+    awk -F',' '{printf "  %s: weight=%s status=%s\n", $2, $19, $18}' || warn "Could not retrieve HAProxy status"
+fi
 
 # VPS verification commands (for manual debugging):
 # ls -l /opt/demo-t3/current                                    # Check current symlink

@@ -67,22 +67,38 @@ docker run --rm \
     --no-eff-email \
     -d $DOMAIN
 
-echo "🔄 Step 3: Switching container to packaged HTTPS config..."
+echo "🔄 Step 3: Combining certificates for HAProxy..."
 
-# Validate packaged HTTPS config inside the container
-if ! docker exec "$CLIENT_CID" nginx -t -c /etc/nginx/nginx.https.conf; then
-  echo "❌ Packaged nginx.https.conf failed validation inside container. Aborting switch."
-  exit 1
+# HAProxy requires fullchain.pem + privkey.pem combined
+CERT_DIR="/opt/demo-t3-shared/letsencrypt/live/$DOMAIN"
+COMBINED_CERT="$CERT_DIR/combined.pem"
+
+if [[ -f "$CERT_DIR/fullchain.pem" && -f "$CERT_DIR/privkey.pem" ]]; then
+  cat "$CERT_DIR/fullchain.pem" "$CERT_DIR/privkey.pem" > "$COMBINED_CERT"
+  chmod 644 "$COMBINED_CERT"
+  echo "✅ Combined certificate created at: $COMBINED_CERT"
+else
+  echo "⚠️  Could not find cert files to combine. HAProxy may not work with HTTPS."
 fi
 
-# Activate HTTPS config
-docker exec "$CLIENT_CID" sh -c 'cp /etc/nginx/nginx.https.conf /etc/nginx/nginx.conf && nginx -t'
-
-echo "♻️  Reloading NGINX with HTTPS..."
-docker exec "$CLIENT_CID" nginx -s reload
+echo "♻️  Reloading HAProxy..."
+HAPROXY_CONTAINER="demo-t3-haproxy"
+if docker ps --format '{{.Names}}' | grep -q "^${HAPROXY_CONTAINER}$"; then
+  # Graceful HAProxy reload (zero downtime)
+  if docker exec "$HAPROXY_CONTAINER" sh -c 'kill -USR2 $(cat /var/run/haproxy.pid)' 2>/dev/null; then
+    echo "✅ HAProxy reloaded gracefully"
+  else
+    docker restart "$HAPROXY_CONTAINER"
+    echo "✅ HAProxy restarted"
+  fi
+else
+  echo "⚠️  HAProxy container not running. Start it with: docker compose -f docker-compose.haproxy.yml up -d"
+fi
 
 echo "✅ SSL setup complete!"
 echo "🌍 Your site should now be available at: https://$DOMAIN"
 echo ""
-echo "📝 To renew certificates automatically, add this to crontab:"
-echo "0 12 * * * docker run --rm -v /opt/demo-t3-shared/letsencrypt:/etc/letsencrypt -v /opt/demo-t3-shared/www-certbot:/var/www/certbot certbot/certbot renew --quiet && CID=\$(docker ps --filter label=com.docker.compose.service=client-mx -q | head -n1); [ -n \"$CID\" ] && docker exec \"$CID\" nginx -s reload || true"
+echo "📝 To renew certificates automatically, add this to crontab (or use systemd timer):"
+echo "0 12 * * * docker run --rm -v /opt/demo-t3-shared/letsencrypt:/etc/letsencrypt -v /opt/demo-t3-shared/www-certbot:/var/www/certbot certbot/certbot renew --quiet --deploy-hook 'cat /etc/letsencrypt/live/$DOMAIN/fullchain.pem /etc/letsencrypt/live/$DOMAIN/privkey.pem > /etc/letsencrypt/live/$DOMAIN/combined.pem && chmod 644 /etc/letsencrypt/live/$DOMAIN/combined.pem && docker exec demo-t3-haproxy sh -c \"kill -USR2 \\\$(cat /var/run/haproxy.pid)\" 2>/dev/null || docker restart demo-t3-haproxy'"
+echo ""
+echo "Or use the helper script: /opt/demo-t3/.github/scripts/combine-certs.sh"
