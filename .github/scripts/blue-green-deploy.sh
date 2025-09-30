@@ -298,6 +298,16 @@ else
   warn "Traffic shift script not found. HAProxy weights unchanged."
 fi
 
+# Clear NGINX cache in new environment to serve fresh data
+log "Clearing NGINX cache in $TARGET_ENV environment..."
+TARGET_CLIENT_NAME="${TARGET_ENV}-client-mx-1"
+if docker exec "$TARGET_CLIENT_NAME" rm -rf /var/cache/nginx/* 2>/dev/null; then
+  docker exec "$TARGET_CLIENT_NAME" nginx -s reload 2>/dev/null || true
+  success "NGINX cache cleared in $TARGET_ENV"
+else
+  warn "Could not clear NGINX cache (container might not have cache yet)"
+fi
+
 # Update symlink to point to new environment
 log "Updating current environment symlink..."
 sudo rm -f "$CURRENT_LINK"
