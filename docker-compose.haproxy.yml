@@ -7,6 +7,9 @@ networks:
     external: true
     name: demo-t3-network
 
+volumes:
+  haproxy-run:
+
 x-logging: &default-logging
   driver: json-file
   options:
@@ -16,7 +19,10 @@ x-logging: &default-logging
 services:
   # Edge Proxy (HAProxy) - Sole public entrypoint on 80/443; routes to client-mx blue/green
   haproxy:
-    image: haproxy:3.2-alpine
+    build:
+      context: ./config/deploy/haproxy
+      dockerfile: Dockerfile
+    image: demo-t3-haproxy:latest
     container_name: demo-t3-haproxy
     ports:
       - '80:80'
@@ -27,7 +33,7 @@ services:
     volumes:
       - ./config/deploy/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
       - /opt/demo-t3-shared/letsencrypt/live/d-t3.mooo.com:/etc/haproxy/certs/d-t3.mooo.com:ro
-      - haproxy-socket:/var/run/haproxy # Socket for runtime API
+      - haproxy-run:/var/run/haproxy
     restart: unless-stopped
     logging: *default-logging
     healthcheck:
@@ -36,10 +42,4 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-    command: >
-      sh -c "mkdir -p /var/run/haproxy &&
-             haproxy -f /usr/local/etc/haproxy/haproxy.cfg -W -db"
-
-volumes:
-  haproxy-socket:
-    driver: local
+    # Use default HAProxy command (reads /usr/local/etc/haproxy/haproxy.cfg automatically)
