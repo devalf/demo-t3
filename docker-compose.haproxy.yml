@@ -1,0 +1,45 @@
+# HAProxy Infrastructure Stack
+# Deploy once: docker compose -f docker-compose.haproxy.yml up -d
+# Never restarted during app deployments
+
+networks:
+  app-network:
+    external: true
+    name: demo-t3-network
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '72'
+
+services:
+  # Edge Proxy (HAProxy) - Sole public entrypoint on 80/443; routes to client-mx blue/green
+  haproxy:
+    image: haproxy:3.2-alpine
+    container_name: demo-t3-haproxy
+    ports:
+      - '80:80'
+      - '443:443'
+      - '127.0.0.1:8404:8404' # Stats page
+    networks:
+      - app-network
+    volumes:
+      - ./config/deploy/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - /opt/demo-t3-shared/letsencrypt/live/d-t3.mooo.com:/etc/haproxy/certs/d-t3.mooo.com:ro
+      - haproxy-socket:/var/run/haproxy # Socket for runtime API
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'sh', '-c', 'nc -z 127.0.0.1 8404 || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    command: >
+      sh -c "mkdir -p /var/run/haproxy &&
+             haproxy -f /usr/local/etc/haproxy/haproxy.cfg -W -db"
+
+volumes:
+  haproxy-socket:
+    driver: local

@@ -10,18 +10,15 @@ x-logging: &default-logging
     max-file: '72'
 
 services:
-  # Frontend (React + NGINX) - Only service with external access
+  # Frontend (React + NGINX) - Routed via HAProxy for zero-downtime deployment
+  # Service name is dynamically set by blue-green-deploy.sh using COMPOSE_PROJECT_NAME
   client-mx:
     build:
       context: .
       dockerfile: apps/client-mx/Dockerfile
     depends_on:
       - server-nest
-    ports:
-      - '80:80' # Standard HTTP port
-      - '443:443' # Standard HTTPS port
     volumes:
-      - /opt/demo-t3-shared/letsencrypt:/etc/letsencrypt:ro
       - /opt/demo-t3-shared/www-certbot:/var/www/certbot:ro
     env_file:
       - .env.production
@@ -30,7 +27,7 @@ services:
     restart: unless-stopped
     logging: *default-logging
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost/']
+      test: ['CMD', 'curl', '-f', 'http://127.0.0.1/']
       interval: 30s
       timeout: 10s
       retries: 3
