@@ -40,7 +40,7 @@ is_container_running() {
 # Execute command in HAProxy container
 haproxy_cmd() {
   local cmd=$1
-  docker exec demo-t3-haproxy sh -c "echo '$cmd' | socat stdio tcp:127.0.0.1:9999"
+  docker exec -i demo-t3-haproxy sh -c "echo '$cmd' | socat stdio /var/run/haproxy/admin.sock"
 }
 
 # Get HAProxy server weight
