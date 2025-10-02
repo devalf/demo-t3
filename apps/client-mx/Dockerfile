@@ -15,7 +15,6 @@ COPY --from=builder /app/dist/apps/client-mx /usr/share/nginx/html
 
 COPY apps/client-mx/nginx/includes /etc/nginx/includes
 COPY apps/client-mx/nginx/nginx.http.conf /etc/nginx/nginx.conf
-COPY apps/client-mx/nginx/nginx.https.conf /etc/nginx/nginx.https.conf
 
 EXPOSE 80
 
