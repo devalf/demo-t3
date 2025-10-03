@@ -228,7 +228,7 @@ INTERVAL=10
 
 while [[ $ELAPSED -lt $TIMEOUT ]]; do
   ALL_HEALTHY=true
-  for SVC in client-mx server-nest auth-service; do
+  for SVC in client-mx server-nest auth-service email-service; do
     CID=$(COMPOSE_PROJECT_NAME="$TARGET_ENV" docker compose --env-file "$ENV_FILE_PATH" -f "$COMPOSE_FILE_PATH" ps -q "$SVC" || true)
     if [[ -z "$CID" ]]; then
       ALL_HEALTHY=false

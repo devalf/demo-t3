@@ -24,7 +24,7 @@ fi
 
 # Force deploy if requested or if this is the first deployment
 if [[ "$FORCE_DEPLOY" == "true" ]]; then
-  echo "apps=client-mx,server-nest,auth-service" >> $GITHUB_OUTPUT
+  echo "apps=client-mx,server-nest,auth-service,email-service" >> $GITHUB_OUTPUT
   echo "libs=$(yarn --silent nx show projects --type=lib --json | jq -r '. | map(select(. | test("-e2e$") | not)) | join(",")')" >> $GITHUB_OUTPUT
   echo "has_affected=true" >> $GITHUB_OUTPUT
   echo "should_deploy=true" >> $GITHUB_OUTPUT
@@ -33,10 +33,10 @@ else
   # Get affected apps and libs (excluding e2e projects)
   AFFECTED_APPS=$(yarn --silent nx show projects --affected --type=app --base=$BASE_REF --json | jq -r '. | map(select(. | test("-e2e$") | not)) | join(",")')
   AFFECTED_LIBS=$(yarn --silent nx show projects --affected --type=lib --base=$BASE_REF --json | jq -r '. | map(select(. | test("-e2e$") | not)) | join(",")')
-  
+
   echo "apps=$AFFECTED_APPS" >> $GITHUB_OUTPUT
   echo "libs=$AFFECTED_LIBS" >> $GITHUB_OUTPUT
-  
+
   # Check if we have any affected projects
   if [[ -n "$AFFECTED_APPS" || -n "$AFFECTED_LIBS" ]]; then
     echo "has_affected=true" >> $GITHUB_OUTPUT
