@@ -25,6 +25,10 @@
                 "onlyDependOnLibsWithTags": ["scope:shared"]
               },
               {
+                "sourceTag": "type:utils-nest",
+                "onlyDependOnLibsWithTags": ["scope:shared"]
+              },
+              {
                 "sourceTag": "scope:client-mx",
                 "onlyDependOnLibsWithTags": ["scope:client-mx", "scope:shared"]
               },
@@ -39,6 +43,13 @@
                 "sourceTag": "scope:auth-service",
                 "onlyDependOnLibsWithTags": [
                   "scope:auth-service",
+                  "scope:shared"
+                ]
+              },
+              {
+                "sourceTag": "scope:email-service",
+                "onlyDependOnLibsWithTags": [
+                  "scope:server-nest",
                   "scope:shared"
                 ]
               },

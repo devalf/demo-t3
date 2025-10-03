@@ -8,12 +8,12 @@ import {
   MetricsInterceptor,
   MetricsModule,
 } from '@demo-t3/monitoring';
+import { HealthCheckModule } from '@demo-t3/utils-nest';
 
 import { DatabaseModule } from './database/database.module';
 import { ProductsModule } from './modules/products/products.module';
 import { OrderModule } from './modules/order/order.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { HealthCheckModule } from './modules/health-check/health-check.module';
 import { THROTTLER_CONFIG } from './constants';
 
 @Module({

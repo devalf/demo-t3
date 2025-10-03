@@ -3,14 +3,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import {
-  MetricsInterceptor,
-  MetricsModule,
   AppLoggingModule,
   LoggingInterceptor,
+  MetricsInterceptor,
+  MetricsModule,
 } from '@demo-t3/monitoring';
+import { HealthCheckModule } from '@demo-t3/utils-nest';
 
 import { AuthModule } from './modules/auth/auth.module';
-import { HealthCheckModule } from './modules/health-check/health-check.module';
 import { TOKEN_CONFIG } from './constants';
 import { PrismaExceptionFilter } from './common/filters';
 

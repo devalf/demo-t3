@@ -16,8 +16,8 @@
       "@demo-t3/monitoring": ["libs/monitoring/src/index.ts"],
       "@demo-t3/test-utils": ["libs/test-utils/src/index.ts"],
       "@demo-t3/utils": ["libs/utils/src/index.ts"],
-      "@demo-t3/utils-ui": ["libs/utils-ui/src/index.ts"],
-      "monitoring": ["libs/monitoring/src/index.ts"]
+      "@demo-t3/utils-nest": ["libs/utils-nest/src/index.ts"],
+      "@demo-t3/utils-ui": ["libs/utils-ui/src/index.ts"]
     }
   },
   "exclude": ["dist", "node_modules"]
