@@ -90,3 +90,31 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  # Email Service (NestJS) - Internal only, no external ports
+  email-service:
+    build:
+      context: .
+      dockerfile: apps/email-service/Dockerfile
+      args:
+        NX_PUBLIC_EMAIL_SERVICE_PORT: ${NX_PUBLIC_EMAIL_SERVICE_PORT:-8085}
+    env_file:
+      - .env.production
+    environment:
+      SERVICE_NAME: email-service
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '-f',
+          'http://localhost:${NX_PUBLIC_EMAIL_SERVICE_PORT:-8085}/api/health-check',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
