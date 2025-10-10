@@ -1,0 +1,74 @@
+<mjml>
+  <mj-body background-color="#f5f5f5">
+    <mj-section background-color="#ffffff" padding-top="40px" padding-bottom="20px">
+      <mj-column>
+        <mj-text align="center" css-class="brand-name" font-size="26px" font-weight="bold">
+          Demo T3
+        </mj-text>
+
+          <mj-text align="center" css-class="brand-name" font-size="22px" color="red">
+              Please ignore this email. It's still in development
+          </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-size="24px" color="#1976d2" font-weight="600" padding-bottom="10px">
+          Welcome{{#if name}}, {{name}}{{/if}}!
+        </mj-text>
+
+        <mj-text font-size="18px">
+          Thank you for registering with Demo T3. To complete your registration and activate your account, please verify your email address.
+        </mj-text>
+
+        <mj-button
+          background-color="#1976d2"
+          color="#ffffff"
+          font-size="16px"
+          font-weight="600"
+          padding="30px 0"
+          href="{{verificationUrl}}"
+          border-radius="4px">
+          Verify Email Address
+        </mj-button>
+
+        <mj-text padding-top="20px" font-size="18px">
+          Or copy and paste this link into your browser:
+        </mj-text>
+
+        <mj-text css-class="token-box">
+          {{verificationUrl}}
+        </mj-text>
+
+        <mj-divider border-color="#e0e0e0" padding="20px 0" />
+
+        <mj-text font-size="13px" color="#999999">
+          This verification link will expire in <strong>{{expirationMinutes}} minutes</strong>.
+        </mj-text>
+
+        <mj-text font-size="13px" color="#999999">
+          If you didn't create an account with Demo T3, you can safely ignore this email.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#ffffff" padding-top="30px">
+      <mj-column>
+        <mj-divider border-color="#e0e0e0" />
+        <mj-text align="center" font-size="11px" color="#999999" padding-top="20px">
+          © Demo T3. All rights reserved.
+        </mj-text>
+        <mj-text align="center" font-size="11px" color="#999999" padding-top="5px" padding-bottom="40px">
+          This is an automated message, please do not reply to this email.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#f5f5f5">
+      <mj-column>
+        <mj-spacer height="20px" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

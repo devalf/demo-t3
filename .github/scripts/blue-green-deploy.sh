@@ -77,7 +77,8 @@ sudo mkdir -p "$DEPLOY_DIR" "$BACKUP_DIR" \
   "/opt/demo-t3-shared/grafana-data" \
   "/opt/demo-t3-shared/loki-data" \
   "/opt/demo-t3-shared/promtail-data" \
-  "/opt/demo-t3-shared/redis-data"
+  "/opt/demo-t3-shared/redis-data" \
+  "/opt/demo-t3-shared/rabbitmq-data"
 
 # Ensure base shared dir owned by deploy user so we can manage subdirs
 sudo chown -R $USER:$USER "$DEPLOY_DIR" "$BACKUP_DIR" "/opt/demo-t3-shared"
@@ -106,6 +107,10 @@ sudo chmod -R 755 /opt/demo-t3-shared/promtail-data || true
 # Redis (official image typically runs as uid 999). Ensure directory is writable.
 sudo chown -R 999:999 /opt/demo-t3-shared/redis-data || true
 sudo chmod -R 755 /opt/demo-t3-shared/redis-data || true
+
+# RabbitMQ (official image runs as uid 999). Ensure directory is writable.
+sudo chown -R 999:999 /opt/demo-t3-shared/rabbitmq-data || true
+sudo chmod -R 755 /opt/demo-t3-shared/rabbitmq-data || true
 
 # Ensure shared external Docker network exists for cross-stack communication
 MONITORING_NETWORK_NAME="demo-t3-network"

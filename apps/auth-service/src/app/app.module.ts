@@ -11,6 +11,7 @@ import {
 import { HealthCheckModule } from '@demo-t3/utils-nest';
 
 import { AuthModule } from './modules/auth/auth.module';
+import { MessagingModule } from './modules/messaging';
 import { TOKEN_CONFIG } from './constants';
 import { PrismaExceptionFilter } from './common/filters';
 
@@ -25,6 +26,7 @@ import { PrismaExceptionFilter } from './common/filters';
         signOptions: { expiresIn: TOKEN_CONFIG.ACCESS_TOKEN.JWT_EXPIRY },
       }),
     }),
+    MessagingModule,
     AuthModule,
     HealthCheckModule,
     MetricsModule,

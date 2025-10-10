@@ -55,3 +55,26 @@ services:
       timeout: 3s
       retries: 3
       start_period: 30s
+
+  # RabbitMQ - Message broker, single, always-on (outside blue-green)
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:4.1.4-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${NX_PUBLIC_RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${NX_PUBLIC_RABBITMQ_PASSWORD}
+    # Localhost-only management UI for debugging (optional)
+    ports:
+      - '127.0.0.1:15672:15672'
+    volumes:
+      - /opt/demo-t3-shared/rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s

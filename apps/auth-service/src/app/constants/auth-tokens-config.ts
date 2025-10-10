@@ -29,6 +29,16 @@ export const TOKEN_CONFIG = {
       return `${this.DAYS}d`;
     },
   },
+  EMAIL_VERIFICATION_TOKEN: {
+    TOKEN_PREFIX: 'email:verification:',
+    MINUTES: 30,
+    get SECONDS() {
+      return this.MINUTES * 60;
+    },
+    get MILLISECONDS() {
+      return this.SECONDS * 1000;
+    },
+  },
   TOKEN_LIMITS: {
     MAX_REFRESH_TOKENS_PER_USER: 5, // the maximum allowed number of devices/browsers to keep the user logged in
   },

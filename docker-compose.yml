@@ -126,8 +126,8 @@ services:
           'pg_isready -U ${NX_PUBLIC_AUTH_DB_POSTGRES_USER} -d ${NX_PUBLIC_AUTH_DB_POSTGRES_DB}',
         ]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 3s
+      retries: 3
       start_period: 30s
 
   # Redis (shared)
@@ -142,6 +142,29 @@ services:
     logging: *default-logging
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+
+  # RabbitMQ - Message broker for event-driven communication
+  rabbitmq:
+    container_name: demo_t3_rabbitmq
+    image: rabbitmq:4.1.4-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${NX_PUBLIC_RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${NX_PUBLIC_RABBITMQ_PASSWORD}
+    ports:
+      - '${NX_PUBLIC_RABBITMQ_PORT}:5672'
+      - '${NX_PUBLIC_RABBITMQ_MANAGEMENT_PORT}:15672'
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', 'ping']
       interval: 10s
       timeout: 3s
       retries: 3
@@ -190,5 +213,6 @@ services:
 volumes:
   auth_postgres_data:
   products_postgres_data:
+  rabbitmq_data:
   prometheus_data:
   grafana_data:

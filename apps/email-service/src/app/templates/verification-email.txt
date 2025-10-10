@@ -1,0 +1,14 @@
+Welcome to Demo T3{{#if name}}, {{name}}{{/if}}!
+
+Thank you for registering with Demo T3. To complete your registration and activate your account, please verify your email address.
+
+Click the link below to verify your email:
+{{verificationUrl}}
+
+This verification link will expire in {{expirationMinutes}} minutes.
+
+If you didn't create an account with Demo T3, you can safely ignore this email.
+
+---
+© Demo T3. All rights reserved.
+This is an automated message, please do not reply to this email.
