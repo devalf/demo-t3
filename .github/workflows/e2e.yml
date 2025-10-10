@@ -77,6 +77,11 @@ jobs:
             if docker inspect -f '{{json .State.Health.Status}}' $(docker compose -f docker-compose.e2e.yml ps -q demo_t3_redis) | grep -q 'healthy'; then
               echo "Redis healthy"; break; fi; sleep 2; done
 
+          echo "Waiting for RabbitMQ health..."
+          for i in {1..60}; do
+            if docker inspect -f '{{json .State.Health.Status}}' $(docker compose -f docker-compose.e2e.yml ps -q demo_t3_rabbitmq_e2e) | grep -q 'healthy'; then
+              echo "RabbitMQ healthy"; break; fi; sleep 2; done
+
           echo "Waiting for auth-service health endpoint..."
           for i in {1..120}; do
             if curl -fsS "http://localhost:${NX_PUBLIC_AUTH_SERVICE_PORT}/api/health-check" >/dev/null; then echo ok; break; fi; sleep 2; done

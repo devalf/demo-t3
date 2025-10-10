@@ -150,5 +150,25 @@ services:
       retries: 10
       start_period: 20s
 
+  rabbitmq:
+    container_name: demo_t3_rabbitmq_e2e
+    image: rabbitmq:4.1.4-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${NX_PUBLIC_RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${NX_PUBLIC_RABBITMQ_PASSWORD}
+    ports:
+      - '${NX_PUBLIC_RABBITMQ_PORT}:5672'
+      - '${NX_PUBLIC_RABBITMQ_MANAGEMENT_PORT}:15672'
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
 volumes:
   auth_postgres_data_e2e:
