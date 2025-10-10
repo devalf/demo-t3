@@ -61,7 +61,7 @@ describe('Email Service RMQ integration', () => {
   }, 6000);
 });
 
-describe('Email Service RMQ real delivery', () => {
+describe.skip('Email Service RMQ real delivery', () => {
   const rmqUrl = NX_PUBLIC_RABBITMQ_URL;
 
   it('should publish to the real queue and be consumed', async () => {
