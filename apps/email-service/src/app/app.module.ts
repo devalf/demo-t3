@@ -9,12 +9,19 @@ import {
 } from '@demo-t3/monitoring';
 import { HealthCheckModule } from '@demo-t3/utils-nest';
 
+import { EmailModule } from './modules/email';
+import { RegistrationModule } from './modules/registration';
+
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     AppLoggingModule.forRoot(),
     MetricsModule,
     HealthCheckModule,
+    EmailModule,
+    RegistrationModule,
   ],
   providers: [
     {

@@ -13,9 +13,13 @@ import {
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { extractDeviceInfo } from '@demo-t3/utils';
+import { UserRegistrationInitiatedEvent } from '@demo-t3/models';
+
+import { EmailServiceClient } from '../messaging';
+import { TOKEN_CONFIG } from '../../constants';
 
 import { AuthService } from './auth.service';
-import { UserDeletionService } from './services';
+import { EmailVerificationTokenService, UserDeletionService } from './services';
 import {
   AuthSignInDto,
   AuthTokensDto,
@@ -38,7 +42,9 @@ import {
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly userDeletionService: UserDeletionService
+    private readonly userDeletionService: UserDeletionService,
+    private readonly emailVerificationTokenService: EmailVerificationTokenService,
+    private readonly emailServiceClient: EmailServiceClient
   ) {}
 
   @Post('register')
@@ -53,7 +59,25 @@ export class AuthController {
     description: 'User with this email already exists',
   })
   async register(@Body() body: CreateUserDto): Promise<UserDto> {
-    return this.authService.createUser(body);
+    const user = await this.authService.createUser(body);
+
+    const verificationToken =
+      await this.emailVerificationTokenService.generateVerificationToken(
+        user.id.toString()
+      );
+
+    const event: UserRegistrationInitiatedEvent = {
+      email: user.email,
+      name: user.name,
+      userId: user.id.toString(),
+      verificationToken,
+      timestamp: new Date(),
+      expirationMinutes: TOKEN_CONFIG.EMAIL_VERIFICATION_TOKEN.MINUTES,
+    };
+
+    this.emailServiceClient.emitUserRegistrationInitiated(event);
+
+    return user;
   }
 
   @Post('sign-in')

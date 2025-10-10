@@ -5,11 +5,13 @@ import { AuthService } from '../auth.service';
 import { AuthController } from '../auth.controller';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
+  EmailVerificationTokenService,
   UserDeletionService,
   UserOperationPermissionService,
 } from '../services';
 import { UserDto } from '../dto';
 import { JwtUserUtil } from '../../../common/utils';
+import { EmailServiceClient } from '../../messaging';
 
 describe('AuthController', () => {
   let authService: AuthService;
@@ -20,6 +22,8 @@ describe('AuthController', () => {
   let userDeletionServiceMock: jest.Mocked<UserDeletionService>;
   let userOperationPermissionServiceMock: jest.Mocked<UserOperationPermissionService>;
   let jwtUserUtilMock: jest.Mocked<JwtUserUtil>;
+  let emailVerificationTokenServiceMock: jest.Mocked<EmailVerificationTokenService>;
+  let emailServiceClientMock: jest.Mocked<EmailServiceClient>;
 
   beforeEach(() => {
     jwtServiceMock = {
@@ -56,6 +60,16 @@ describe('AuthController', () => {
       extractUserFromJwt: jest.fn(),
     } as unknown as jest.Mocked<JwtUserUtil>;
 
+    emailVerificationTokenServiceMock = {
+      generateVerificationToken: jest.fn().mockResolvedValue('mock-token'),
+      verifyToken: jest.fn(),
+      invalidateToken: jest.fn(),
+    } as unknown as jest.Mocked<EmailVerificationTokenService>;
+
+    emailServiceClientMock = {
+      emitUserRegistrationInitiated: jest.fn(),
+    } as unknown as jest.Mocked<EmailServiceClient>;
+
     authService = new AuthService(
       jwtServiceMock,
       configServiceMock,
@@ -64,7 +78,12 @@ describe('AuthController', () => {
       jwtUserUtilMock
     );
 
-    authController = new AuthController(authService, userDeletionServiceMock);
+    authController = new AuthController(
+      authService,
+      userDeletionServiceMock,
+      emailVerificationTokenServiceMock,
+      emailServiceClientMock
+    );
   });
 
   describe('register', () => {
@@ -167,7 +186,7 @@ describe('AuthController', () => {
     it('should call service with invalid input when bypassing HTTP layer', async () => {
       const createUserSpy = jest
         .spyOn(authService, 'createUser')
-        .mockResolvedValue({} as UserDto);
+        .mockResolvedValue({ id: 1 } as UserDto);
 
       await authController.register({
         email: 'invalid-email',
