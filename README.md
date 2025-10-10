@@ -8,31 +8,37 @@ This demo project showcases a monorepo architecture built with NX, containing mu
 
 **auth-service** - A dedicated NestJS microservice handling user authentication and authorization
 
+**email-service** - An event-driven NestJS microservice for email delivery, utilizing RabbitMQ message queue for asynchronous communication
+
 ### Live Demo / Production URL
 
 The production deployment is available at: https://d-t3.mooo.com/
 
 Note: Availability may change in the future; the link above is confirmed to be relevant and maintained during Autumn 2025. 
 
-## Database & Caching Infrastructure
+## Infrastructure & Services
 
-This project utilizes a robust data persistence and caching layer:
+This project utilizes a robust infrastructure layer:
 
 **PostgreSQL Database** - Primary relational database for the auth-service, handling user authentication data, session management, and authorization records with full ACID compliance.
 
 **Redis Cache** - In-memory data store running in a separate container, providing shared caching capabilities across all applications in the monorepo. Used for session management, temporary data storage, and performance optimization.
 
-Both services are containerized and orchestrated through Docker Compose, ensuring consistent development and production environments with proper service dependencies and health checks.
+**RabbitMQ Message Broker** - Event-driven messaging system enabling asynchronous communication between microservices. The email-service consumes messages from queues to handle email delivery operations independently, ensuring reliable and scalable inter-service communication with proper message persistence and retry mechanisms.
+
+All infrastructure services are containerized and orchestrated through Docker Compose, ensuring consistent development and production environments with proper service dependencies and health checks.
 
 ## Technical Stack
 
 **Server API** is built using NestJS, RXDB, Jest, Swagger, class-validator, and class-transformer. Currently implements basic READ operations due to time constraints - additional CRUD examples are available in my other repositories.
 
-**Auth Service** utilizes NestJS, PostgreSQL, Prisma, Jest, Swagger, class-validator, and class-transformer to provide a fully functional authentication system with comprehensive coverage of all authentication and authorization scenarios. Unlike the basic operations in server-nest, this service implements complete CRUD functionality and handles edge cases thoroughly.
+**Auth Service** utilizes NestJS, PostgreSQL, Prisma, Jest, Swagger, class-validator, and class-transformer to provide a fully functional authentication system with comprehensive coverage of all authentication and authorization scenarios. Unlike the basic operations in server-nest, this service implements complete CRUD functionality and handles edge cases thoroughly. The service publishes events to RabbitMQ message queues to trigger asynchronous operations in other microservices, such as email notifications.
+
+**Email Service** is built with NestJS and leverages RabbitMQ for event-driven architecture. It consumes messages from message queues to process email delivery requests asynchronously, decoupling email operations from the main application flow. The service uses MJML templates for responsive email design and includes comprehensive error handling with retry logic.
 
 **Client Application** leverages React, React Router, MobX, React Query, Material-UI, Inversify, Jest, and React Testing Library for a comprehensive frontend experience.
 
-The architecture includes Redis running in a separate container, making it accessible and shareable across all applications in the monorepo for session management and caching.
+The architecture includes Redis and RabbitMQ running in separate containers, making them accessible and shareable across all applications in the monorepo for session management, caching, and asynchronous messaging.
 
 All applications are developed in TypeScript and include exemplary test coverage with representative unit tests, integration tests, and end-to-end tests.
 The server APIs are fully documented and accessible through Swagger documentation. Navigate to the `/docs` path for each service, for example: http://localhost:8084/docs
@@ -73,8 +79,9 @@ yarn start:demo
 
 # Or run services individually
 yarn nx serve client-mx      # Client application
-yarn nx serve server-nest    # Main server  
+yarn nx serve server-nest    # Main server
 yarn nx serve auth-service   # Authentication service
+yarn nx serve email-service  # Email service
 ```
 
 ## Testing
