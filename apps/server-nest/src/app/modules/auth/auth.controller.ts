@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -25,6 +26,7 @@ import {
   AccessTokenExpiresInDto,
   AuthSignInDto,
   CreateUserDto,
+  VerifyEmailParamsDto,
 } from '../../dto/auth.dto';
 import { THROTTLER_CONFIG } from '../../constants';
 
@@ -259,6 +261,43 @@ export class AuthController {
     this.setCookiesFromTokens(res, result);
 
     return res.status(201).send();
+  }
+
+  @Get('verify-email')
+  @Throttle({
+    default: {
+      limit: THROTTLER_CONFIG.RIGID.LIMIT,
+      ttl: THROTTLER_CONFIG.RIGID.TTL_MILLISECONDS,
+    },
+  })
+  @ApiOperation({
+    summary: 'Verify email address',
+    description:
+      'Verify user email using token from email link. Redirects to specified returnTo path or root path on success.',
+  })
+  @ApiResponse({
+    status: 302,
+    description: 'Email verified successfully. Redirects to success page.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired verification token.',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too many verification attempts. Please try again later.',
+  })
+  async verifyEmail(
+    @Query() params: VerifyEmailParamsDto,
+    @Res() res: Response
+  ) {
+    const { token, returnTo } = params;
+
+    await this.authService.verifyEmail(token);
+
+    const redirectUrl = returnTo || '/';
+
+    return res.redirect(redirectUrl);
   }
 
   private setCookiesFromTokens(

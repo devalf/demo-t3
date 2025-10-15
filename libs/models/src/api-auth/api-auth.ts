@@ -14,3 +14,8 @@ export type ApiAuthResponseError = {
   error: string;
   statusCode: number;
 };
+
+export type ApiVerifyEmailParams = {
+  token: string;
+  returnTo?: string;
+};

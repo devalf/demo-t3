@@ -50,3 +50,15 @@ export const refreshTokenRequest =
 
     return data;
   };
+
+export const verifyEmailRequest = async (token: string): Promise<void> => {
+  const { data }: AxiosResponse<void> = await axiosClient.get(
+    '/auth/verify-email',
+    {
+      params: { token },
+      ...configSkipAuthRefresh,
+    }
+  );
+
+  return data;
+};
