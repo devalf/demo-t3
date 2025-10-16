@@ -96,21 +96,14 @@ export class AuthService {
     }
   }
 
-  async registerAndSignIn(
+  async register(
     params: ApiCreateUserParams,
     deviceInfo: ApiDeviceInfo
-  ): Promise<ApiTokenResponse> {
+  ): Promise<ApiUser | ApiAuthResponseError> {
     try {
-      await this.registerUser(params, deviceInfo);
-
-      const signInParams: ApiAuthSignInParams = {
-        email: params.email,
-        password: params.password,
-      };
-
-      return await this.signIn(signInParams, deviceInfo);
+      return await this.registerUser(params, deviceInfo);
     } catch (error) {
-      this.logger.error('Register and sign-in failed', {
+      this.logger.error('Registration failed', {
         error: error.message,
         params: { ...params, password: '[REDACTED]' },
         deviceInfo,

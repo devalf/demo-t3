@@ -75,7 +75,8 @@ describe('AuthController', () => {
       configServiceMock,
       prismaServiceMock,
       userOperationPermissionServiceMock,
-      jwtUserUtilMock
+      jwtUserUtilMock,
+      emailVerificationTokenServiceMock
     );
 
     authController = new AuthController(
@@ -106,6 +107,7 @@ describe('AuthController', () => {
         settings: '',
         is_active: true,
         original_email: '',
+        email_verified: false,
       };
 
       const createUserSpy = jest

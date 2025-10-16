@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import { extractErrorMessage } from '@demo-t3/utils';
 
 import { useInjection } from '../../../../bootstrap/ioc/use-injection';
-import { IModalManager, IToastManager } from '../../../../store/interfaces';
+import { IToastManager } from '../../../../store/interfaces';
 import { DependencyType } from '../../../../bootstrap/ioc/dependency-type';
 
 const AuthSchema = Yup.object().shape({
@@ -31,9 +31,6 @@ export const AuthForm: FC<AuthFormProps> = ({
   onSubmit,
   testIdPrefix,
 }) => {
-  const { closeModal } = useInjection<IModalManager>(
-    DependencyType.ModalManager
-  );
   const { showToast } = useInjection<IToastManager>(
     DependencyType.ToastManager
   );
@@ -48,7 +45,6 @@ export const AuthForm: FC<AuthFormProps> = ({
     onSubmit: async (values, { setSubmitting }) => {
       try {
         await onSubmit(values);
-        closeModal();
       } catch (error) {
         const errorMessage = extractErrorMessage(error);
 

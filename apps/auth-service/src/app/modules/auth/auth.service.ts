@@ -88,6 +88,12 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
+    if (!user.email_verified) {
+      throw new ForbiddenException(
+        'Please verify your email before signing in. Check your inbox for the verification link.'
+      );
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {

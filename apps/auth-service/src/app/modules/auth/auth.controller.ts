@@ -97,6 +97,10 @@ export class AuthController {
     description: 'Invalid credentials',
   })
   @ApiResponse({
+    status: 403,
+    description: 'Email not verified',
+  })
+  @ApiResponse({
     status: 404,
     description: 'User not found',
   })

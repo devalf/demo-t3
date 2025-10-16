@@ -100,6 +100,12 @@ describe('AuthService', () => {
       extractUserFromJwt: jest.fn(),
     };
 
+    const mockEmailVerificationTokenService = {
+      createToken: jest.fn(),
+      verifyToken: jest.fn(),
+      deleteToken: jest.fn(),
+    };
+
     mockedBcrypt.hash.mockResolvedValue('hashed_password' as never);
     mockedBcrypt.compare.mockResolvedValue(true as never);
 
@@ -108,7 +114,8 @@ describe('AuthService', () => {
       mockConfigService as ConfigService,
       mockPrismaService as PrismaService,
       mockUserOperationPermissionService as UserOperationPermissionService,
-      mockJwtUserUtil as JwtUserUtil
+      mockJwtUserUtil as JwtUserUtil,
+      mockEmailVerificationTokenService as any
     );
 
     jest.clearAllMocks();

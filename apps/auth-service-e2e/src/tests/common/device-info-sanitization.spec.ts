@@ -1,18 +1,23 @@
 import axios from 'axios';
 
+import {
+  createTestUser,
+  type TestUser,
+  withCleanup,
+} from '../../utils/test-user-manager';
+
 const apiSignInEndpoint = '/api/auth/sign-in';
-const apiRegisterEndpoint = '/api/auth/register';
 
 describe('Device Info Sanitization E2E', () => {
-  const testEmail = `device_test_${Date.now()}@example.com`;
-  const password = 'TestPassword123!';
-  const name = 'Device Test User';
+  withCleanup();
+
+  let testUser: TestUser;
 
   beforeAll(async () => {
-    await axios.post(apiRegisterEndpoint, {
-      email: testEmail,
-      password,
-      name,
+    testUser = await createTestUser({
+      customPrefix: 'device_test',
+      password: 'TestPassword123!',
+      name: 'Device Test User',
     });
   });
 
@@ -39,8 +44,8 @@ describe('Device Info Sanitization E2E', () => {
 
       for (const testCase of testCases) {
         const res = await axios.post(apiSignInEndpoint, {
-          email: testEmail,
-          password,
+          email: testUser.email,
+          password: testUser.password,
           deviceInfo: {
             userAgent: testCase.input,
             ip: '192.168.1.1',
@@ -57,8 +62,8 @@ describe('Device Info Sanitization E2E', () => {
 
       try {
         await axios.post(apiSignInEndpoint, {
-          email: testEmail,
-          password,
+          email: testUser.email,
+          password: testUser.password,
           deviceInfo: {
             userAgent: longUserAgent,
             ip: '192.168.1.1',
@@ -82,8 +87,8 @@ describe('Device Info Sanitization E2E', () => {
       const maxLengthUserAgent = 'A'.repeat(1000); // Exactly 1000 characters
 
       const res = await axios.post(apiSignInEndpoint, {
-        email: testEmail,
-        password,
+        email: testUser.email,
+        password: testUser.password,
         deviceInfo: {
           userAgent: maxLengthUserAgent,
           ip: '192.168.1.1',
@@ -101,8 +106,8 @@ describe('Device Info Sanitization E2E', () => {
 
       try {
         await axios.post(apiSignInEndpoint, {
-          email: testEmail,
-          password,
+          email: testUser.email,
+          password: testUser.password,
           deviceInfo: {
             userAgent: 'Mozilla/5.0 Chrome/91.0',
             ip: maliciousIp,
@@ -162,8 +167,8 @@ describe('Device Info Sanitization E2E', () => {
       for (const testCase of invalidTestCases) {
         try {
           await axios.post(apiSignInEndpoint, {
-            email: testEmail,
-            password,
+            email: testUser.email,
+            password: testUser.password,
             deviceInfo: {
               userAgent: 'Mozilla/5.0 Chrome/91.0',
               ip: testCase.input,
@@ -185,8 +190,8 @@ describe('Device Info Sanitization E2E', () => {
 
       for (const testCase of validTestCases) {
         const res = await axios.post(apiSignInEndpoint, {
-          email: testEmail,
-          password,
+          email: testUser.email,
+          password: testUser.password,
           deviceInfo: {
             userAgent: 'Mozilla/5.0 Chrome/91.0',
             ip: testCase.input,
@@ -203,8 +208,8 @@ describe('Device Info Sanitization E2E', () => {
 
       try {
         await axios.post(apiSignInEndpoint, {
-          email: testEmail,
-          password,
+          email: testUser.email,
+          password: testUser.password,
           deviceInfo: {
             userAgent: 'Mozilla/5.0 Chrome/91.0',
             ip: longInvalidIp,
@@ -226,8 +231,8 @@ describe('Device Info Sanitization E2E', () => {
       const validLongIPv6 = '2001:0db8:85a3:0000:0000:8a2e:0370:7334'; // Valid IPv6
 
       const res = await axios.post(apiSignInEndpoint, {
-        email: testEmail,
-        password,
+        email: testUser.email,
+        password: testUser.password,
         deviceInfo: {
           userAgent: 'Mozilla/5.0 Chrome/91.0',
           ip: validLongIPv6,
@@ -242,8 +247,8 @@ describe('Device Info Sanitization E2E', () => {
   describe('Combined Device Info Validation', () => {
     it('should handle missing deviceInfo gracefully', async () => {
       const res = await axios.post(apiSignInEndpoint, {
-        email: testEmail,
-        password,
+        email: testUser.email,
+        password: testUser.password,
       });
 
       expect(res.status).toBe(200);
@@ -252,8 +257,8 @@ describe('Device Info Sanitization E2E', () => {
 
     it('should handle partial deviceInfo', async () => {
       const res = await axios.post(apiSignInEndpoint, {
-        email: testEmail,
-        password,
+        email: testUser.email,
+        password: testUser.password,
         deviceInfo: {
           userAgent: 'Mozilla/5.0 Chrome/91.0',
         },

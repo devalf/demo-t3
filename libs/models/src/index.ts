@@ -6,3 +6,4 @@ export * from './api-order';
 export * from './api-email';
 
 export * from './events';
+export * from './error';
