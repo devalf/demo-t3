@@ -50,7 +50,7 @@ async function bootstrap() {
   Logger.log(
     `Application is running on: http://localhost:${NX_PUBLIC_EMAIL_SERVICE_PORT}/${globalPrefix}`
   );
-  Logger.log(`Email microservice connected to RabbitMQ at: ${rmqUrl}`);
+  Logger.log(`Email microservice connected to RabbitMQ`);
 }
 
 bootstrap();

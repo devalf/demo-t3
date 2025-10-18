@@ -9,6 +9,7 @@ import { LoadingBox } from '../loading-box/loading-box';
 const Product = lazy(() => import('../../pages/product'));
 const Cart = lazy(() => import('../../pages/cart'));
 const OrderSuccess = lazy(() => import('../../pages/order-success'));
+const VerifyEmail = lazy(() => import('../../pages/verify-email'));
 
 export const Layout: FC = () => {
   return (
@@ -37,6 +38,14 @@ export const Layout: FC = () => {
           element={
             <Suspense fallback={<LoadingBox />}>
               <OrderSuccess />
+            </Suspense>
+          }
+        />
+        <Route
+          path={routes.verifyEmail}
+          element={
+            <Suspense fallback={<LoadingBox />}>
+              <VerifyEmail />
             </Suspense>
           }
         />

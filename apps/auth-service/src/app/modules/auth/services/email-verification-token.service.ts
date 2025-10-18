@@ -13,11 +13,6 @@ export class EmailVerificationTokenService {
 
   constructor(private readonly redis: RedisClient) {}
 
-  /**
-   * Generate a verification token and store it in Redis with TTL
-   * @param userId - User ID to associate with the token
-   * @returns The generated verification token
-   */
   async generateVerificationToken(userId: string): Promise<string> {
     const token = randomBytes(32).toString('hex');
     const key = `${this.TOKEN_PREFIX}${token}`;
@@ -27,11 +22,6 @@ export class EmailVerificationTokenService {
     return token;
   }
 
-  /**
-   * Verify a token and get the associated userId
-   * @param token - The verification token
-   * @returns The userId if token is valid, null otherwise
-   */
   async verifyToken(token: string): Promise<string | null> {
     const key = `${this.TOKEN_PREFIX}${token}`;
     const userId = await this.redis.get(key);
@@ -39,21 +29,12 @@ export class EmailVerificationTokenService {
     return userId;
   }
 
-  /**
-   * Invalidate a verification token
-   * @param token - The token to invalidate
-   */
   async invalidateToken(token: string): Promise<void> {
     const key = `${this.TOKEN_PREFIX}${token}`;
 
     await this.redis.del(key);
   }
 
-  /**
-   * Get remaining TTL for a token
-   * @param token - The verification token
-   * @returns TTL in seconds, -1 if no expiry, -2 if doesn't exist
-   */
   async getTokenTTL(token: string): Promise<number> {
     const key = `${this.TOKEN_PREFIX}${token}`;
 

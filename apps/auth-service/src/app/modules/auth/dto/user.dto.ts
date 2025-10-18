@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsInt,
@@ -77,6 +78,14 @@ export class UserDto implements ApiUser {
   @IsEnum(['ADMIN', 'MANAGER', 'CLIENT'])
   role: string;
 
+  @Expose()
+  @IsBoolean()
+  @ApiProperty({
+    description: 'Whether the user email has been verified',
+    example: false,
+  })
+  email_verified: boolean;
+
   deleted_at: string;
   createdAt: string;
   updatedAt: string;
@@ -84,6 +93,7 @@ export class UserDto implements ApiUser {
   settings: string;
   is_active: boolean;
   original_email: string;
+  email_verified_at?: string;
 }
 
 export class DeleteUserParamsDto {

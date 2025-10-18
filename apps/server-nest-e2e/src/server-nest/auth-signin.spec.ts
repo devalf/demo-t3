@@ -1,9 +1,14 @@
 import axios, { AxiosError } from 'axios';
 
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { PrismaClient } from '../../../auth-service/src/prisma-setup/generated';
+
 const SIGN_IN_ENDPOINT = '/api/auth/sign-in';
 const REGISTER_ENDPOINT = '/api/auth/register';
 
 describe('POST /api/auth/sign-in', () => {
+  const prisma = new PrismaClient();
+
   const getUniqueEmail = (prefix: string) =>
     `${prefix}-${Date.now()}@example.com`;
 
@@ -19,10 +24,22 @@ describe('POST /api/auth/sign-in', () => {
 
   beforeAll(async () => {
     try {
-      await axios.post(REGISTER_ENDPOINT, validCredentials);
+      const registerResponse = await axios.post(
+        REGISTER_ENDPOINT,
+        validCredentials
+      );
+      // Mark email as verified for e2e testing
+      await prisma.user.update({
+        where: { id: registerResponse.data.id },
+        data: { email_verified: true },
+      });
     } catch (error) {
       console.error(error);
     }
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
   });
 
   describe('Successful sign-in', () => {

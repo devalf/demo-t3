@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
 
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -24,8 +25,16 @@ import { SALT_ROUNDS, TOKEN_CONFIG } from '../../constants';
 import { User as UserEntity } from '../../../prisma-setup/generated';
 import { JwtUserUtil } from '../../common/utils';
 
-import { AuthTokensDto, LogoutAllResponseDto, UserDto } from './dto';
-import { UserOperationPermissionService } from './services';
+import {
+  AuthTokensDto,
+  LogoutAllResponseDto,
+  UserDto,
+  VerifyEmailResponseDto,
+} from './dto';
+import {
+  EmailVerificationTokenService,
+  UserOperationPermissionService,
+} from './services';
 
 @Injectable()
 export class AuthService {
@@ -36,7 +45,8 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     private readonly userOperationPermissionService: UserOperationPermissionService,
-    private readonly jwtUserUtil: JwtUserUtil
+    private readonly jwtUserUtil: JwtUserUtil,
+    private readonly emailVerificationTokenService: EmailVerificationTokenService
   ) {}
 
   async createUser(userData: ApiCreateUserParams): Promise<UserDto> {
@@ -76,6 +86,12 @@ export class AuthService {
 
     if (!user || !user.is_active) {
       throw new NotFoundException('User not found');
+    }
+
+    if (!user.email_verified) {
+      throw new ForbiddenException(
+        'Please verify your email before signing in. Check your inbox for the verification link.'
+      );
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -265,6 +281,54 @@ export class AuthService {
       message: 'Logged out from all devices successfully',
       devicesLoggedOut: revokedCount,
       timestamp: new Date().toISOString(),
+    };
+  }
+
+  async verifyEmail(token: string): Promise<VerifyEmailResponseDto> {
+    const userId = await this.emailVerificationTokenService.verifyToken(token);
+
+    if (!userId) {
+      throw new BadRequestException('Invalid or expired verification token');
+    }
+
+    const userIdNum = parseInt(userId, 10);
+
+    if (isNaN(userIdNum)) {
+      throw new BadRequestException('Invalid user ID in token');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userIdNum },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.is_active) {
+      throw new BadRequestException('User account is not active');
+    }
+
+    if (user.email_verified) {
+      throw new BadRequestException('Email is already verified');
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userIdNum },
+      data: {
+        email_verified: true,
+        email_verified_at: new Date(),
+      },
+    });
+
+    await this.emailVerificationTokenService.invalidateToken(token);
+
+    this.logger.log(`Email verified successfully for user ${user.email}`);
+
+    return {
+      message: 'Email verified successfully',
+      email: updatedUser.email,
+      verifiedAt: updatedUser.email_verified_at.toISOString(),
     };
   }
 

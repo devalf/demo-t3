@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { PrismaClient } from '../../../auth-service/src/prisma-setup/generated';
+
 type TestUser = {
   id: number;
   email: string;
@@ -18,6 +21,7 @@ export class TestUserManager {
   private static instance: TestUserManager;
   private createdUsers: TestUser[] = [];
   private adminToken: string | null = null;
+  private prisma: PrismaClient;
 
   private readonly API_REGISTER = '/api/auth/register';
   private readonly API_SIGN_IN = '/api/auth/sign-in';
@@ -32,6 +36,7 @@ export class TestUserManager {
         'Environment variables NX_PUBLIC_ALPHA_USER_EMAIL and NX_PUBLIC_ALPHA_USER_PASSWORD must be set.'
       );
     }
+    this.prisma = new PrismaClient();
   }
 
   static getInstance(): TestUserManager {
@@ -60,6 +65,11 @@ export class TestUserManager {
         name: userData.name,
         password: userData.password,
       };
+
+      await this.prisma.user.update({
+        where: { id: testUser.id },
+        data: { email_verified: true },
+      });
 
       this.createdUsers.push(testUser);
 
@@ -142,6 +152,8 @@ export class TestUserManager {
 
     this.createdUsers = [];
     this.adminToken = null;
+
+    await this.prisma.$disconnect();
   }
 
   getTrackedUsers(): TestUser[] {

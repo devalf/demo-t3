@@ -1,9 +1,13 @@
 import { createHash } from 'crypto';
 
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 import { jwtDecode } from 'jwt-decode';
 import {
@@ -17,6 +21,7 @@ import {
   ApiUser,
   ApiVerifyToken,
 } from '@demo-t3/models';
+import { HttpClient } from '@demo-t3/utils-nest';
 import { Redis } from 'ioredis';
 
 type DecodedJwt = {
@@ -42,14 +47,16 @@ export class AuthService {
   private readonly authServiceUrl: string;
   private readonly cacheBufferSeconds = 3;
   private readonly minCacheTtlSeconds = 5;
+  private readonly httpClient: HttpClient;
 
   constructor(
-    private readonly httpService: HttpService,
+    httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     @Inject('REDIS_CLIENT') private readonly redisClient: Redis
   ) {
     this.authServiceUrl = this.buildAuthServiceUrl();
+    this.httpClient = new HttpClient(httpService);
   }
 
   async registerUser(
@@ -64,11 +71,11 @@ export class AuthService {
         deviceInfo,
       };
 
-      const response = await this.makeHttpRequest<
+      const response = await this.httpClient.post<
         ApiUser | ApiAuthResponseError
       >(url, requestPayload);
 
-      if (!this.isValidRegistrationResponse(response)) {
+      if (!this.isValidResponse(response, 201, 'id')) {
         const errorMessages = (response.data as ApiAuthResponseError)?.message;
         const errorMessage = Array.isArray(errorMessages)
           ? errorMessages.join(', ')
@@ -89,21 +96,14 @@ export class AuthService {
     }
   }
 
-  async registerAndSignIn(
+  async register(
     params: ApiCreateUserParams,
     deviceInfo: ApiDeviceInfo
-  ): Promise<ApiTokenResponse> {
+  ): Promise<ApiUser | ApiAuthResponseError> {
     try {
-      await this.registerUser(params, deviceInfo);
-
-      const signInParams: ApiAuthSignInParams = {
-        email: params.email,
-        password: params.password,
-      };
-
-      return await this.signIn(signInParams, deviceInfo);
+      return await this.registerUser(params, deviceInfo);
     } catch (error) {
-      this.logger.error('Register and sign-in failed', {
+      this.logger.error('Registration failed', {
         error: error.message,
         params: { ...params, password: '[REDACTED]' },
         deviceInfo,
@@ -125,12 +125,12 @@ export class AuthService {
         deviceInfo,
       };
 
-      const response = await this.makeHttpRequest<ApiTokenResponse>(
+      const response = await this.httpClient.post<ApiTokenResponse>(
         url,
         requestPayload
       );
 
-      if (!this.isValidSignInResponse(response)) {
+      if (!this.isValidResponse(response, 200, 'accessToken')) {
         throw new Error(response.data?.message || 'Invalid credentials');
       }
 
@@ -158,12 +158,12 @@ export class AuthService {
         deviceInfo,
       };
 
-      const response = await this.makeHttpRequest<ApiTokenResponse>(
+      const response = await this.httpClient.post<ApiTokenResponse>(
         url,
         requestPayload
       );
 
-      if (!this.isValidRefreshResponse(response)) {
+      if (!this.isValidResponse(response, 200, 'accessToken')) {
         throw new Error(response.data?.message || 'Invalid refresh token');
       }
 
@@ -186,12 +186,12 @@ export class AuthService {
         refreshToken,
       };
 
-      const response = await this.makeHttpRequest<ApiLogoutResponse>(
+      const response = await this.httpClient.post<ApiLogoutResponse>(
         url,
         requestPayload
       );
 
-      if (!this.isValidLogoutResponse(response)) {
+      if (!this.isValidResponse(response, 200, 'message')) {
         throw new Error(response.data?.message || 'Logout failed');
       }
 
@@ -202,6 +202,35 @@ export class AuthService {
       });
 
       throw error;
+    }
+  }
+
+  async verifyEmail(token: string): Promise<void> {
+    const url = `${this.authServiceUrl}/verify-email`;
+
+    try {
+      // TODO provide correct typing
+      const response = await this.httpClient.get<{ message: string }>(url, {
+        token,
+      });
+
+      if (!this.isValidResponse(response, 200, 'message')) {
+        throw new BadRequestException(
+          response.data?.message || 'Email verification failed'
+        );
+      }
+    } catch (error) {
+      this.logger.error('Email verification failed', {
+        error: error.message,
+      });
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new BadRequestException(
+        error.message || 'Email verification failed'
+      );
     }
   }
 
@@ -260,44 +289,20 @@ export class AuthService {
     return `http://${host}:${port}/api/auth`;
   }
 
-  private async makeHttpRequest<T>(
-    url: string,
-    data: unknown
-  ): Promise<{ status: number; data: T }> {
-    return firstValueFrom(
-      this.httpService.post(url, data, {
-        validateStatus: () => true,
-        timeout: 5000, // 5 second timeout
-      })
-    );
-  }
+  private isValidResponse<T extends Record<string, unknown>>(
+    response: { status: number; data?: T },
+    expectedStatus: number,
+    validatorOrKey: ((data: T) => boolean) | string
+  ): boolean {
+    if (response.status !== expectedStatus || !response.data) return false;
 
-  private isValidSignInResponse(response: {
-    status: number;
-    data?: ApiTokenResponse;
-  }): boolean {
-    return response.status === 200 && Boolean(response.data?.accessToken);
-  }
+    if (typeof validatorOrKey === 'function') {
+      return validatorOrKey(response.data);
+    }
 
-  private isValidRegistrationResponse(response: {
-    status: number;
-    data?: ApiUser | ApiAuthResponseError;
-  }): boolean {
-    return response.status === 201 && Boolean((response.data as ApiUser)?.id);
-  }
-
-  private isValidRefreshResponse(response: {
-    status: number;
-    data?: ApiTokenResponse;
-  }): boolean {
-    return response.status === 200 && Boolean(response.data?.accessToken);
-  }
-
-  private isValidLogoutResponse(response: {
-    status: number;
-    data?: ApiLogoutResponse;
-  }): boolean {
-    return response.status === 200 && Boolean(response.data?.message);
+    const key = validatorOrKey as keyof T;
+    const value = response.data[key];
+    return Boolean(value);
   }
 
   private async getCachedTokenPayload(token: string): Promise<unknown | null> {
@@ -323,11 +328,11 @@ export class AuthService {
     const url = `${this.authServiceUrl}/verify`;
 
     try {
-      const response = await this.makeHttpRequest<ApiVerifyToken>(url, {
+      const response = await this.httpClient.post<ApiVerifyToken>(url, {
         accessToken,
       });
 
-      if (!this.isValidVerificationResponse(response)) {
+      if (!this.isValidResponse(response, 200, 'isValid')) {
         throw new Error(response.data?.error || 'Invalid token');
       }
 
@@ -344,13 +349,6 @@ export class AuthService {
 
       throw error;
     }
-  }
-
-  private isValidVerificationResponse(response: {
-    status: number;
-    data?: ApiVerifyToken;
-  }): boolean {
-    return response.status === 200 && response.data?.isValid === true;
   }
 
   private async cacheTokenPayload(

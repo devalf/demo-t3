@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -25,6 +26,7 @@ import {
   AccessTokenExpiresInDto,
   AuthSignInDto,
   CreateUserDto,
+  VerifyEmailParamsDto,
 } from '../../dto/auth.dto';
 import { THROTTLER_CONFIG } from '../../constants';
 
@@ -215,10 +217,9 @@ export class AuthController {
     },
   })
   @ApiOperation({
-    summary: 'Register and sign in user',
+    summary: 'Register a new user',
     description:
-      'Register a new user and immediately sign them in. Sets accessToken and refreshToken cookies on success.' +
-      'This is simplified DEMO version, without the necessary steps such as email verification.',
+      'Register a new user. A verification email will be sent. User must verify email before signing in.',
   })
   @ApiBody({
     description: 'User registration data',
@@ -232,8 +233,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: 201,
-    description:
-      'User registered and signed in successfully. Authentication cookies are set.',
+    description: 'User registered successfully. Verification email sent.',
   })
   @ApiResponse({
     status: 400,
@@ -247,18 +247,50 @@ export class AuthController {
     status: 429,
     description: 'Too many registration attempts. Please try again later.',
   })
-  async registerAndSignIn(
+  async register(
     @Body() body: CreateUserDto,
     @Req() request: Request,
     @Res({ passthrough: false }) res: Response
   ) {
     const deviceInfo = extractDeviceInfo(request);
 
-    const result = await this.authService.registerAndSignIn(body, deviceInfo);
-
-    this.setCookiesFromTokens(res, result);
+    await this.authService.register(body, deviceInfo);
 
     return res.status(201).send();
+  }
+
+  @Get('verify-email')
+  @Throttle({
+    default: {
+      limit: THROTTLER_CONFIG.RIGID.LIMIT,
+      ttl: THROTTLER_CONFIG.RIGID.TTL_MILLISECONDS,
+    },
+  })
+  @ApiOperation({
+    summary: 'Verify email address',
+    description: 'Verify user email using token from email link.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Email verified successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired verification token.',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too many verification attempts. Please try again later.',
+  })
+  async verifyEmail(
+    @Query() params: VerifyEmailParamsDto,
+    @Res({ passthrough: false }) res: Response
+  ) {
+    const { token } = params;
+
+    await this.authService.verifyEmail(token);
+
+    return res.status(200).send();
   }
 
   private setCookiesFromTokens(

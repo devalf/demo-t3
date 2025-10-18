@@ -2,12 +2,15 @@ import { useMutation } from '@tanstack/react-query';
 
 import { signUpRequest } from '../../repository';
 import { useInjection } from '../../bootstrap/ioc/use-injection';
-import { IUserManager } from '../../store/interfaces';
+import { IModalManager, IToastManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 
 export const useSignUpMutation = () => {
-  const { setIsSignedIn } = useInjection<IUserManager>(
-    DependencyType.UserManager
+  const { closeModal } = useInjection<IModalManager>(
+    DependencyType.ModalManager
+  );
+  const { showToast } = useInjection<IToastManager>(
+    DependencyType.ToastManager
   );
 
   const { mutateAsync, isPending } = useMutation<
@@ -18,7 +21,12 @@ export const useSignUpMutation = () => {
     mutationFn: signUpRequest,
     mutationKey: ['sign-up'],
     onSuccess: () => {
-      setIsSignedIn(true);
+      closeModal();
+      showToast({
+        message:
+          'Registration successful! Please check your email to verify your account.',
+        variant: 'success',
+      });
     },
   });
 

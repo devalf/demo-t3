@@ -30,6 +30,7 @@ export const generateOrmUser = (
     is_active: boolean;
     deleted_at: Date | null;
     original_email: string | null;
+    email_verified: boolean;
     created_at: Date;
     updated_at: Date;
   }>
@@ -43,6 +44,7 @@ export const generateOrmUser = (
   is_active: true,
   deleted_at: null,
   original_email: null,
+  email_verified: true,
   created_at: new Date('2025-01-01T00:00:00Z'),
   updated_at: new Date('2025-01-01T00:00:00Z'),
   ...options,

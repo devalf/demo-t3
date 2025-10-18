@@ -3,10 +3,12 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Patch,
   Post,
+  Query,
   Req,
   UseInterceptors,
 } from '@nestjs/common';
@@ -33,6 +35,8 @@ import {
   RefreshTokenWithDeviceDto,
   UserDto,
   VerifyAccessTokenParamsDto,
+  VerifyEmailQueryDto,
+  VerifyEmailResponseDto,
   VerifyTokenDto,
 } from './dto';
 
@@ -91,6 +95,10 @@ export class AuthController {
   @ApiResponse({
     status: 401,
     description: 'Invalid credentials',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Email not verified',
   })
   @ApiResponse({
     status: 404,
@@ -253,5 +261,32 @@ export class AuthController {
       body.accessToken,
       body.targetUserId
     );
+  }
+
+  @Get('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Verify email with token sent to email',
+    description:
+      'This endpoint verifies the user email using the token sent to their email address during registration. ' +
+      'The token is valid for a limited time and can only be used once.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Email verified successfully',
+    type: VerifyEmailResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired token, or email already verified',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  async verifyEmail(
+    @Query() params: VerifyEmailQueryDto
+  ): Promise<VerifyEmailResponseDto> {
+    return this.authService.verifyEmail(params.token);
   }
 }

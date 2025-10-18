@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -17,14 +17,28 @@ type TemplateSet = {
   text: HandlebarsTemplateDelegate;
 };
 
+type EmailMode = 'send' | 'file' | 'both';
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: Transporter;
+  private transporter: Transporter | null = null;
   private templates: Map<EmailTemplate, TemplateSet> = new Map();
+  private readonly emailMode: EmailMode;
+  private readonly emailStoragePath: string;
 
   constructor(private configService: ConfigService) {
-    this.initializeTransporter();
+    this.emailMode = this.getEmailMode();
+    this.emailStoragePath = join(process.cwd(), 'dev', 'non-track', 'mails');
+
+    if (this.emailMode === 'send' || this.emailMode === 'both') {
+      this.initializeTransporter();
+    }
+
+    if (this.emailMode === 'file' || this.emailMode === 'both') {
+      this.initializeFileStorage();
+    }
+
     this.loadTemplates();
   }
 
@@ -65,28 +79,45 @@ export class EmailService {
     );
     const fromName = this.configService.get<string>('NX_PUBLIC_SMTP_FROM_NAME');
 
-    if (!fromAddress || !fromName) {
-      throw new Error(
-        'Email configuration incomplete: NX_PUBLIC_SMTP_FROM_ADDRESS and NX_PUBLIC_SMTP_FROM_NAME are required'
-      );
+    const subject = 'Verify Your Email - Demo T3';
+
+    if (this.emailMode === 'send' || this.emailMode === 'both') {
+      if (!fromAddress || !fromName) {
+        throw new Error(
+          'Email configuration incomplete: NX_PUBLIC_SMTP_FROM_ADDRESS and NX_PUBLIC_SMTP_FROM_NAME are required'
+        );
+      }
+
+      if (!this.transporter) {
+        throw new Error('Email transporter not initialized');
+      }
+
+      try {
+        const info = await this.transporter.sendMail({
+          from: `"${fromName}" <${fromAddress}>`,
+          to,
+          subject,
+          text: textContent,
+          html: htmlContent,
+        });
+
+        this.logger.log(
+          `Verification email sent to ${to}. Message ID: ${info.messageId}`
+        );
+      } catch (error) {
+        this.logger.error(`Failed to send verification email to ${to}`, error);
+        throw error;
+      }
     }
 
-    try {
-      const info = await this.transporter.sendMail({
-        from: `"${fromName}" <${fromAddress}>`,
+    if (this.emailMode === 'file' || this.emailMode === 'both') {
+      await this.saveEmailToFile({
         to,
-        subject: 'Verify Your Email - Demo T3',
-        text: textContent,
-        html: htmlContent,
+        subject,
+        htmlContent,
+        textContent,
+        templateName: EmailTemplate.VERIFICATION,
       });
-
-      this.logger.log(
-        `Verification email sent to ${to}. Message ID: ${info.messageId}`
-      );
-    } catch (error) {
-      this.logger.error(`Failed to send verification email to ${to}`, error);
-
-      throw error;
     }
   }
 
@@ -130,8 +161,8 @@ export class EmailService {
         );
 
         this.templates.set(EmailTemplate[key as keyof typeof EmailTemplate], {
-          html: Handlebars.compile(htmlSource),
-          text: Handlebars.compile(textSource),
+          html: Handlebars.compile(htmlSource, { noEscape: true }),
+          text: Handlebars.compile(textSource, { noEscape: true }),
         });
       }
     } catch (error) {
@@ -139,6 +170,85 @@ export class EmailService {
         'Failed to load email templates. Make sure to run "yarn build:email-templates" first.',
         error
       );
+
+      throw error;
+    }
+  }
+
+  private getEmailMode(): EmailMode {
+    const mode = this.configService.get<string>('NX_PUBLIC_EMAIL_MODE');
+
+    if (!mode) {
+      return 'send';
+    }
+
+    if (mode !== 'send' && mode !== 'file' && mode !== 'both') {
+      this.logger.warn(
+        `Invalid EMAIL_MODE "${mode}", defaulting to "send" mode. Valid values are: send, file, both`
+      );
+
+      return 'send';
+    }
+
+    this.logger.log(`Email mode set to: ${mode}`);
+    return mode as EmailMode;
+  }
+
+  private initializeFileStorage() {
+    if (!existsSync(this.emailStoragePath)) {
+      mkdirSync(this.emailStoragePath, { recursive: true });
+      this.logger.log(
+        `Created email storage directory: ${this.emailStoragePath}`
+      );
+    } else {
+      this.logger.log(
+        `Email storage directory ready: ${this.emailStoragePath}`
+      );
+    }
+  }
+
+  private async saveEmailToFile(params: {
+    to: string;
+    subject: string;
+    htmlContent: string;
+    textContent: string;
+    templateName: string;
+  }): Promise<void> {
+    const { to, subject, htmlContent, textContent, templateName } = params;
+
+    try {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const sanitizedRecipient = to.replace(/[^a-zA-Z0-9@.-]/g, '_');
+      const baseFilename = `${timestamp}_${sanitizedRecipient}_${templateName}`;
+
+      const htmlPath = join(this.emailStoragePath, `${baseFilename}.html`);
+      const htmlWithMetadata = `<!--
+        To: ${to}
+        Subject: ${subject}
+        Template: ${templateName}
+        Timestamp: ${new Date().toISOString()}
+        -->
+        
+        ${htmlContent}`;
+
+      writeFileSync(htmlPath, htmlWithMetadata, 'utf-8');
+
+      const txtPath = join(this.emailStoragePath, `${baseFilename}.txt`);
+      const txtWithMetadata = `To: ${to}
+        Subject: ${subject}
+        Template: ${templateName}
+        Timestamp: ${new Date().toISOString()}
+        ${'='.repeat(70)}
+        
+        ${textContent}`;
+
+      writeFileSync(txtPath, txtWithMetadata, 'utf-8');
+
+      this.logger.log(
+        `Email saved to files: ${baseFilename}.html and ${baseFilename}.txt`
+      );
+    } catch (error) {
+      this.logger.error(`Failed to save email to file for ${to}`, error);
 
       throw error;
     }

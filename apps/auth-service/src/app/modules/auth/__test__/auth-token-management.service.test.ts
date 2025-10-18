@@ -104,6 +104,12 @@ describe('AuthService - Token Management Features', () => {
       verbose: jest.fn(),
     };
 
+    const mockEmailVerificationTokenService = {
+      createToken: jest.fn(),
+      verifyToken: jest.fn(),
+      deleteToken: jest.fn(),
+    };
+
     mockedBcrypt.hash.mockResolvedValue('hashed_password' as never);
     mockedBcrypt.compare.mockResolvedValue(true as never);
 
@@ -112,7 +118,8 @@ describe('AuthService - Token Management Features', () => {
       mockConfigService as ConfigService,
       mockPrismaService as PrismaService,
       mockUserOperationPermissionService as UserOperationPermissionService,
-      mockJwtUserUtil as JwtUserUtil
+      mockJwtUserUtil as JwtUserUtil,
+      mockEmailVerificationTokenService as any
     );
 
     // Mock the logger to prevent console output during tests

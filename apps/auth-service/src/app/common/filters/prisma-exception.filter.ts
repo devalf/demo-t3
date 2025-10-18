@@ -1,10 +1,9 @@
+import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpStatus,
-  Logger,
-} from '@nestjs/common';
+  ERROR_CODE_MESSAGES,
+  ERROR_CODE_TO_HTTP_STATUS,
+  ErrorCode,
+} from '@demo-t3/models';
 import { Response } from 'express';
 
 import { PrismaClientKnownRequestError } from '../../../prisma-setup/generated/runtime/library';
@@ -17,33 +16,26 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = 'Internal server error';
+    let errorCode: ErrorCode;
+    let message: string;
 
     switch (exception.code) {
       case 'P2002':
         // Unique constraint violation
-        status = HttpStatus.CONFLICT;
-        message = 'Resource already exists';
-
-        if (exception.meta?.target) {
-          const field = Array.isArray(exception.meta.target)
-            ? exception.meta.target[0]
-            : exception.meta.target;
-          message = `${field} already exists`;
-        }
+        errorCode = ErrorCode.ALREADY_EXISTS;
+        message = ERROR_CODE_MESSAGES[ErrorCode.ALREADY_EXISTS];
         break;
 
       case 'P2025':
         // Record not found - this is expected behavior, log as debug/warn instead of error
-        status = HttpStatus.NOT_FOUND;
-        message = 'Resource not found';
+        errorCode = ErrorCode.NOT_FOUND;
+        message = ERROR_CODE_MESSAGES[ErrorCode.NOT_FOUND];
         this.logger.debug(`Resource not found: ${exception.message}`);
         break;
 
       case 'P2003':
         // Foreign key constraint violation
-        status = HttpStatus.BAD_REQUEST;
+        errorCode = ErrorCode.INVALID_INPUT;
         message = 'Invalid reference to related resource';
         this.logger.warn(
           `Foreign key constraint violation: ${exception.message}`
@@ -52,13 +44,16 @@ export class PrismaExceptionFilter implements ExceptionFilter {
 
       case 'P2014':
         // Required relation violation
-        status = HttpStatus.BAD_REQUEST;
+        errorCode = ErrorCode.CONFLICT;
         message = 'Cannot delete resource due to related dependencies';
         this.logger.warn(`Relation constraint violation: ${exception.message}`);
         break;
 
       default:
         // Only log actual errors, not expected business logic failures
+        errorCode = ErrorCode.DATABASE_ERROR;
+        message = ERROR_CODE_MESSAGES[ErrorCode.DATABASE_ERROR];
+
         this.logger.error(
           `Unhandled Prisma error: ${exception.code}`,
           exception.message
@@ -66,9 +61,12 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         break;
     }
 
+    const status = ERROR_CODE_TO_HTTP_STATUS[errorCode];
+
     response.status(status).json({
       statusCode: status,
       message,
+      code: errorCode,
       error: exception.code,
       timestamp: new Date().toISOString(),
     });
