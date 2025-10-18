@@ -268,12 +268,11 @@ export class AuthController {
   })
   @ApiOperation({
     summary: 'Verify email address',
-    description:
-      'Verify user email using token from email link. Redirects to specified returnTo path or root path on success.',
+    description: 'Verify user email using token from email link.',
   })
   @ApiResponse({
-    status: 302,
-    description: 'Email verified successfully. Redirects to success page.',
+    status: 200,
+    description: 'Email verified successfully.',
   })
   @ApiResponse({
     status: 400,
@@ -285,15 +284,13 @@ export class AuthController {
   })
   async verifyEmail(
     @Query() params: VerifyEmailParamsDto,
-    @Res() res: Response
+    @Res({ passthrough: false }) res: Response
   ) {
-    const { token, returnTo } = params;
+    const { token } = params;
 
     await this.authService.verifyEmail(token);
 
-    const redirectUrl = returnTo || '/';
-
-    return res.redirect(redirectUrl);
+    return res.status(200).send();
   }
 
   private setCookiesFromTokens(

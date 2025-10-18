@@ -17,5 +17,4 @@ export type ApiAuthResponseError = {
 
 export type ApiVerifyEmailParams = {
   token: string;
-  returnTo?: string;
 };

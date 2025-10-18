@@ -5,10 +5,6 @@
         <mj-text align="center" css-class="brand-name" font-size="26px" font-weight="bold">
           Demo T3
         </mj-text>
-
-          <mj-text align="center" css-class="brand-name" font-size="22px" color="red">
-              Please ignore this email. It's still in development
-          </mj-text>
       </mj-column>
     </mj-section>
 

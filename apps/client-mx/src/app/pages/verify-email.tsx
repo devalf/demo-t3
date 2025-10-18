@@ -1,5 +1,5 @@
 import { Alert, Box, Container, Typography } from '@mui/material';
-import React, { FC, useEffect } from 'react';
+import React, { FC, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { useVerifyEmailMutation } from '../state';
@@ -12,10 +12,14 @@ export const VerifyEmail: FC = () => {
   const { verifyEmail, isLoading, isError, isSuccess } =
     useVerifyEmailMutation();
 
+  const hasVerifiedRef = useRef<boolean>(false);
+
   useEffect(() => {
-    if (!token) {
+    if (!token || hasVerifiedRef.current) {
       return;
     }
+
+    hasVerifiedRef.current = true;
 
     verifyEmail(token);
   }, [token, verifyEmail]);
