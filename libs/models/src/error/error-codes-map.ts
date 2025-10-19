@@ -46,6 +46,7 @@ export enum ErrorCode {
   NOT_FOUND = 'NOT_FOUND',
   USER_NOT_FOUND = 'USER_NOT_FOUND',
   RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND',
+  USER_UPDATE_FAILED = 'USER_UPDATE_FAILED',
 
   // Conflict errors (5xxx)
   ALREADY_EXISTS = 'ALREADY_EXISTS',
@@ -106,6 +107,7 @@ export const ERROR_CODE_TO_HTTP_STATUS: Record<ErrorCode, HttpStatus> = {
   [ErrorCode.NOT_FOUND]: HttpStatus.NOT_FOUND,
   [ErrorCode.USER_NOT_FOUND]: HttpStatus.NOT_FOUND,
   [ErrorCode.RESOURCE_NOT_FOUND]: HttpStatus.NOT_FOUND,
+  [ErrorCode.USER_UPDATE_FAILED]: HttpStatus.BAD_REQUEST,
 
   // Conflict errors -> 409
   [ErrorCode.ALREADY_EXISTS]: HttpStatus.CONFLICT,
@@ -170,6 +172,7 @@ export const ERROR_CODE_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.NOT_FOUND]: 'Resource not found',
   [ErrorCode.USER_NOT_FOUND]: 'User not found',
   [ErrorCode.RESOURCE_NOT_FOUND]: 'The requested resource could not be found',
+  [ErrorCode.USER_UPDATE_FAILED]: 'Failed to update user',
 
   // Conflicts
   [ErrorCode.ALREADY_EXISTS]: 'Resource already exists',

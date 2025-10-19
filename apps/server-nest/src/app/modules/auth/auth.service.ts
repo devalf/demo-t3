@@ -17,9 +17,12 @@ import {
   ApiDeviceInfo,
   ApiDeviceInfoParams,
   ApiLogoutResponse,
+  ApiMessagePayload,
   ApiTokenResponse,
+  ApiUpdateUserParams,
   ApiUser,
   ApiVerifyToken,
+  ErrorCode,
 } from '@demo-t3/models';
 import { HttpClient } from '@demo-t3/utils-nest';
 import { Redis } from 'ioredis';
@@ -209,8 +212,7 @@ export class AuthService {
     const url = `${this.authServiceUrl}/verify-email`;
 
     try {
-      // TODO provide correct typing
-      const response = await this.httpClient.get<{ message: string }>(url, {
+      const response = await this.httpClient.get<ApiMessagePayload>(url, {
         token,
       });
 
@@ -230,6 +232,33 @@ export class AuthService {
 
       throw new BadRequestException(
         error.message || 'Email verification failed'
+      );
+    }
+  }
+
+  async updateUser(params: ApiUpdateUserParams): Promise<ApiUser> {
+    const url = `${this.authServiceUrl}/user`;
+
+    try {
+      const response = await this.httpClient.patch<ApiUser>(url, params);
+
+      if (!this.isValidResponse(response, 200, 'id')) {
+        throw new BadRequestException(ErrorCode.USER_UPDATE_FAILED);
+      }
+
+      return response.data;
+    } catch (error) {
+      this.logger.error('User update failed', {
+        error: error.message,
+        userId: params.targetUserId,
+      });
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new BadRequestException(
+        error.message || ErrorCode.USER_UPDATE_FAILED
       );
     }
   }

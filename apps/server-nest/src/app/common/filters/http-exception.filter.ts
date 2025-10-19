@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { ErrorCode } from '@demo-t3/models';
+import { ERROR_CODE_MESSAGES, ErrorCode } from '@demo-t3/models';
 
 type ErrorResponse = {
   statusCode: number;
@@ -52,9 +52,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
           : (exceptionResponse as { message?: string })?.message ||
             exception.message;
 
+      const errorCode = this.getErrorCodeFromMessage(message);
+      const finalMessage = errorCode ? ERROR_CODE_MESSAGES[errorCode] : message;
+
       return {
         statusCode: status,
-        message,
+        message: finalMessage,
+        code: errorCode,
       };
     }
 
@@ -81,6 +85,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message: 'Internal server error',
       code: ErrorCode.INTERNAL_SERVER_ERROR,
     };
+  }
+
+  private getErrorCodeFromMessage(message: string): ErrorCode | undefined {
+    if (Object.values(ErrorCode).includes(message as ErrorCode)) {
+      return message as ErrorCode;
+    }
+
+    return undefined;
   }
 
   /**

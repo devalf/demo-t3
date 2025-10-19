@@ -1,50 +1,27 @@
 import axios, { AxiosError } from 'axios';
 
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import { PrismaClient } from '../../../auth-service/src/prisma-setup/generated';
-
-const SIGN_IN_ENDPOINT = '/api/auth/sign-in';
-const REGISTER_ENDPOINT = '/api/auth/register';
+const apiSignInEndpoint = '/api/auth/sign-in';
 
 describe('POST /api/auth/sign-in', () => {
-  const prisma = new PrismaClient();
+  const ADMIN_EMAIL = process.env.NX_PUBLIC_ALPHA_USER_EMAIL;
+  const ADMIN_PASSWORD = process.env.NX_PUBLIC_ALPHA_USER_PASSWORD;
 
   const getUniqueEmail = (prefix: string) =>
     `${prefix}-${Date.now()}@example.com`;
 
   const validCredentials = {
-    email: getUniqueEmail('signin-test'),
-    password: 'TestPassword123!',
+    email: ADMIN_EMAIL,
+    password: ADMIN_PASSWORD,
   };
 
   const invalidCredentials = {
-    email: validCredentials.email,
+    email: ADMIN_EMAIL,
     password: 'wrongpassword',
   };
 
-  beforeAll(async () => {
-    try {
-      const registerResponse = await axios.post(
-        REGISTER_ENDPOINT,
-        validCredentials
-      );
-      // Mark email as verified for e2e testing
-      await prisma.user.update({
-        where: { id: registerResponse.data.id },
-        data: { email_verified: true },
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  });
-
-  afterAll(async () => {
-    await prisma.$disconnect();
-  });
-
   describe('Successful sign-in', () => {
     it('should sign in with valid credentials', async () => {
-      const response = await axios.post(SIGN_IN_ENDPOINT, validCredentials);
+      const response = await axios.post(apiSignInEndpoint, validCredentials);
 
       expect(response.status).toBe(200);
       expect(response.data).toHaveProperty('accessTokenExpiresIn');
@@ -63,7 +40,7 @@ describe('POST /api/auth/sign-in', () => {
     });
 
     it('should set secure cookie attributes', async () => {
-      const response = await axios.post(SIGN_IN_ENDPOINT, validCredentials);
+      const response = await axios.post(apiSignInEndpoint, validCredentials);
 
       const cookies = response.headers['set-cookie'];
       const accessTokenCookie = cookies.find((cookie: string) =>
@@ -83,7 +60,7 @@ describe('POST /api/auth/sign-in', () => {
   describe('Authentication failures', () => {
     it('should return 400 for invalid credentials', async () => {
       try {
-        await axios.post(SIGN_IN_ENDPOINT, invalidCredentials);
+        await axios.post(apiSignInEndpoint, invalidCredentials);
 
         fail('Expected request to fail');
       } catch (error) {
@@ -100,7 +77,7 @@ describe('POST /api/auth/sign-in', () => {
       };
 
       try {
-        await axios.post(SIGN_IN_ENDPOINT, nonExistentUser);
+        await axios.post(apiSignInEndpoint, nonExistentUser);
 
         fail('Expected request to fail');
       } catch (error) {
@@ -118,7 +95,7 @@ describe('POST /api/auth/sign-in', () => {
       };
 
       try {
-        await axios.post(SIGN_IN_ENDPOINT, invalidEmailData);
+        await axios.post(apiSignInEndpoint, invalidEmailData);
 
         fail('Expected request to fail');
       } catch (error) {
@@ -135,7 +112,7 @@ describe('POST /api/auth/sign-in', () => {
       };
 
       try {
-        await axios.post(SIGN_IN_ENDPOINT, weakPasswordData);
+        await axios.post(apiSignInEndpoint, weakPasswordData);
 
         fail('Expected request to fail');
       } catch (error) {
@@ -151,7 +128,7 @@ describe('POST /api/auth/sign-in', () => {
       };
 
       try {
-        await axios.post(SIGN_IN_ENDPOINT, missingEmailData);
+        await axios.post(apiSignInEndpoint, missingEmailData);
 
         fail('Expected request to fail');
       } catch (error) {
@@ -167,7 +144,7 @@ describe('POST /api/auth/sign-in', () => {
       };
 
       try {
-        await axios.post(SIGN_IN_ENDPOINT, missingPasswordData);
+        await axios.post(apiSignInEndpoint, missingPasswordData);
 
         fail('Expected request to fail');
       } catch (error) {
@@ -179,7 +156,7 @@ describe('POST /api/auth/sign-in', () => {
 
     it('should return 400 for empty request body', async () => {
       try {
-        await axios.post(SIGN_IN_ENDPOINT, {});
+        await axios.post(apiSignInEndpoint, {});
 
         fail('Expected request to fail');
       } catch (error) {
@@ -192,7 +169,7 @@ describe('POST /api/auth/sign-in', () => {
 
   describe('Request headers and device info', () => {
     it('should accept requests with User-Agent header', async () => {
-      const response = await axios.post(SIGN_IN_ENDPOINT, validCredentials, {
+      const response = await axios.post(apiSignInEndpoint, validCredentials, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Test Browser) E2E Test',
         },
@@ -203,7 +180,7 @@ describe('POST /api/auth/sign-in', () => {
     });
 
     it('should accept requests with X-Forwarded-For header', async () => {
-      const response = await axios.post(SIGN_IN_ENDPOINT, validCredentials, {
+      const response = await axios.post(apiSignInEndpoint, validCredentials, {
         headers: {
           'X-Forwarded-For': '192.168.1.100',
         },
@@ -216,7 +193,7 @@ describe('POST /api/auth/sign-in', () => {
 
   describe('Response format and structure', () => {
     it('should return correct response structure', async () => {
-      const response = await axios.post(SIGN_IN_ENDPOINT, validCredentials);
+      const response = await axios.post(apiSignInEndpoint, validCredentials);
 
       expect(response.status).toBe(200);
       expect(response.data).toEqual({
@@ -225,7 +202,7 @@ describe('POST /api/auth/sign-in', () => {
     });
 
     it('should return Content-Type application/json', async () => {
-      const response = await axios.post(SIGN_IN_ENDPOINT, validCredentials);
+      const response = await axios.post(apiSignInEndpoint, validCredentials);
 
       expect(response.headers['content-type']).toContain('application/json');
     });
@@ -233,7 +210,7 @@ describe('POST /api/auth/sign-in', () => {
 
   describe('Cookie management', () => {
     it('should set cookies with appropriate expiration', async () => {
-      const response = await axios.post(SIGN_IN_ENDPOINT, validCredentials);
+      const response = await axios.post(apiSignInEndpoint, validCredentials);
 
       const cookies = response.headers['set-cookie'];
       const accessTokenCookie = cookies.find((cookie: string) =>
@@ -248,7 +225,7 @@ describe('POST /api/auth/sign-in', () => {
     });
 
     it('should not include sensitive information in response body', async () => {
-      const response = await axios.post(SIGN_IN_ENDPOINT, validCredentials);
+      const response = await axios.post(apiSignInEndpoint, validCredentials);
 
       expect(response.data).not.toHaveProperty('accessToken');
       expect(response.data).not.toHaveProperty('refreshToken');
@@ -264,7 +241,7 @@ describe('POST /api/auth/sign-in', () => {
         password: validCredentials.password,
       };
 
-      const response = await axios.post(SIGN_IN_ENDPOINT, upperCaseEmailCreds);
+      const response = await axios.post(apiSignInEndpoint, upperCaseEmailCreds);
       expect(response.status).toBe(200);
     });
 
@@ -275,7 +252,7 @@ describe('POST /api/auth/sign-in', () => {
       };
 
       try {
-        await axios.post(SIGN_IN_ENDPOINT, whitespaceEmailCreds);
+        await axios.post(apiSignInEndpoint, whitespaceEmailCreds);
         // If it succeeds, that's fine (trimming is handled)
       } catch (error) {
         // If it fails, it should be a validation error (400)
@@ -292,7 +269,7 @@ describe('POST /api/auth/sign-in', () => {
       };
 
       try {
-        await axios.post(SIGN_IN_ENDPOINT, nullData);
+        await axios.post(apiSignInEndpoint, nullData);
         fail('Expected request to fail');
       } catch (error) {
         const axiosError = error as AxiosError;

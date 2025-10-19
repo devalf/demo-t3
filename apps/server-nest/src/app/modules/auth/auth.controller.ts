@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Post,
   Query,
   Req,
@@ -20,12 +21,15 @@ import {
   AccessTokenGuard,
   EmailThrottlerGuard,
   RefreshTokenGuard,
+  RolesGuard,
 } from '../../common/guards';
-import { RefreshToken } from '../../common/decorators';
+import { RefreshToken, Roles } from '../../common/decorators';
+import { AuthenticatedRequest } from '../../common/types';
 import {
   AccessTokenExpiresInDto,
   AuthSignInDto,
   CreateUserDto,
+  UpdateUserDto,
   VerifyEmailParamsDto,
 } from '../../dto/auth.dto';
 import { THROTTLER_CONFIG } from '../../constants';
@@ -289,6 +293,61 @@ export class AuthController {
     const { token } = params;
 
     await this.authService.verifyEmail(token);
+
+    return res.status(200).send();
+  }
+
+  @Patch('user')
+  @Roles('ADMIN')
+  @UseGuards(AccessTokenGuard, RolesGuard)
+  @Throttle({
+    default: {
+      limit: THROTTLER_CONFIG.RIGID.LIMIT,
+      ttl: THROTTLER_CONFIG.RIGID.TTL_MILLISECONDS,
+    },
+  })
+  @ApiOperation({
+    summary: 'Update user information',
+    description:
+      'Update user information. Admin only endpoint for managing user data including email verification status.',
+  })
+  @ApiBody({
+    description: 'User update data',
+    type: UpdateUserDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User updated successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request. Invalid input data.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized. Access token missing or invalid.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden. Insufficient permissions.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found.',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too many update attempts. Please try again later.',
+  })
+  async updateUser(
+    @Body() body: UpdateUserDto,
+    @Req() request: AuthenticatedRequest,
+    @Res({ passthrough: false }) res: Response
+  ) {
+    await this.authService.updateUser({
+      ...body,
+      accessToken: request.accessToken,
+    });
 
     return res.status(200).send();
   }

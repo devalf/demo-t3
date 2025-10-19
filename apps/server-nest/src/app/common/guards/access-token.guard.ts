@@ -5,8 +5,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { ApiJwtPayload } from '@demo-t3/models';
 
 import { AuthService } from '../../modules/auth/auth.service';
+import { AuthenticatedRequest } from '../types';
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
@@ -22,7 +24,10 @@ export class AccessTokenGuard implements CanActivate {
 
     try {
       const payload = await this.authService.verifyToken(accessToken);
-      (request as Request & { user?: unknown }).user = payload;
+      const authenticatedRequest = request as AuthenticatedRequest;
+
+      authenticatedRequest.user = payload as ApiJwtPayload;
+      authenticatedRequest.accessToken = accessToken;
 
       return true;
     } catch (error) {

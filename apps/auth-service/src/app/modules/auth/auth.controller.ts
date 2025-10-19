@@ -16,6 +16,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { extractDeviceInfo } from '@demo-t3/utils';
 import { UserRegistrationInitiatedEvent } from '@demo-t3/models';
+import { UpdateUserDto } from '@demo-t3/utils-nest';
 
 import { EmailServiceClient } from '../messaging';
 import { TOKEN_CONFIG } from '../../constants';
@@ -202,6 +203,34 @@ export class AuthController {
     @Body() body: VerifyAccessTokenParamsDto
   ): Promise<VerifyTokenDto> {
     return this.authService.verifyToken(body.accessToken);
+  }
+
+  @Patch('user')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Update user information',
+    description:
+      'This endpoint is intended for internal microservice use only. Allows admins to update user information including email verification status.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User updated successfully',
+    type: UserDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - insufficient permissions',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  async updateUser(@Body() body: UpdateUserDto): Promise<UserDto> {
+    const { accessToken, targetUserId, ...rest } = body;
+
+    return this.authService.updateUser(accessToken, targetUserId, {
+      ...rest,
+    });
   }
 
   @Patch('user/soft-delete')

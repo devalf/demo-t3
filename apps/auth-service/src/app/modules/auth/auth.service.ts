@@ -17,6 +17,8 @@ import {
   ApiDeviceInfo,
   ApiJwtPayload,
   ApiRefreshTokenPayload,
+  ApiUpdateUserBasicParams,
+  ErrorCode,
 } from '@demo-t3/models';
 import { plainToInstance } from 'class-transformer';
 
@@ -66,11 +68,68 @@ export class AuthService {
     return plainToInstance(UserDto, user);
   }
 
-  async updateUser(id: number, data: { email?: string }) {
-    return this.prisma.user.update({
-      where: { id },
-      data,
+  async updateUser(
+    accessToken: string,
+    targetUserId: number,
+    data: ApiUpdateUserBasicParams
+  ): Promise<UserDto> {
+    const currentUser = await this.jwtUserUtil.extractUserFromAccessToken(
+      accessToken
+    );
+
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: {
+        id: true,
+        role: true,
+        is_active: true,
+        email: true,
+      },
     });
+
+    if (!targetUser || !targetUser.is_active) {
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+    }
+
+    const canUpdate =
+      this.userOperationPermissionService.canUserPerformActionOnUser(
+        currentUser,
+        targetUser
+      );
+
+    if (!canUpdate.allowed) {
+      throw new ForbiddenException(canUpdate.reason);
+    }
+
+    // Only admins can modify email_verified status
+    if (data.email_verified !== undefined && currentUser.role !== 'ADMIN') {
+      throw new ForbiddenException(
+        'Only administrators can modify email verification status'
+      );
+    }
+
+    const updateData: ApiUpdateUserBasicParams = {};
+
+    if (data.email !== undefined) {
+      updateData.email = data.email.toLowerCase();
+    }
+
+    if (data.name !== undefined) {
+      updateData.name = data.name;
+    }
+
+    if (data.email_verified !== undefined) {
+      updateData.email_verified = data.email_verified;
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: targetUserId },
+      data: updateData,
+    });
+
+    this.logger.log(`User ${targetUserId} updated by user ${currentUser.id}`);
+
+    return plainToInstance(UserDto, updatedUser);
   }
 
   async signIn(
