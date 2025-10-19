@@ -5,13 +5,14 @@ import {
   IsString,
   IsStrongPassword,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import {
   ApiAccessTokenExpiresIn,
   ApiAuthSignInParams,
   ApiCreateUserParams,
   ApiVerifyEmailParams,
 } from '@demo-t3/models';
+import { UpdateUserDto as BaseUpdateUserDto } from '@demo-t3/utils-nest';
 
 export class CreateUserDto implements ApiCreateUserParams {
   @ApiProperty()
@@ -48,3 +49,7 @@ export class VerifyEmailParamsDto implements ApiVerifyEmailParams {
   @IsNotEmpty()
   token: string;
 }
+
+export class UpdateUserDto extends OmitType(BaseUpdateUserDto, [
+  'accessToken',
+] as const) {}

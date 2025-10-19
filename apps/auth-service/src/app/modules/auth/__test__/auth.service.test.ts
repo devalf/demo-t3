@@ -94,10 +94,12 @@ describe('AuthService', () => {
 
     mockUserOperationPermissionService = {
       canDeleteUser: jest.fn().mockResolvedValue(true),
+      canUserPerformActionOnUser: jest.fn().mockReturnValue({ allowed: true }),
     };
 
     mockJwtUserUtil = {
       extractUserFromJwt: jest.fn(),
+      extractUserFromAccessToken: jest.fn(),
     };
 
     const mockEmailVerificationTokenService = {
@@ -198,59 +200,107 @@ describe('AuthService', () => {
 
   describe('update user', () => {
     it('should update user email successfully', async () => {
+      const accessToken = 'valid-access-token';
       const userId = 1;
       const updateData = { email: 'new.email@example.com' };
 
+      const mockCurrentUser = { id: 1, role: 'ADMIN' };
       const mockUpdatedUser = generateOrmUser({
         email: 'new.email@example.com',
         name: 'Test User',
       });
+      const expectedUserDto = {
+        id: mockUpdatedUser.id,
+        email: mockUpdatedUser.email,
+        name: mockUpdatedUser.name,
+        role: mockUpdatedUser.role,
+      } as UserDto;
 
+      mockJwtUserUtil.extractUserFromAccessToken.mockResolvedValue(
+        mockCurrentUser
+      );
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        id: userId,
+        role: 'CLIENT',
+        is_active: true,
+        email: 'old.email@example.com',
+      });
       mockPrismaService.user.update.mockResolvedValue(mockUpdatedUser);
+      mockedPlainToInstance.mockReturnValue(expectedUserDto);
 
-      const result = await authService.updateUser(userId, updateData);
+      const result = await authService.updateUser(
+        accessToken,
+        userId,
+        updateData
+      );
 
+      expect(mockJwtUserUtil.extractUserFromAccessToken).toHaveBeenCalledWith(
+        accessToken
+      );
       expect(mockPrismaService.user.update).toHaveBeenCalledWith({
         where: { id: userId },
-        data: updateData,
+        data: { email: 'new.email@example.com' },
       });
-      expect(result).toEqual(mockUpdatedUser);
+      expect(result).toEqual(expectedUserDto);
     });
 
     it('should handle empty update data', async () => {
+      const accessToken = 'valid-access-token';
       const userId = 1;
       const updateData = {};
 
+      const mockCurrentUser = { id: 1, role: 'ADMIN' };
       const mockUpdatedUser = generateOrmUser({
         email: 'test@example.com',
         name: 'Test User',
       });
+      const expectedUserDto = {
+        id: mockUpdatedUser.id,
+        email: mockUpdatedUser.email,
+        name: mockUpdatedUser.name,
+        role: mockUpdatedUser.role,
+      } as UserDto;
 
+      mockJwtUserUtil.extractUserFromAccessToken.mockResolvedValue(
+        mockCurrentUser
+      );
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        id: userId,
+        role: 'CLIENT',
+        is_active: true,
+        email: 'test@example.com',
+      });
       mockPrismaService.user.update.mockResolvedValue(mockUpdatedUser);
+      mockedPlainToInstance.mockReturnValue(expectedUserDto);
 
-      const result = await authService.updateUser(userId, updateData);
+      const result = await authService.updateUser(
+        accessToken,
+        userId,
+        updateData
+      );
 
       expect(mockPrismaService.user.update).toHaveBeenCalledWith({
         where: { id: userId },
-        data: updateData,
+        data: {},
       });
-      expect(result).toEqual(mockUpdatedUser);
+      expect(result).toEqual(expectedUserDto);
     });
 
     it('should throw an error when user is not found', async () => {
+      const accessToken = 'valid-access-token';
       const userId = 999; // Non-existent user ID
       const updateData = { email: 'new.email@example.com' };
 
-      const prismaError = new Error('User not found');
-      mockPrismaService.user.update.mockRejectedValue(prismaError);
+      const mockCurrentUser = { id: 1, role: 'ADMIN' };
+
+      mockJwtUserUtil.extractUserFromAccessToken.mockResolvedValue(
+        mockCurrentUser
+      );
+      mockPrismaService.user.findUnique.mockResolvedValue(null);
 
       await expect(
-        authService.updateUser(userId, updateData)
+        authService.updateUser(accessToken, userId, updateData)
       ).rejects.toThrow();
-      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
-        where: { id: userId },
-        data: updateData,
-      });
     });
   });
 
