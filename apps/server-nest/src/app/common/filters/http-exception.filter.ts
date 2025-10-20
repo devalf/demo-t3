@@ -224,6 +224,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       case ErrorCode.INSUFFICIENT_PERMISSIONS:
       case ErrorCode.EMAIL_NOT_VERIFIED:
       case ErrorCode.EMAIL_VERIFICATION_REQUIRED:
+      case ErrorCode.CSRF_TOKEN_MISSING:
+      case ErrorCode.CSRF_TOKEN_INVALID:
         return HttpStatus.FORBIDDEN;
 
       // 404 errors

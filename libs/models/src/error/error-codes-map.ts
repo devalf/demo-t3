@@ -68,6 +68,11 @@ export enum ErrorCode {
   RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
   TOO_MANY_REQUESTS = 'TOO_MANY_REQUESTS',
 
+  // Security errors (8xxx)
+  CSRF_TOKEN_MISSING = 'CSRF_TOKEN_MISSING',
+  CSRF_TOKEN_INVALID = 'CSRF_TOKEN_INVALID',
+  CSRF_VALIDATION_FAILED = 'CSRF_VALIDATION_FAILED',
+
   // Server errors (9xxx)
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   SERVER_ERROR = 'SERVER_ERROR',
@@ -128,6 +133,11 @@ export const ERROR_CODE_TO_HTTP_STATUS: Record<ErrorCode, HttpStatus> = {
   // Rate limiting -> 429
   [ErrorCode.RATE_LIMIT_EXCEEDED]: HttpStatus.TOO_MANY_REQUESTS,
   [ErrorCode.TOO_MANY_REQUESTS]: HttpStatus.TOO_MANY_REQUESTS,
+
+  // Security errors -> 403
+  [ErrorCode.CSRF_TOKEN_MISSING]: HttpStatus.FORBIDDEN,
+  [ErrorCode.CSRF_TOKEN_INVALID]: HttpStatus.FORBIDDEN,
+  [ErrorCode.CSRF_VALIDATION_FAILED]: HttpStatus.FORBIDDEN,
 
   // Server errors -> 500
   [ErrorCode.INTERNAL_SERVER_ERROR]: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -193,6 +203,11 @@ export const ERROR_CODE_MESSAGES: Record<ErrorCode, string> = {
   // Rate limiting
   [ErrorCode.RATE_LIMIT_EXCEEDED]: 'Too many attempts, please try again later',
   [ErrorCode.TOO_MANY_REQUESTS]: 'Too many requests, please try again later',
+
+  // Security
+  [ErrorCode.CSRF_TOKEN_MISSING]: 'Security validation failed',
+  [ErrorCode.CSRF_TOKEN_INVALID]: 'Security validation failed',
+  [ErrorCode.CSRF_VALIDATION_FAILED]: 'Security validation failed',
 
   // Server errors
   [ErrorCode.INTERNAL_SERVER_ERROR]:

@@ -1,3 +1,5 @@
+import { randomBytes } from 'crypto';
+
 import {
   Body,
   Controller,
@@ -19,9 +21,11 @@ import { ApiTokenResponse } from '@demo-t3/models';
 
 import {
   AccessTokenGuard,
+  CsrfGuard,
   EmailThrottlerGuard,
   RefreshTokenGuard,
   RolesGuard,
+  SkipCsrf,
 } from '../../common/guards';
 import { RefreshToken, Roles } from '../../common/decorators';
 import { AuthenticatedRequest } from '../../common/types';
@@ -38,6 +42,7 @@ import { AuthService } from './auth.service';
 
 @ApiTags('Auth')
 @Controller('auth')
+@UseGuards(CsrfGuard)
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -45,6 +50,7 @@ export class AuthController {
   ) {}
 
   @Post('sign-in')
+  @SkipCsrf()
   @UseGuards(EmailThrottlerGuard)
   @Throttle({
     default: {
@@ -208,12 +214,21 @@ export class AuthController {
       path: '/',
     });
 
+    res.cookie('csrfToken', '', {
+      httpOnly: false,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      maxAge: 0,
+      path: '/',
+    });
+
     await this.authService.logout(refreshToken);
 
     return res.status(200).send();
   }
 
   @Post('register')
+  @SkipCsrf()
   @Throttle({
     default: {
       limit: THROTTLER_CONFIG.RIGID.LIMIT,
@@ -379,6 +394,18 @@ export class AuthController {
     }
 
     res.cookie('sessionPresent', '1', {
+      httpOnly: false,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      path: '/',
+      maxAge: cookieData.refreshToken
+        ? cookieData.refreshToken.maxAge
+        : cookieData.accessToken.maxAge,
+    });
+
+    const csrfToken = randomBytes(32).toString('base64');
+
+    res.cookie('csrfToken', csrfToken, {
       httpOnly: false,
       secure: isProduction,
       sameSite: isProduction ? 'strict' : 'lax',
