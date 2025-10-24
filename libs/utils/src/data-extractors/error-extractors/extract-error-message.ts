@@ -1,4 +1,4 @@
-import { get, isString } from 'lodash';
+import { get, isString } from 'lodash-es';
 
 import { errorCodeKeyMap } from './error-code-key-map';
 
