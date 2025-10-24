@@ -294,6 +294,16 @@ else
   exit 1
 fi
 
+# Clear NGINX cache in new environment BEFORE traffic shift
+log "Pre-shift cache clear: Clearing NGINX cache in $TARGET_ENV environment..."
+TARGET_CLIENT_NAME="${TARGET_ENV}-client-mx-1"
+if docker exec "$TARGET_CLIENT_NAME" rm -rf /var/cache/nginx/* 2>/dev/null; then
+  docker exec "$TARGET_CLIENT_NAME" nginx -s reload 2>/dev/null || true
+  success "Pre-shift: NGINX cache cleared in $TARGET_ENV"
+else
+  warn "Pre-shift: Could not clear NGINX cache (container might not have cache yet)"
+fi
+
 # Shift HAProxy traffic to new environment
 log "Shifting HAProxy traffic from $CURRENT_ENV to $TARGET_ENV..."
 if [[ -f "$SOURCE_DIR/.github/scripts/haproxy-shift-traffic.sh" ]]; then
@@ -303,14 +313,13 @@ else
   warn "Traffic shift script not found. HAProxy weights unchanged."
 fi
 
-# Clear NGINX cache in new environment to serve fresh data
-log "Clearing NGINX cache in $TARGET_ENV environment..."
-TARGET_CLIENT_NAME="${TARGET_ENV}-client-mx-1"
+# Clear NGINX cache in new environment AFTER traffic shift (catches any cache built during health checks)
+log "Post-shift cache clear: Clearing NGINX cache in $TARGET_ENV environment..."
 if docker exec "$TARGET_CLIENT_NAME" rm -rf /var/cache/nginx/* 2>/dev/null; then
   docker exec "$TARGET_CLIENT_NAME" nginx -s reload 2>/dev/null || true
-  success "NGINX cache cleared in $TARGET_ENV"
+  success "Post-shift: NGINX cache cleared in $TARGET_ENV"
 else
-  warn "Could not clear NGINX cache (container might not have cache yet)"
+  warn "Post-shift: Could not clear NGINX cache"
 fi
 
 # Update symlink to point to new environment
