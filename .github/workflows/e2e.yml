@@ -18,6 +18,7 @@ jobs:
     # if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -105,7 +106,8 @@ jobs:
             . ./.env
             set +a
           fi
-          yarn test:e2e
+          # Run without --parallel to avoid hanging in CI
+          yarn nx run-many --all --target=e2e
 
       - name: Show container logs on failure
         if: failure()

@@ -34,6 +34,8 @@ export const ProductCard: FC<ProductCardProps> = ({ product }) => {
           sx={{ height: 140 }}
           image={product.picture}
           title={product.name}
+          component="img"
+          loading="lazy"
           data-testid={'product_card_picture'}
         />
         <CardContent>

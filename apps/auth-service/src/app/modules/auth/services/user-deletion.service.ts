@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ErrorCode } from '@demo-t3/models';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtUserUtil } from '../../../common/utils';
@@ -36,11 +37,11 @@ export class UserDeletionService {
     });
 
     if (!targetUser) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
     if (!targetUser.is_active) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
     const canDelete =
@@ -94,7 +95,7 @@ export class UserDeletionService {
     });
 
     if (!targetUser) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
     const canDelete =

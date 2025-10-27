@@ -8,18 +8,21 @@
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/dist/apps/auth-service/main.js",
       "preLaunchTask": "nx:build-auth-service",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env",
+      "runtimeArgs": ["--enable-source-maps"],
       "outFiles": ["${workspaceFolder}/dist/apps/auth-service/**/*.js"],
       "sourceMaps": true,
-      "sourceMapPathOverrides": {
-        "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
-        "webpack:///./*": "${workspaceFolder}/*",
-        "webpack:///*": "*"
-      },
-      "smartStep": true,
       "resolveSourceMapLocations": [
         "${workspaceFolder}/**",
-        "!**/node_modules/**"
-      ]
+        "!**/node_modules/**",
+        "!${workspaceFolder}/apps/auth-service/src/prisma-setup/generated/**"
+      ],
+      "sourceMapPathOverrides": {
+        "webpack:///./apps/auth-service/*": "${workspaceFolder}/apps/auth-service/*",
+        "webpack:///./*": "${workspaceFolder}/*",
+        "webpack:///*": "*"
+      }
     },
     {
       "type": "node",

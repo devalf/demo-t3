@@ -2,6 +2,8 @@ import { createHash } from 'crypto';
 
 import {
   BadRequestException,
+  ConflictException,
+  HttpException,
   Inject,
   Injectable,
   Logger,
@@ -79,7 +81,17 @@ export class AuthService {
       >(url, requestPayload);
 
       if (!this.isValidResponse(response, 201, 'id')) {
-        const errorMessages = (response.data as ApiAuthResponseError)?.message;
+        const errorResponse = response.data as ApiAuthResponseError;
+        const errorCode = errorResponse?.errorCode;
+        const statusCode = errorResponse?.statusCode || response.status;
+
+        // If we have an error code, throw the appropriate HTTP exception
+        if (errorCode) {
+          throw new HttpException(errorCode, statusCode);
+        }
+
+        // Fallback to legacy error message handling
+        const errorMessages = errorResponse?.message;
         const errorMessage = Array.isArray(errorMessages)
           ? errorMessages.join(', ')
           : errorMessages || 'Registration failed';

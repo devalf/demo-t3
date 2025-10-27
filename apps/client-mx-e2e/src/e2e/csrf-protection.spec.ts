@@ -40,6 +40,8 @@ const makeAuthenticatedRequest = async (
   };
 };
 
+test.describe.configure({ mode: 'serial' });
+
 test.describe('CSRF Protection on /api/auth/refresh', () => {
   // Skip webkit - it handles cookies differently and requires different test approach
   test.skip(({ browserName }) => browserName === 'webkit');
@@ -109,7 +111,7 @@ test.describe('CSRF Protection on /api/auth/refresh', () => {
 
     expect(response.status).toBe(403);
     expect(response.body.message).toBe('Security validation failed');
-    expect(response.body.code).toBe('CSRF_TOKEN_MISSING');
+    expect(response.body.errorCode).toBe('CSRF_TOKEN_MISSING');
   });
 
   test('Should reject request when CSRF token cookie is missing', async ({
@@ -123,7 +125,7 @@ test.describe('CSRF Protection on /api/auth/refresh', () => {
 
     expect(response.status).toBe(403);
     expect(response.body.message).toBe('Security validation failed');
-    expect(response.body.code).toBe('CSRF_TOKEN_MISSING');
+    expect(response.body.errorCode).toBe('CSRF_TOKEN_MISSING');
   });
 
   test('Should reject request when CSRF token values do not match', async ({
@@ -137,7 +139,7 @@ test.describe('CSRF Protection on /api/auth/refresh', () => {
 
     expect(response.status).toBe(403);
     expect(response.body.message).toBe('Security validation failed');
-    expect(response.body.code).toBe('CSRF_TOKEN_INVALID');
+    expect(response.body.errorCode).toBe('CSRF_TOKEN_INVALID');
   });
 
   test('Should reject request with token exceeding maximum length (DoS protection)', async ({
@@ -153,7 +155,7 @@ test.describe('CSRF Protection on /api/auth/refresh', () => {
 
     expect(response.status).toBe(403);
     expect(response.body.message).toBe('Security validation failed');
-    expect(response.body.code).toBe('CSRF_TOKEN_INVALID');
+    expect(response.body.errorCode).toBe('CSRF_TOKEN_INVALID');
   });
 
   test('Should handle URL-encoded CSRF tokens correctly', async ({ page }) => {

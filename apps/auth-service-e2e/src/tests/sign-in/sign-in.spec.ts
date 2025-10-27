@@ -376,7 +376,9 @@ describe('Sign-in endpoint E2E', () => {
           throw new Error('Expected 401 Unauthorized');
         } catch (error: any) {
           expect(error.response.status).toBe(401);
-          expect(error.response.data.message).toContain('Invalid credentials');
+          expect(error.response.data.message).toContain(
+            'Invalid email or password'
+          );
         }
       });
 
@@ -390,7 +392,9 @@ describe('Sign-in endpoint E2E', () => {
           throw new Error('Expected 401 Unauthorized');
         } catch (error: any) {
           expect(error.response.status).toBe(401);
-          expect(error.response.data.message).toContain('Invalid credentials');
+          expect(error.response.data.message).toContain(
+            'Invalid email or password'
+          );
         }
       });
 
@@ -404,7 +408,9 @@ describe('Sign-in endpoint E2E', () => {
           throw new Error('Expected 401 Unauthorized');
         } catch (error: any) {
           expect(error.response.status).toBe(401);
-          expect(error.response.data.message).toContain('Invalid credentials');
+          expect(error.response.data.message).toContain(
+            'Invalid email or password'
+          );
         }
       });
 

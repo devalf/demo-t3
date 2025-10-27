@@ -7,13 +7,11 @@ import {
   generateApiRefreshTokenPayload,
   generateOrmUser,
 } from '@demo-t3/utils';
+import { ErrorCode } from '@demo-t3/models';
 
 import { AuthService } from '../auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  UserDeletionService,
-  UserOperationPermissionService,
-} from '../services';
+import { UserOperationPermissionService } from '../services';
 import { JwtUserUtil } from '../../../common/utils';
 
 jest.mock('bcrypt');
@@ -214,7 +212,7 @@ describe('AuthService part 2', () => {
       ).rejects.toThrow(UnauthorizedException);
       await expect(
         authService.refreshToken(mockRefreshToken, mockDeviceInfo)
-      ).rejects.toThrow('Refresh token not found');
+      ).rejects.toThrow(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
     });
 
     it('should throw and cleanup when refresh token is expired', async () => {
@@ -246,7 +244,7 @@ describe('AuthService part 2', () => {
       ).rejects.toThrow(UnauthorizedException);
       await expect(
         authService.refreshToken(mockRefreshToken, mockDeviceInfo)
-      ).rejects.toThrow('Refresh token expired');
+      ).rejects.toThrow(ErrorCode.TOKEN_EXPIRED);
 
       expect(authService['cleanupToken']).toHaveBeenCalledWith(
         mockPayload.tokenId
@@ -283,7 +281,7 @@ describe('AuthService part 2', () => {
       ).rejects.toThrow(UnauthorizedException);
       await expect(
         authService.refreshToken(mockRefreshToken, mockDeviceInfo)
-      ).rejects.toThrow('Invalid refresh token - all sessions revoked');
+      ).rejects.toThrow(ErrorCode.REFRESH_TOKEN_INVALID);
 
       expect(authService['revokeAllRefreshTokens']).toHaveBeenCalledWith(
         mockStoredToken.user_id
@@ -317,7 +315,7 @@ describe('AuthService part 2', () => {
       ).rejects.toThrow(ForbiddenException);
       await expect(
         authService.refreshToken(mockRefreshToken, mockDeviceInfo)
-      ).rejects.toThrow('User no longer exists');
+      ).rejects.toThrow(ErrorCode.USER_NO_LONGER_EXISTS);
     });
 
     it('should handle JsonWebTokenError', async () => {
@@ -331,7 +329,7 @@ describe('AuthService part 2', () => {
       ).rejects.toThrow(UnauthorizedException);
       await expect(
         authService.refreshToken(mockRefreshToken, mockDeviceInfo)
-      ).rejects.toThrow('Invalid or expired refresh token');
+      ).rejects.toThrow(ErrorCode.REFRESH_TOKEN_INVALID);
     });
 
     it('should handle TokenExpiredError specifically', async () => {
@@ -345,7 +343,7 @@ describe('AuthService part 2', () => {
       ).rejects.toThrow(UnauthorizedException);
       await expect(
         authService.refreshToken(mockRefreshToken, mockDeviceInfo)
-      ).rejects.toThrow('Invalid or expired refresh token');
+      ).rejects.toThrow(ErrorCode.REFRESH_TOKEN_INVALID);
     });
 
     it('should propagate non-JWT errors', async () => {
@@ -394,7 +392,7 @@ describe('AuthService part 2', () => {
       ).rejects.toThrow(UnauthorizedException);
       await expect(
         authService.revokeRefreshToken(mockRefreshToken)
-      ).rejects.toThrow('Invalid or expired refresh token');
+      ).rejects.toThrow(ErrorCode.REFRESH_TOKEN_INVALID);
     });
 
     it('should handle TokenExpiredError', async () => {
@@ -408,7 +406,7 @@ describe('AuthService part 2', () => {
       ).rejects.toThrow(UnauthorizedException);
       await expect(
         authService.revokeRefreshToken(mockRefreshToken)
-      ).rejects.toThrow('Invalid or expired refresh token');
+      ).rejects.toThrow(ErrorCode.REFRESH_TOKEN_INVALID);
     });
 
     it('should handle UnauthorizedException', async () => {
@@ -422,7 +420,7 @@ describe('AuthService part 2', () => {
       ).rejects.toThrow(UnauthorizedException);
       await expect(
         authService.revokeRefreshToken(mockRefreshToken)
-      ).rejects.toThrow('Invalid or expired refresh token');
+      ).rejects.toThrow(ErrorCode.REFRESH_TOKEN_INVALID);
     });
   });
 
@@ -482,7 +480,7 @@ describe('AuthService part 2', () => {
 
       expect(result).toEqual({
         isValid: false,
-        error: 'User no longer exists',
+        error: ErrorCode.USER_NO_LONGER_EXISTS,
       });
     });
 
@@ -725,7 +723,7 @@ describe('AuthService part 2', () => {
       ).rejects.toThrow(UnauthorizedException);
       await expect(
         (authService as any).verifyRefreshToken(refreshToken)
-      ).rejects.toThrow('Invalid token type');
+      ).rejects.toThrow(ErrorCode.INVALID_TOKEN);
     });
   });
 
