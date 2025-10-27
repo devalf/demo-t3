@@ -1,98 +1,46 @@
 import {
   ArgumentsHost,
   Catch,
-  ExceptionFilter,
   HttpException,
   HttpStatus,
-  Logger,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
-import { ERROR_CODE_MESSAGES, ErrorCode } from '@demo-t3/models';
+import { ERROR_CODE_TO_HTTP_STATUS, ErrorCode } from '@demo-t3/models';
+import { HttpExceptionFilter as BaseHttpExceptionFilter } from '@demo-t3/utils-nest';
 
-type ErrorResponse = {
-  statusCode: number;
-  message: string;
-  code?: ErrorCode;
-  details?: Record<string, unknown>;
-};
-
+/**
+ * Extended HTTP Exception Filter for server-nest
+ *
+ * This filter extends the shared HttpExceptionFilter from @demo-t3/utils-nest
+ * and adds legacy message inference support for backwards compatibility.
+ *
+ * Legacy support: For Error objects with string messages (not ErrorCode enum),
+ * this filter attempts to infer the appropriate ErrorCode based on message content.
+ *
+ * TODO: Remove legacy inference logic once all error handling is migrated to use ErrorCode enum
+ */
 @Catch()
-export class HttpExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(HttpExceptionFilter.name);
-
+export class HttpExceptionFilter extends BaseHttpExceptionFilter {
+  /**
+   * Override catch to add legacy message inference before delegating to parent
+   */
   catch(exception: unknown, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    // For standard Error objects (not HttpException), try to infer error code
+    // and convert to HttpException for proper handling
+    if (exception instanceof Error && !(exception instanceof HttpException)) {
+      const inferredCode = this.inferErrorCodeFromMessage(exception.message);
 
-    const errorResponse = this.getErrorResponse(exception);
+      if (inferredCode) {
+        // Convert to HttpException with the inferred error code
+        const status = ERROR_CODE_TO_HTTP_STATUS[inferredCode];
+        const httpException = new HttpException(inferredCode, status);
 
-    if (errorResponse.statusCode >= 500) {
-      this.logger.error(`HTTP ${errorResponse.statusCode} Error`, {
-        code: errorResponse.code,
-        message: errorResponse.message,
-        path: request.url,
-        method: request.method,
-        timestamp: new Date().toISOString(),
-        exception: exception instanceof Error ? exception.stack : exception,
-      });
+        // Delegate to parent with the converted exception
+        return super.catch(httpException, host);
+      }
     }
 
-    response.status(errorResponse.statusCode).json(errorResponse);
-  }
-
-  private getErrorResponse(exception: unknown): ErrorResponse {
-    // Handle NestJS HttpException
-    if (exception instanceof HttpException) {
-      const status = exception.getStatus();
-      const exceptionResponse = exception.getResponse();
-      const message =
-        typeof exceptionResponse === 'string'
-          ? exceptionResponse
-          : (exceptionResponse as { message?: string })?.message ||
-            exception.message;
-
-      const errorCode = this.getErrorCodeFromMessage(message);
-      const finalMessage = errorCode ? ERROR_CODE_MESSAGES[errorCode] : message;
-
-      return {
-        statusCode: status,
-        message: finalMessage,
-        code: errorCode,
-      };
-    }
-
-    // Handle standard Error objects - try to infer error code from message
-    if (exception instanceof Error) {
-      const errorCode = this.inferErrorCodeFromMessage(exception.message);
-      const status = errorCode
-        ? this.getStatusFromErrorCode(errorCode)
-        : HttpStatus.INTERNAL_SERVER_ERROR;
-
-      return {
-        statusCode: status,
-        message:
-          status === HttpStatus.INTERNAL_SERVER_ERROR
-            ? 'Internal server error'
-            : exception.message,
-        code: errorCode,
-      };
-    }
-
-    // Unknown exception type
-    return {
-      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: 'Internal server error',
-      code: ErrorCode.INTERNAL_SERVER_ERROR,
-    };
-  }
-
-  private getErrorCodeFromMessage(message: string): ErrorCode | undefined {
-    if (Object.values(ErrorCode).includes(message as ErrorCode)) {
-      return message as ErrorCode;
-    }
-
-    return undefined;
+    // For all other cases, delegate to parent
+    super.catch(exception, host);
   }
 
   /**

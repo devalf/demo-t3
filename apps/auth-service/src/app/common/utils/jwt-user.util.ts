@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ApiJwtPayload } from '@demo-t3/models';
+import { ApiJwtPayload, ErrorCode } from '@demo-t3/models';
 import { plainToInstance } from 'class-transformer';
 
 import { PrismaService } from '../../modules/prisma/prisma.service';
@@ -33,17 +33,15 @@ export class JwtUserUtil {
       });
 
       if (!user) {
-        throw new UnauthorizedException('User no longer exists');
+        throw new UnauthorizedException(ErrorCode.USER_NO_LONGER_EXISTS);
       }
 
       if (!user.is_active) {
-        throw new UnauthorizedException('User account is inactive');
+        throw new UnauthorizedException(ErrorCode.USER_NOT_ACTIVE);
       }
 
       if (user.email !== payload.email || user.role !== payload.role) {
-        throw new UnauthorizedException(
-          'Token payload does not match current user state'
-        );
+        throw new UnauthorizedException(ErrorCode.TOKEN_PAYLOAD_MISMATCH);
       }
 
       return plainToInstance(UserDto, user);
@@ -52,7 +50,7 @@ export class JwtUserUtil {
         error.name === 'JsonWebTokenError' ||
         error.name === 'TokenExpiredError'
       ) {
-        throw new UnauthorizedException('Invalid or expired access token');
+        throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
       }
 
       throw error;

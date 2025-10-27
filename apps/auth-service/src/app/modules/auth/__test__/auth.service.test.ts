@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { generateOrmUser } from '@demo-t3/utils';
+import { ErrorCode } from '@demo-t3/models';
 
 import { AuthService } from '../auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -380,7 +381,7 @@ describe('AuthService', () => {
 
       await expect(
         authService.signIn(credentials, mockDeviceInfo)
-      ).rejects.toThrow('User not found');
+      ).rejects.toThrow(ErrorCode.USER_NOT_FOUND);
 
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'nonexistent@example.com' },
@@ -402,7 +403,7 @@ describe('AuthService', () => {
 
       await expect(
         authService.signIn(credentials, mockDeviceInfo)
-      ).rejects.toThrow('User not found');
+      ).rejects.toThrow(ErrorCode.USER_NOT_FOUND);
 
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
@@ -423,7 +424,7 @@ describe('AuthService', () => {
 
       await expect(
         authService.signIn(credentials, mockDeviceInfo)
-      ).rejects.toThrow('Invalid credentials');
+      ).rejects.toThrow(ErrorCode.INVALID_CREDENTIALS);
 
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },

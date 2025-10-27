@@ -1,5 +1,7 @@
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ErrorCode } from '@demo-t3/models';
 
 import { AuthService } from '../auth.service';
 import { AuthController } from '../auth.controller';
@@ -297,11 +299,13 @@ describe('AuthController', () => {
 
       jest
         .spyOn(authService, 'signIn')
-        .mockRejectedValue(new Error('Invalid credentials'));
+        .mockRejectedValue(
+          new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS)
+        );
 
       await expect(
         authController.signIn(inputData, mockRequest)
-      ).rejects.toThrow('Invalid credentials');
+      ).rejects.toThrow(ErrorCode.INVALID_CREDENTIALS);
     });
 
     it('should validate that controller passes credentials unchanged', async () => {
@@ -369,11 +373,11 @@ describe('AuthController', () => {
 
       jest
         .spyOn(authService, 'signIn')
-        .mockRejectedValue(new Error('User not found'));
+        .mockRejectedValue(new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
       await expect(
         authController.signIn(inputData, mockRequest)
-      ).rejects.toThrow('User not found');
+      ).rejects.toThrow(ErrorCode.USER_NOT_FOUND);
     });
 
     it('should handle UnauthorizedException from service', async () => {
@@ -395,11 +399,13 @@ describe('AuthController', () => {
 
       jest
         .spyOn(authService, 'signIn')
-        .mockRejectedValue(new Error('Invalid credentials'));
+        .mockRejectedValue(
+          new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS)
+        );
 
       await expect(
         authController.signIn(inputData, mockRequest)
-      ).rejects.toThrow('Invalid credentials');
+      ).rejects.toThrow(ErrorCode.INVALID_CREDENTIALS);
     });
 
     it('should call service with invalid input when bypassing HTTP layer', async () => {

@@ -10,9 +10,10 @@ export type ApiAuthSignInParams = {
 };
 
 export type ApiAuthResponseError = {
-  message: string[];
-  error: string;
+  message: string | string[];
+  error?: string;
   statusCode: number;
+  errorCode?: string;
 };
 
 export type ApiVerifyEmailParams = {

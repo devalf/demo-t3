@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto';
 
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -10,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import * as bcrypt from 'bcrypt';
 import {
   ApiAuthSignInParams,
@@ -55,6 +57,8 @@ export class AuthService {
     const { email, password, name } = userData;
     const normalizedEmail = email.toLowerCase();
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    await this.checkIfUserUnverifiedAndDelete(normalizedEmail);
 
     const user = await this.prisma.user.create({
       data: {
@@ -103,9 +107,7 @@ export class AuthService {
 
     // Only admins can modify email_verified status
     if (data.email_verified !== undefined && currentUser.role !== 'ADMIN') {
-      throw new ForbiddenException(
-        'Only administrators can modify email verification status'
-      );
+      throw new ForbiddenException(ErrorCode.PERMISSION_DENIED);
     }
 
     const updateData: ApiUpdateUserBasicParams = {};
@@ -132,6 +134,39 @@ export class AuthService {
     return plainToInstance(UserDto, updatedUser);
   }
 
+  async checkIfUserUnverifiedAndDelete(email: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return;
+    }
+
+    if (user.email_verified) {
+      throw new ConflictException(ErrorCode.EMAIL_ALREADY_EXISTS);
+    }
+
+    // User exists but email is not verified
+    // Check if the unverified account has expired
+    const expirationTime = new Date(
+      Date.now() - TOKEN_CONFIG.EMAIL_VERIFICATION_TOKEN.MILLISECONDS
+    );
+
+    if (user.created_at < expirationTime) {
+      await this.prisma.user.delete({
+        where: { id: user.id },
+      });
+
+      this.logger.log(`Deleted expired unverified account for email: ${email}`);
+
+      return;
+    }
+
+    // Account is still within the verification period
+    throw new ConflictException(ErrorCode.UNVERIFIED_ACCOUNT_EXISTS);
+  }
+
   async signIn(
     credentials: ApiAuthSignInParams,
     deviceInfo: ApiDeviceInfo
@@ -144,19 +179,17 @@ export class AuthService {
     });
 
     if (!user || !user.is_active) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
     if (!user.email_verified) {
-      throw new ForbiddenException(
-        'Please verify your email before signing in. Check your inbox for the verification link.'
-      );
+      throw new ForbiddenException(ErrorCode.EMAIL_NOT_VERIFIED);
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
     }
 
     return await this.generateTokenPair(user, deviceInfo);
@@ -175,13 +208,13 @@ export class AuthService {
       });
 
       if (!storedToken) {
-        throw new UnauthorizedException('Refresh token not found');
+        throw new UnauthorizedException(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
       }
 
       if (storedToken.expires_at < new Date()) {
         await this.cleanupToken(payload.tokenId);
 
-        throw new UnauthorizedException('Refresh token expired');
+        throw new UnauthorizedException(ErrorCode.TOKEN_EXPIRED);
       }
 
       const isValidToken = await bcrypt.compare(
@@ -196,13 +229,11 @@ export class AuthService {
           `Potential token theft detected for user ${storedToken.user_id}`
         );
 
-        throw new UnauthorizedException(
-          'Invalid refresh token - all sessions revoked'
-        );
+        throw new UnauthorizedException(ErrorCode.REFRESH_TOKEN_INVALID);
       }
 
       if (!storedToken.user) {
-        throw new ForbiddenException('User no longer exists');
+        throw new ForbiddenException(ErrorCode.USER_NO_LONGER_EXISTS);
       }
 
       await this.updateTokenUsage(payload.tokenId, deviceInfo);
@@ -217,7 +248,7 @@ export class AuthService {
         error.name === 'JsonWebTokenError' ||
         error.name === 'TokenExpiredError'
       ) {
-        throw new UnauthorizedException('Invalid or expired refresh token');
+        throw new UnauthorizedException(ErrorCode.REFRESH_TOKEN_INVALID);
       }
 
       throw error;
@@ -237,7 +268,7 @@ export class AuthService {
       ) {
         this.logger.warn(`Failed to revoke refresh token: ${error.message}`);
 
-        throw new UnauthorizedException('Invalid or expired refresh token');
+        throw new UnauthorizedException(ErrorCode.REFRESH_TOKEN_INVALID);
       }
 
       throw error;
@@ -269,7 +300,7 @@ export class AuthService {
       });
 
       if (!user) {
-        throw new ForbiddenException('User no longer exists');
+        throw new ForbiddenException(ErrorCode.USER_NO_LONGER_EXISTS);
       }
 
       return {
@@ -302,6 +333,41 @@ export class AuthService {
     }
   }
 
+  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
+  async cleanupUnverifiedUsers(): Promise<number> {
+    this.logger.debug('Running unverified users cleanup job');
+
+    try {
+      const expirationTime = new Date(
+        Date.now() - TOKEN_CONFIG.EMAIL_VERIFICATION_TOKEN.MILLISECONDS
+      );
+
+      const result = await this.prisma.user.deleteMany({
+        where: {
+          email_verified: false,
+          created_at: {
+            lt: expirationTime,
+          },
+        },
+      });
+
+      if (result.count > 0) {
+        this.logger.log(
+          `Cleanup job completed: ${result.count} unverified user(s) removed`
+        );
+      }
+
+      return result.count;
+    } catch (error) {
+      this.logger.error(
+        `Unverified users cleanup job failed: ${error.message}`,
+        error.stack
+      );
+
+      throw error;
+    }
+  }
+
   async logoutAllDevices(
     accessToken: string,
     targetUserId: number
@@ -321,7 +387,7 @@ export class AuthService {
     });
 
     if (!targetUser || !targetUser.is_active) {
-      throw new NotFoundException('Target user not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
     const canPerformAction =
@@ -347,13 +413,13 @@ export class AuthService {
     const userId = await this.emailVerificationTokenService.verifyToken(token);
 
     if (!userId) {
-      throw new BadRequestException('Invalid or expired verification token');
+      throw new BadRequestException(ErrorCode.VERIFICATION_TOKEN_INVALID);
     }
 
     const userIdNum = parseInt(userId, 10);
 
     if (isNaN(userIdNum)) {
-      throw new BadRequestException('Invalid user ID in token');
+      throw new BadRequestException(ErrorCode.INVALID_USER_ID);
     }
 
     const user = await this.prisma.user.findUnique({
@@ -361,15 +427,15 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
     if (!user.is_active) {
-      throw new BadRequestException('User account is not active');
+      throw new BadRequestException(ErrorCode.USER_NOT_ACTIVE);
     }
 
     if (user.email_verified) {
-      throw new BadRequestException('Email is already verified');
+      throw new BadRequestException(ErrorCode.EMAIL_ALREADY_VERIFIED);
     }
 
     const updatedUser = await this.prisma.user.update({
@@ -578,7 +644,7 @@ export class AuthService {
     );
 
     if (payload.type !== 'refresh') {
-      throw new UnauthorizedException('Invalid token type');
+      throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
     }
 
     return payload;

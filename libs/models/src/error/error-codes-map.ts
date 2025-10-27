@@ -28,6 +28,7 @@ export enum ErrorCode {
   REFRESH_TOKEN_NOT_FOUND = 'REFRESH_TOKEN_NOT_FOUND',
   AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED',
   SESSION_EXPIRED = 'SESSION_EXPIRED',
+  TOKEN_PAYLOAD_MISMATCH = 'TOKEN_PAYLOAD_MISMATCH',
 
   // Authorization errors (2xxx)
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -41,12 +42,17 @@ export enum ErrorCode {
   EMAIL_VERIFICATION_REQUIRED = 'EMAIL_VERIFICATION_REQUIRED',
   VERIFICATION_TOKEN_INVALID = 'VERIFICATION_TOKEN_INVALID',
   VERIFICATION_TOKEN_EXPIRED = 'VERIFICATION_TOKEN_EXPIRED',
+  UNVERIFIED_ACCOUNT_EXISTS = 'UNVERIFIED_ACCOUNT_EXISTS',
+  EMAIL_ALREADY_VERIFIED = 'EMAIL_ALREADY_VERIFIED',
 
   // Resource errors (4xxx)
   NOT_FOUND = 'NOT_FOUND',
   USER_NOT_FOUND = 'USER_NOT_FOUND',
   RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND',
   USER_UPDATE_FAILED = 'USER_UPDATE_FAILED',
+  USER_NOT_ACTIVE = 'USER_NOT_ACTIVE',
+  USER_NO_LONGER_EXISTS = 'USER_NO_LONGER_EXISTS',
+  INVALID_USER_ID = 'INVALID_USER_ID',
 
   // Conflict errors (5xxx)
   ALREADY_EXISTS = 'ALREADY_EXISTS',
@@ -94,6 +100,7 @@ export const ERROR_CODE_TO_HTTP_STATUS: Record<ErrorCode, HttpStatus> = {
   [ErrorCode.REFRESH_TOKEN_NOT_FOUND]: HttpStatus.UNAUTHORIZED,
   [ErrorCode.AUTHENTICATION_FAILED]: HttpStatus.UNAUTHORIZED,
   [ErrorCode.SESSION_EXPIRED]: HttpStatus.UNAUTHORIZED,
+  [ErrorCode.TOKEN_PAYLOAD_MISMATCH]: HttpStatus.UNAUTHORIZED,
 
   // Authorization errors -> 403
   [ErrorCode.UNAUTHORIZED]: HttpStatus.UNAUTHORIZED,
@@ -107,12 +114,17 @@ export const ERROR_CODE_TO_HTTP_STATUS: Record<ErrorCode, HttpStatus> = {
   [ErrorCode.EMAIL_VERIFICATION_REQUIRED]: HttpStatus.FORBIDDEN,
   [ErrorCode.VERIFICATION_TOKEN_INVALID]: HttpStatus.BAD_REQUEST,
   [ErrorCode.VERIFICATION_TOKEN_EXPIRED]: HttpStatus.BAD_REQUEST,
+  [ErrorCode.UNVERIFIED_ACCOUNT_EXISTS]: HttpStatus.CONFLICT,
+  [ErrorCode.EMAIL_ALREADY_VERIFIED]: HttpStatus.BAD_REQUEST,
 
   // Resource errors -> 404
   [ErrorCode.NOT_FOUND]: HttpStatus.NOT_FOUND,
   [ErrorCode.USER_NOT_FOUND]: HttpStatus.NOT_FOUND,
   [ErrorCode.RESOURCE_NOT_FOUND]: HttpStatus.NOT_FOUND,
   [ErrorCode.USER_UPDATE_FAILED]: HttpStatus.BAD_REQUEST,
+  [ErrorCode.USER_NOT_ACTIVE]: HttpStatus.FORBIDDEN,
+  [ErrorCode.USER_NO_LONGER_EXISTS]: HttpStatus.FORBIDDEN,
+  [ErrorCode.INVALID_USER_ID]: HttpStatus.BAD_REQUEST,
 
   // Conflict errors -> 409
   [ErrorCode.ALREADY_EXISTS]: HttpStatus.CONFLICT,
@@ -161,6 +173,8 @@ export const ERROR_CODE_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.REFRESH_TOKEN_NOT_FOUND]: 'Refresh token not found',
   [ErrorCode.AUTHENTICATION_FAILED]: 'Authentication failed',
   [ErrorCode.SESSION_EXPIRED]: 'Your session has expired, please login again',
+  [ErrorCode.TOKEN_PAYLOAD_MISMATCH]:
+    'Token payload does not match current user state',
 
   // Authorization
   [ErrorCode.UNAUTHORIZED]: 'Unauthorized access',
@@ -177,12 +191,18 @@ export const ERROR_CODE_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.VERIFICATION_TOKEN_INVALID]: 'Invalid verification token',
   [ErrorCode.VERIFICATION_TOKEN_EXPIRED]:
     'Verification token has expired, please request a new one',
+  [ErrorCode.UNVERIFIED_ACCOUNT_EXISTS]:
+    'An unverified account with this email already exists. Please check your email for the verification link or wait for it to expire.',
+  [ErrorCode.EMAIL_ALREADY_VERIFIED]: 'Email is already verified',
 
   // Resources
   [ErrorCode.NOT_FOUND]: 'Resource not found',
   [ErrorCode.USER_NOT_FOUND]: 'User not found',
   [ErrorCode.RESOURCE_NOT_FOUND]: 'The requested resource could not be found',
   [ErrorCode.USER_UPDATE_FAILED]: 'Failed to update user',
+  [ErrorCode.USER_NOT_ACTIVE]: 'User account is not active',
+  [ErrorCode.USER_NO_LONGER_EXISTS]: 'User no longer exists',
+  [ErrorCode.INVALID_USER_ID]: 'Invalid user ID',
 
   // Conflicts
   [ErrorCode.ALREADY_EXISTS]: 'Resource already exists',
