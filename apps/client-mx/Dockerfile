@@ -7,7 +7,7 @@ COPY apps/client-mx/ ./apps/client-mx/
 
 RUN yarn nx build client-mx --configuration=production
 
-FROM nginx:alpine
+FROM nginx:1.29.3-alpine3.22
 
 RUN apk add --no-cache curl
 
