@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import { Button, Grid, TextField, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { generatePath, useNavigate } from 'react-router-dom';
-import { LoadingButton } from '@mui/lab';
 
 import { ICartManager } from '../../store/interfaces';
 import { useInjection } from '../../bootstrap/ioc/use-injection';
@@ -64,7 +63,7 @@ export const CartForm: FC = observer(() => {
             alignItems={'center'}
             data-testid={`cart_item_row_${idx}`}
           >
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box
                 display={'flex'}
                 flexDirection={'row'}
@@ -108,7 +107,7 @@ export const CartForm: FC = observer(() => {
                 </Box>
               </Box>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Box
                 display={'flex'}
                 gap={2}
@@ -163,9 +162,7 @@ export const CartForm: FC = observer(() => {
               </Box>
             </Grid>
             <Grid
-              item
-              xs={12}
-              md={2}
+              size={{ xs: 12, md: 2 }}
               sx={{
                 textAlign: {
                   xs: 'left',
@@ -208,7 +205,7 @@ export const CartForm: FC = observer(() => {
           textAlign: 'center',
         }}
       >
-        <LoadingButton
+        <Button
           variant={'contained'}
           color={'primary'}
           size={'large'}
@@ -217,7 +214,7 @@ export const CartForm: FC = observer(() => {
           data-testid={'cart_make_order_btn'}
         >
           Make order
-        </LoadingButton>
+        </Button>
       </Box>
     </Box>
   );
