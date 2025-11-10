@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Server Nest Debug" type="NodeJSConfigurationType" node-parameters="--inspect=9230" path-to-js-file="dist/apps/server-nest/main.js" working-dir="$PROJECT_DIR$">
+    <envs>
+      <env name="NODE_OPTIONS" value="--enable-source-maps" />
+    </envs>
+    <method v="2">
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="server-nest:build:development" run_configuration_type="NxRunConfigurationType" />
+    </method>
+  </configuration>
+</component>

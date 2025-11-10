@@ -1,6 +1,5 @@
 import React, { FC } from 'react';
-import { Box, TextField, Typography } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
+import { Box, Button, TextField, Typography } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { extractErrorMessage } from '@demo-t3/utils';
@@ -105,7 +104,7 @@ export const AuthForm: FC<AuthFormProps> = ({
         />
 
         <Box sx={{ mt: 2, textAlign: 'center' }}>
-          <LoadingButton
+          <Button
             variant="contained"
             color="primary"
             size="large"
@@ -115,7 +114,7 @@ export const AuthForm: FC<AuthFormProps> = ({
             data-testid="login_submit_button"
           >
             {buttonText}
-          </LoadingButton>
+          </Button>
         </Box>
       </Box>
     </Box>

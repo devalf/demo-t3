@@ -1,14 +1,17 @@
-import React, { FC } from 'react';
-import { observer } from 'mobx-react-lite';
-import { IconButton, Menu, MenuItem } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import { Box, IconButton, Menu, MenuItem, Typography } from '@mui/material';
+import { observer } from 'mobx-react-lite';
+import React, { FC } from 'react';
 
-import { useInjection } from '../../bootstrap/ioc/use-injection';
-import { IUserManager } from '../../store/interfaces/iuser-manager';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
+import { useInjection } from '../../bootstrap/ioc/use-injection';
+import { useViewSize } from '../../common-hooks';
+import { IUserManager } from '../../store/interfaces';
 
 export const UserDropdown: FC = observer(() => {
   const { logout } = useInjection<IUserManager>(DependencyType.UserManager);
+
+  const { isSmall } = useViewSize();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -27,13 +30,24 @@ export const UserDropdown: FC = observer(() => {
 
   return (
     <>
-      <IconButton
-        color="inherit"
+      <Box
         onClick={handleMenu}
-        data-testid={'user_header_icon'}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          cursor: 'pointer',
+        }}
       >
-        <AccountCircleIcon />
-      </IconButton>
+        <IconButton
+          color="inherit"
+          data-testid={'user_header_icon'}
+          sx={{ width: 'min-content' }}
+        >
+          <AccountCircleIcon />
+        </IconButton>
+        {isSmall && <Typography> User Name // TBD</Typography>}
+      </Box>
       <Menu
         anchorEl={anchorEl}
         open={open}

@@ -46,7 +46,7 @@ export const SingleProductPage: FC = observer(() => {
   return (
     <Container maxWidth={'xl'} sx={{ my: 2 }}>
       <Grid container spacing={4}>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Card variant={'outlined'} sx={{ textAlign: 'center', p: 2 }}>
             <Box
               component={'img'}
@@ -57,7 +57,7 @@ export const SingleProductPage: FC = observer(() => {
             />
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Typography variant="h4" data-testid={'product_name'}>
             {product.name}
           </Typography>

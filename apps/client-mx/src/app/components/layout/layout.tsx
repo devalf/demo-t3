@@ -5,6 +5,10 @@ import { Home } from '../../pages';
 import { Header } from '../header/header';
 import { routes } from '../../constants';
 import { LoadingBox } from '../loading-box/loading-box';
+import { NotFoundPage } from '../not-found-page/not-found-page';
+import { useInjection } from '../../bootstrap/ioc/use-injection';
+import { IUserManager } from '../../store/interfaces';
+import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 
 const Product = lazy(() => import('../../pages/product'));
 const Cart = lazy(() => import('../../pages/cart'));
@@ -12,8 +16,10 @@ const OrderSuccess = lazy(() => import('../../pages/order-success'));
 const VerifyEmail = lazy(() => import('../../pages/verify-email'));
 
 export const Layout: FC = () => {
+  useInjection<IUserManager>(DependencyType.UserManager);
+
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Header />
       <Routes>
         <Route path={routes.home} element={<Home />} />
@@ -49,6 +55,7 @@ export const Layout: FC = () => {
             </Suspense>
           }
         />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );
