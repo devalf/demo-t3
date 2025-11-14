@@ -77,8 +77,7 @@ sudo mkdir -p "$DEPLOY_DIR" "$BACKUP_DIR" \
   "/opt/demo-t3-shared/grafana-data" \
   "/opt/demo-t3-shared/loki-data" \
   "/opt/demo-t3-shared/promtail-data" \
-  "/opt/demo-t3-shared/redis-data" \
-  "/opt/demo-t3-shared/rabbitmq-data"
+  "/opt/demo-t3-shared/redis-data"
 
 # Ensure base shared dir owned by deploy user so we can manage subdirs
 sudo chown -R $USER:$USER "$DEPLOY_DIR" "$BACKUP_DIR" "/opt/demo-t3-shared"
@@ -108,9 +107,23 @@ sudo chmod -R 755 /opt/demo-t3-shared/promtail-data || true
 sudo chown -R 999:999 /opt/demo-t3-shared/redis-data || true
 sudo chmod -R 755 /opt/demo-t3-shared/redis-data || true
 
-# RabbitMQ (official image runs as uid 999). Ensure directory is writable.
-sudo chown -R 999:999 /opt/demo-t3-shared/rabbitmq-data || true
-sudo chmod -R 755 /opt/demo-t3-shared/rabbitmq-data || true
+# TODO remove it later
+# RabbitMQ: migrate from old host bind mount to named volume if applicable (idempotent)
+if [[ -d "/opt/demo-t3-shared/rabbitmq-data" ]]; then
+  log "Checking RabbitMQ data migration to named volume..."
+  # Create a short-lived container to access the named volume
+  docker run --rm -d --name rabbitmq-init -v rabbitmq_data:/var/lib/rabbitmq busybox sleep 60 || true
+  # If the named volume is empty, migrate data from the old host path
+  if docker exec rabbitmq-init sh -c 'test -z "$(ls -A /var/lib/rabbitmq 2>/dev/null)"'; then
+    log "Migrating existing data from /opt/demo-t3-shared/rabbitmq-data into named volume..."
+    docker cp /opt/demo-t3-shared/rabbitmq-data/. rabbitmq-init:/var/lib/rabbitmq/ || warn "RabbitMQ data copy encountered issues"
+    docker exec rabbitmq-init sh -c 'chown -R 999:999 /var/lib/rabbitmq' || true
+    success "RabbitMQ data migration completed."
+  else
+    log "RabbitMQ named volume already contains data; skipping migration."
+  fi
+  docker rm -f rabbitmq-init >/dev/null 2>&1 || true
+fi
 
 # Ensure shared external Docker network exists for cross-stack communication
 MONITORING_NETWORK_NAME="demo-t3-network"
@@ -164,8 +177,9 @@ if [[ -f "$DATA_COMPOSE_FILE" ]]; then
   # Using stable container names defined in docker-compose.data.production.yml
   POSTGRES_RUNNING=$(docker ps --format '{{.Names}}' | grep -w '^postgres$' || true)
   REDIS_RUNNING=$(docker ps --format '{{.Names}}' | grep -w '^redis$' || true)
-  if [[ -z "$POSTGRES_RUNNING" || -z "$REDIS_RUNNING" ]]; then
-    log "Starting data stack (postgres, redis) once..."
+  RABBITMQ_RUNNING=$(docker ps --format '{{.Names}}' | grep -w '^rabbitmq$' || true)
+  if [[ -z "$POSTGRES_RUNNING" || -z "$REDIS_RUNNING" || -z "$RABBITMQ_RUNNING" ]]; then
+    log "Starting data stack (postgres, redis, rabbitmq) once..."
     docker compose --env-file "$SOURCE_DIR/.env.production" -f "$DATA_COMPOSE_FILE" up -d
   else
     log "Data stack already running; skipping restart"

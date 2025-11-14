@@ -106,7 +106,7 @@ describe('AuthController', () => {
         createdAt: '',
         updatedAt: '',
         password: '',
-        settings: '',
+        settings: {},
         is_active: true,
         original_email: '',
         email_verified: false,

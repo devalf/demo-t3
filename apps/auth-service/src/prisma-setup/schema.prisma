@@ -14,7 +14,7 @@ model User {
   password String  @db.VarChar(100)
   email    String  @unique @db.VarChar(45)
   role     Role    @default(CLIENT)
-  settings Json    @default("{}")
+  settings Json    @default("{}") @db.JsonB
 
   is_active      Boolean   @default(true)
   deleted_at     DateTime?

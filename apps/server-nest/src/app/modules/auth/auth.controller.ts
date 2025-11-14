@@ -17,7 +17,14 @@ import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { plainToInstance } from 'class-transformer';
 import { extractDeviceInfo } from '@demo-t3/utils';
-import { ApiTokenResponse } from '@demo-t3/models';
+import {
+  ACCESS_TOKEN,
+  ACCESS_TOKEN_PUB,
+  ApiTokenResponse,
+  REFRESH_TOKEN,
+  REFRESH_TOKEN_PUB,
+} from '@demo-t3/models';
+import { UserProfileDto } from '@demo-t3/utils-nest';
 
 import {
   AccessTokenGuard,
@@ -105,18 +112,24 @@ export class AuthController {
   }
 
   @Get('me')
+  @ApiOperation({
+    summary: 'Get authenticated user profile',
+    description: 'Returns the profile of the currently authenticated user.',
+  })
   @ApiResponse({
     status: 200,
-    description:
-      'Authenticated user returned successfully. No body is returned.',
+    description: 'User profile retrieved successfully.',
+    type: UserProfileDto,
   })
   @ApiResponse({
     status: 401,
     description: 'Unauthorized. accessToken token missing or invalid.',
   })
   @UseGuards(AccessTokenGuard)
-  async getMe(@Res() res: Response) {
-    return res.status(200).send();
+  async getMe(@Req() request: AuthenticatedRequest): Promise<UserProfileDto> {
+    const accessToken = request.accessToken;
+
+    return this.authService.getUserProfile(accessToken);
   }
 
   @Post('refresh')
@@ -188,41 +201,12 @@ export class AuthController {
     @RefreshToken() refreshToken: string,
     @Res({ passthrough: false }) res: Response
   ) {
-    const isProduction = this.configService.get<boolean>('NX_PUBLIC_MODE');
-
-    res.cookie('accessToken', '', {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
-      maxAge: 0,
-      path: '/',
-    });
-
-    res.cookie('refreshToken', '', {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
-      maxAge: 0,
-      path: '/',
-    });
-
-    res.cookie('sessionPresent', '', {
-      httpOnly: false,
-      secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
-      maxAge: 0,
-      path: '/',
-    });
-
-    res.cookie('csrfToken', '', {
-      httpOnly: false,
-      secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
-      maxAge: 0,
-      path: '/',
-    });
-
     await this.authService.logout(refreshToken);
+
+    res.clearCookie(ACCESS_TOKEN);
+    res.clearCookie(REFRESH_TOKEN);
+    res.clearCookie(ACCESS_TOKEN_PUB);
+    res.clearCookie(REFRESH_TOKEN_PUB);
 
     return res.status(200).send();
   }
@@ -381,38 +365,40 @@ export class AuthController {
       path: '/',
     };
 
-    res.cookie('accessToken', cookieData.accessToken.value, {
+    const maxAgeCommon = cookieData.refreshToken
+      ? cookieData.refreshToken.maxAge
+      : cookieData.accessToken.maxAge;
+
+    res.cookie(ACCESS_TOKEN, cookieData.accessToken.value, {
       ...baseCookieOptions,
       maxAge: cookieData.accessToken.maxAge,
     });
 
     if (cookieData.refreshToken) {
-      res.cookie('refreshToken', cookieData.refreshToken.value, {
+      res.cookie(REFRESH_TOKEN, cookieData.refreshToken.value, {
         ...baseCookieOptions,
         maxAge: cookieData.refreshToken.maxAge,
       });
     }
 
-    res.cookie('sessionPresent', '1', {
+    res.cookie(ACCESS_TOKEN_PUB, '1', {
+      ...baseCookieOptions,
       httpOnly: false,
-      secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
-      path: '/',
-      maxAge: cookieData.refreshToken
-        ? cookieData.refreshToken.maxAge
-        : cookieData.accessToken.maxAge,
+      maxAge: cookieData.accessToken.maxAge,
+    });
+
+    res.cookie(REFRESH_TOKEN_PUB, '1', {
+      ...baseCookieOptions,
+      httpOnly: false,
+      maxAge: cookieData.refreshToken.maxAge,
     });
 
     const csrfToken = randomBytes(32).toString('base64');
 
     res.cookie('csrfToken', csrfToken, {
+      ...baseCookieOptions,
       httpOnly: false,
-      secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
-      path: '/',
-      maxAge: cookieData.refreshToken
-        ? cookieData.refreshToken.maxAge
-        : cookieData.accessToken.maxAge,
+      maxAge: maxAgeCommon,
     });
   }
 }

@@ -1,10 +1,10 @@
 import { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { injectable } from 'inversify';
+import { Container, inject, injectable } from 'inversify';
 
 import { refreshTokenRequest } from '../../repository';
 import { axiosClient } from '../../http';
-import { IRefreshTokenManager } from '../interfaces';
-import { diContainer } from '../../bootstrap/ioc/di-container';
+import { IRefreshTokenManager, IUserManager } from '../interfaces';
+import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 
 type QueuedRequest = {
   resolve: (value: unknown) => void;
@@ -20,6 +20,11 @@ export class RefreshTokenManager implements IRefreshTokenManager {
   private lastRefreshError: AxiosError | null = null;
   private proactiveRefreshInterval: NodeJS.Timeout | null = null;
   private readonly REFRESH_BUFFER_MS = 10 * 1000; // 10 seconds
+
+  constructor(
+    @inject('Container')
+    private readonly container: Container
+  ) {}
 
   async handleTokenRefresh(
     originalRequest: InternalAxiosRequestConfig
@@ -48,17 +53,8 @@ export class RefreshTokenManager implements IRefreshTokenManager {
 
       return axiosClient(originalRequest);
     } catch (error) {
-      this.hasRefreshFailed = true;
-      this.lastRefreshError = error as AxiosError;
       this.processQueue(this.lastRefreshError);
-
-      try {
-        const userManager = diContainer.userManager;
-
-        userManager.handleTokenRefreshFailure();
-      } catch (diError) {
-        console.warn('Could not update user manager state:', diError);
-      }
+      this.handleRefreshFailure(error as AxiosError);
 
       throw error;
     } finally {
@@ -90,6 +86,10 @@ export class RefreshTokenManager implements IRefreshTokenManager {
       const refreshResponse = await refreshTokenRequest();
 
       this.scheduleNextProactiveRefresh(refreshResponse.accessTokenExpiresIn);
+    } catch (error) {
+      this.handleRefreshFailure(error as AxiosError);
+
+      throw error;
     } finally {
       this.isRefreshing = false;
     }
@@ -111,6 +111,24 @@ export class RefreshTokenManager implements IRefreshTokenManager {
         console.warn('Proactive token refresh failed:', error);
       }
     }, refreshIntervalMs);
+  }
+
+  private handleRefreshFailure(error: AxiosError): void {
+    this.hasRefreshFailed = true;
+    this.lastRefreshError = error;
+
+    try {
+      const userManager = this.container.get<IUserManager>(
+        DependencyType.UserManager
+      );
+
+      userManager.handleTokenRefreshFailure();
+    } catch (diError) {
+      console.error(
+        '[RefreshTokenManager] Failed to update user manager state:',
+        diError
+      );
+    }
   }
 
   private processQueue(error: AxiosError | null) {

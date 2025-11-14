@@ -1,5 +1,9 @@
 import { AxiosResponse } from 'axios';
-import { ApiAccessTokenExpiresIn, ApiAuthSignInParams } from '@demo-t3/models';
+import {
+  ApiAccessTokenExpiresIn,
+  ApiAuthSignInParams,
+  ApiUser,
+} from '@demo-t3/models';
 
 import { axiosClient } from '../http';
 import { AppAuthAxiosRequestConfig } from '../types';
@@ -29,11 +33,11 @@ export const sighInRequest = async (
   return data;
 };
 
-export const checkAuthStatusRequest = async (): Promise<boolean> => {
+export const fetchUserProfileData = async (): Promise<ApiUser | false> => {
   try {
-    await axiosClient.get('/auth/me');
+    const { data }: AxiosResponse<ApiUser> = await axiosClient.get('/auth/me');
 
-    return true;
+    return data;
   } catch {
     return false;
   }
@@ -46,7 +50,7 @@ export const logoutRequest = async (): Promise<void> => {
 export const refreshTokenRequest =
   async (): Promise<ApiAccessTokenExpiresIn> => {
     const { data }: AxiosResponse<ApiAccessTokenExpiresIn> =
-      await axiosClient.post('/auth/refresh', {});
+      await axiosClient.post('/auth/refresh', {}, configSkipAuthRefresh);
 
     return data;
   };

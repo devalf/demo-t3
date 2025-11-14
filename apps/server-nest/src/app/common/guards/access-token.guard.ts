@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { ApiJwtPayload } from '@demo-t3/models';
+import { ACCESS_TOKEN, ApiJwtPayload } from '@demo-t3/models';
 
 import { AuthService } from '../../modules/auth/auth.service';
 import { AuthenticatedRequest } from '../types';
@@ -16,7 +16,7 @@ export class AccessTokenGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const accessToken = request.cookies?.['accessToken'];
+    const accessToken = request.cookies?.[ACCESS_TOKEN];
 
     if (!accessToken) {
       throw new UnauthorizedException('No accessToken token found');

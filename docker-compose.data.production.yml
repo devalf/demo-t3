@@ -67,7 +67,7 @@ services:
     ports:
       - '127.0.0.1:15672:15672'
     volumes:
-      - /opt/demo-t3-shared/rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - app-network
     restart: unless-stopped
@@ -78,3 +78,6 @@ services:
       timeout: 3s
       retries: 3
       start_period: 30s
+
+volumes:
+  rabbitmq_data:

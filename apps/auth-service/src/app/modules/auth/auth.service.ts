@@ -23,6 +23,7 @@ import {
   ErrorCode,
 } from '@demo-t3/models';
 import { plainToInstance } from 'class-transformer';
+import { UserProfileDto } from '@demo-t3/utils-nest';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { SALT_ROUNDS, TOKEN_CONFIG } from '../../constants';
@@ -76,7 +77,7 @@ export class AuthService {
     accessToken: string,
     targetUserId: number,
     data: ApiUpdateUserBasicParams
-  ): Promise<UserDto> {
+  ): Promise<UserProfileDto> {
     const currentUser = await this.jwtUserUtil.extractUserFromAccessToken(
       accessToken
     );
@@ -131,7 +132,27 @@ export class AuthService {
 
     this.logger.log(`User ${targetUserId} updated by user ${currentUser.id}`);
 
-    return plainToInstance(UserDto, updatedUser);
+    return plainToInstance(UserProfileDto, updatedUser);
+  }
+
+  async getUserProfile(userId: number): Promise<UserProfileDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId, is_active: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        settings: true,
+        email_verified: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+    }
+
+    return plainToInstance(UserProfileDto, user);
   }
 
   async checkIfUserUnverifiedAndDelete(email: string): Promise<void> {

@@ -3,4 +3,6 @@ export type ApiUser = {
   name?: string;
   email: string;
   role: string;
+  settings: Record<string, unknown>;
+  email_verified: boolean;
 };

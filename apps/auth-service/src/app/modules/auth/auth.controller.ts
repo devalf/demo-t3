@@ -16,7 +16,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { extractDeviceInfo } from '@demo-t3/utils';
 import { UserRegistrationInitiatedEvent } from '@demo-t3/models';
-import { UpdateUserDto } from '@demo-t3/utils-nest';
+import { UpdateUserDto, UserProfileDto } from '@demo-t3/utils-nest';
 
 import { EmailServiceClient } from '../messaging';
 import { TOKEN_CONFIG } from '../../constants';
@@ -34,7 +34,6 @@ import {
   LogoutResponseDto,
   RefreshTokenDto,
   RefreshTokenWithDeviceDto,
-  UserDto,
   VerifyAccessTokenParamsDto,
   VerifyEmailQueryDto,
   VerifyEmailResponseDto,
@@ -57,13 +56,13 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'User created successfully',
-    type: UserDto,
+    type: UserProfileDto,
   })
   @ApiResponse({
     status: 409,
     description: 'User with this email already exists',
   })
-  async register(@Body() body: CreateUserDto): Promise<UserDto> {
+  async register(@Body() body: CreateUserDto): Promise<UserProfileDto> {
     const user = await this.authService.createUser(body);
 
     const verificationToken =
@@ -205,6 +204,34 @@ export class AuthController {
     return this.authService.verifyToken(body.accessToken);
   }
 
+  @Post('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get authenticated user profile',
+    description:
+      'Returns the profile of the authenticated user based on the provided access token.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+    type: UserProfileDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired access token',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  async getMe(
+    @Body() body: VerifyAccessTokenParamsDto
+  ): Promise<UserProfileDto> {
+    const verifiedToken = await this.authService.verifyToken(body.accessToken);
+
+    return this.authService.getUserProfile(verifiedToken.payload.id);
+  }
+
   @Patch('user')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -215,7 +242,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'User updated successfully',
-    type: UserDto,
+    type: UserProfileDto,
   })
   @ApiResponse({
     status: 403,
@@ -225,7 +252,7 @@ export class AuthController {
     status: 404,
     description: 'User not found',
   })
-  async updateUser(@Body() body: UpdateUserDto): Promise<UserDto> {
+  async updateUser(@Body() body: UpdateUserDto): Promise<UserProfileDto> {
     const { accessToken, targetUserId, ...rest } = body;
 
     return this.authService.updateUser(accessToken, targetUserId, {

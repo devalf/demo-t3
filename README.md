@@ -110,6 +110,7 @@ _Note_: Execute all commands from the root directory - no need to navigate to sp
 - `yarn build [application-name|library-name]` build an app/library
 - `yarn test [application-name|library-name]` to run test for a specific application|package
 - `yarn lint [application-name|library-name]` to run eslint for a specific application|package
+- `yarn nx lint client-mx --fix` 
 - `yarn format [application-name|library-name]` to run prettier for a specific application|package
 - `yarn nx e2e [application-name] --ui` to run e2e tests for client application in UI mode (with Browser) (
   e.g. `client-mx-e2e`)
