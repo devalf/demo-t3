@@ -41,6 +41,15 @@
         }
       }
     },
+    "@nx/playwright:playwright": {
+      "cache": true,
+      "configurations": {
+        "ci": {
+          "forbidOnly": true,
+          "reporter": "list"
+        }
+      }
+    },
     "@nx/webpack:webpack": {
       "cache": true,
       "dependsOn": ["^build"],

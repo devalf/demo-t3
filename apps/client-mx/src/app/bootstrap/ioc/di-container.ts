@@ -8,7 +8,7 @@ import {
   StoreExampleTwo,
   ToastManager,
 } from '../../store';
-import {
+import type {
   ICartManager,
   IModalManager,
   IRefreshTokenManager,
@@ -26,6 +26,11 @@ export class DiContainer {
 
   public constructor() {
     this.inversifyContainer = new Container({ defaultScope: 'Singleton' });
+
+    // Bind the container itself for circular dependency resolution
+    this.inversifyContainer
+      .bind<Container>('Container')
+      .toConstantValue(this.inversifyContainer);
 
     this.inversifyContainer
       .bind<IStoreExampleOne>(DependencyType.StoreExampleOne)

@@ -18,7 +18,7 @@ export const AuthSection: FC<AuthSectionProps> = observer(({ onCLick }) => {
   const { showModal } = useInjection<IModalManager>(
     DependencyType.ModalManager
   );
-  const { isSignedIn, isLoading: isUserLoading } = useInjection<IUserManager>(
+  const { userData, isLoading: isUserLoading } = useInjection<IUserManager>(
     DependencyType.UserManager
   );
 
@@ -28,7 +28,7 @@ export const AuthSection: FC<AuthSectionProps> = observer(({ onCLick }) => {
     return null;
   }
 
-  if (isSignedIn) {
+  if (userData) {
     return <UserDropdown />;
   }
 

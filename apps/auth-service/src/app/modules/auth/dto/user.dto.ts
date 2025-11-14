@@ -86,11 +86,17 @@ export class UserDto implements ApiUser {
   })
   email_verified: boolean;
 
+  @Expose()
+  @ApiProperty({
+    description: 'User settings as JSON object',
+    example: { theme: 'dark', language: 'en' },
+  })
+  settings: Record<string, unknown>;
+
   deleted_at: string;
   createdAt: string;
   updatedAt: string;
   password: string;
-  settings: string;
   is_active: boolean;
   original_email: string;
   email_verified_at?: string;

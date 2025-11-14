@@ -26,7 +26,7 @@ import {
   ApiVerifyToken,
   ErrorCode,
 } from '@demo-t3/models';
-import { HttpClient } from '@demo-t3/utils-nest';
+import { HttpClient, UserProfileDto } from '@demo-t3/utils-nest';
 import { Redis } from 'ioredis';
 
 type DecodedJwt = {
@@ -272,6 +272,24 @@ export class AuthService {
       throw new BadRequestException(
         error.message || ErrorCode.USER_UPDATE_FAILED
       );
+    }
+  }
+
+  async getUserProfile(accessToken: string): Promise<UserProfileDto> {
+    const url = `${this.authServiceUrl}/me`;
+
+    try {
+      const response = await this.httpClient.post<UserProfileDto>(url, {
+        accessToken,
+      });
+
+      return response.data;
+    } catch (error) {
+      this.logger.error('User profile fetch failed', {
+        error: error.message,
+      });
+
+      throw error;
     }
   }
 

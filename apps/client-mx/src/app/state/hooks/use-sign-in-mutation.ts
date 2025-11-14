@@ -5,10 +5,9 @@ import { sighInRequest } from '../../repository';
 import { useInjection } from '../../bootstrap/ioc/use-injection';
 import { IModalManager, IUserManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
-import { diContainer } from '../../bootstrap/ioc/di-container';
 
 export const useSignInMutation = () => {
-  const { setIsSignedIn } = useInjection<IUserManager>(
+  const { fetchUserData } = useInjection<IUserManager>(
     DependencyType.UserManager
   );
   const { closeModal } = useInjection<IModalManager>(
@@ -22,9 +21,9 @@ export const useSignInMutation = () => {
   >({
     mutationFn: sighInRequest,
     mutationKey: ['sign-in'],
-    onSuccess: (response: ApiAccessTokenExpiresIn) => {
-      diContainer.refreshTokenManager.resetRefreshFailureState();
-      setIsSignedIn(true, response.accessTokenExpiresIn);
+    onSuccess: async () => {
+      await fetchUserData();
+
       closeModal();
     },
   });

@@ -1,22 +1,22 @@
+import { ACCESS_TOKEN_PUB, ApiUser, REFRESH_TOKEN_PUB } from '@demo-t3/models';
+import { inject, injectable } from 'inversify';
 import { makeAutoObservable } from 'mobx';
-import { injectable } from 'inversify';
 
-import { IUserManager } from '../interfaces';
-import { checkAuthStatusRequest, logoutRequest } from '../../repository';
-import { diContainer } from '../../bootstrap/ioc/di-container';
+import { DependencyType } from '../../bootstrap/ioc/dependency-type';
+import { fetchUserProfileData, logoutRequest } from '../../repository';
+import type { IRefreshTokenManager, IUserManager } from '../interfaces';
 
 @injectable()
 export class UserManager implements IUserManager {
-  constructor() {
+  private userProfileData: ApiUser | null = null;
+
+  constructor(
+    @inject(DependencyType.RefreshTokenManager)
+    private readonly refreshTokenManager: IRefreshTokenManager
+  ) {
     makeAutoObservable(this);
 
-    void this.checkAuthStatusOnLoad();
-  }
-
-  private _isSignedIn = false;
-
-  get isSignedIn(): boolean {
-    return this._isSignedIn;
+    void this.fetchUserData();
   }
 
   private _isLoading = true;
@@ -25,31 +25,29 @@ export class UserManager implements IUserManager {
     return this._isLoading;
   }
 
-  get usedData(): unknown {
-    return undefined;
+  get userData(): ApiUser | null {
+    return this.userProfileData;
   }
 
-  setIsSignedIn = (isSignedIn: boolean, expiresInSeconds?: number): void => {
-    this._isSignedIn = isSignedIn;
+  setUserData = (userData: ApiUser | null, expiresInSeconds?: number): void => {
+    this.userProfileData = userData;
 
     try {
-      const refreshTokenManager = diContainer.refreshTokenManager;
-
-      if (isSignedIn) {
-        refreshTokenManager.resetRefreshFailureState();
+      if (userData !== null) {
+        this.refreshTokenManager.resetRefreshFailureState();
 
         if (expiresInSeconds) {
-          refreshTokenManager.startProactiveRefresh(expiresInSeconds);
+          this.refreshTokenManager.startProactiveRefresh(expiresInSeconds);
         } else {
           console.warn(
             'No expiration time provided, proactive refresh not started'
           );
         }
       } else {
-        refreshTokenManager.stopProactiveRefresh();
+        this.refreshTokenManager.stopProactiveRefresh();
       }
-    } catch (diError) {
-      console.warn('Could not manage refresh token state:', diError);
+    } catch (error) {
+      console.warn('Could not manage refresh token state:', error);
     }
   };
 
@@ -57,17 +55,25 @@ export class UserManager implements IUserManager {
     this._isLoading = isLoading;
   };
 
-  checkAuthStatusOnLoad = async (): Promise<void> => {
+  fetchUserData = async (): Promise<void> => {
     this.setIsLoading(true);
+
     try {
       if (!this.hasSessionCookie()) {
-        this.setIsSignedIn(false);
+        this.setUserData(null);
 
         return;
       }
 
-      const isSignedIn = await checkAuthStatusRequest();
-      this.setIsSignedIn(isSignedIn);
+      const userData = await fetchUserProfileData();
+
+      if (userData) {
+        const expiresInSeconds = await this.getAccessTokenExpiresIn();
+
+        this.setUserData(userData, expiresInSeconds ?? undefined);
+      } else {
+        this.setUserData(null);
+      }
     } finally {
       this.setIsLoading(false);
     }
@@ -76,20 +82,62 @@ export class UserManager implements IUserManager {
   logout = async (): Promise<void> => {
     await logoutRequest();
 
-    this.setIsSignedIn(false);
+    this.setUserData(null);
   };
 
   handleTokenRefreshFailure = (): void => {
-    this.setIsSignedIn(false);
+    this.setUserData(null);
+  };
+
+  private getCookies = (): string[] => {
+    try {
+      return document.cookie ? document.cookie.split('; ') : [];
+    } catch {
+      return [];
+    }
   };
 
   private hasSessionCookie = (): boolean => {
-    try {
-      const cookies = document.cookie ? document.cookie.split('; ') : [];
+    const cookies = this.getCookies();
 
-      return cookies.some((c) => c.startsWith('sessionPresent='));
-    } catch {
-      return false;
+    return cookies.some((c) => c.startsWith(`${REFRESH_TOKEN_PUB}=`));
+  };
+
+  private getAccessTokenExpiresIn = async (): Promise<number | null> => {
+    try {
+      if ('cookieStore' in window) {
+        const cookie = await window.cookieStore.get(ACCESS_TOKEN_PUB);
+
+        if (!cookie || !cookie.expires) {
+          return null;
+        }
+
+        const expiryDate = new Date(cookie.expires);
+        const now = new Date();
+        const secondsRemaining = Math.floor(
+          (expiryDate.getTime() - now.getTime()) / 1000
+        );
+
+        return secondsRemaining > 0 ? secondsRemaining : null;
+      }
+
+      const cookies = this.getCookies();
+      const accessTokenCookie = cookies.find((c) =>
+        c.startsWith(`${ACCESS_TOKEN_PUB}=`)
+      );
+
+      if (!accessTokenCookie) {
+        return null;
+      }
+
+      console.warn(
+        'Cookie Store API not available, cannot read cookie expiration'
+      );
+
+      return null;
+    } catch (error) {
+      console.warn('Failed to read access token expiration:', error);
+      return null;
     }
   };
 }
