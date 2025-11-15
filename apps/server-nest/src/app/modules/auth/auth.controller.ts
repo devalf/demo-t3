@@ -390,7 +390,7 @@ export class AuthController {
     res.cookie(REFRESH_TOKEN_PUB, '1', {
       ...baseCookieOptions,
       httpOnly: false,
-      maxAge: cookieData.refreshToken.maxAge,
+      maxAge: maxAgeCommon,
     });
 
     const csrfToken = randomBytes(32).toString('base64');
