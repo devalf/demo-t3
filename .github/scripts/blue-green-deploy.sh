@@ -107,24 +107,6 @@ sudo chmod -R 755 /opt/demo-t3-shared/promtail-data || true
 sudo chown -R 999:999 /opt/demo-t3-shared/redis-data || true
 sudo chmod -R 755 /opt/demo-t3-shared/redis-data || true
 
-# TODO remove it later
-# RabbitMQ: migrate from old host bind mount to named volume if applicable (idempotent)
-if [[ -d "/opt/demo-t3-shared/rabbitmq-data" ]]; then
-  log "Checking RabbitMQ data migration to named volume..."
-  # Create a short-lived container to access the named volume
-  docker run --rm -d --name rabbitmq-init -v rabbitmq_data:/var/lib/rabbitmq busybox sleep 60 || true
-  # If the named volume is empty, migrate data from the old host path
-  if docker exec rabbitmq-init sh -c 'test -z "$(ls -A /var/lib/rabbitmq 2>/dev/null)"'; then
-    log "Migrating existing data from /opt/demo-t3-shared/rabbitmq-data into named volume..."
-    docker cp /opt/demo-t3-shared/rabbitmq-data/. rabbitmq-init:/var/lib/rabbitmq/ || warn "RabbitMQ data copy encountered issues"
-    docker exec rabbitmq-init sh -c 'chown -R 999:999 /var/lib/rabbitmq' || true
-    success "RabbitMQ data migration completed."
-  else
-    log "RabbitMQ named volume already contains data; skipping migration."
-  fi
-  docker rm -f rabbitmq-init >/dev/null 2>&1 || true
-fi
-
 # Ensure shared external Docker network exists for cross-stack communication
 MONITORING_NETWORK_NAME="demo-t3-network"
 if ! docker network inspect "$MONITORING_NETWORK_NAME" >/dev/null 2>&1; then

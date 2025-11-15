@@ -22,9 +22,11 @@ export const useSignInMutation = () => {
     mutationFn: sighInRequest,
     mutationKey: ['sign-in'],
     onSuccess: async () => {
-      await fetchUserData();
-
-      closeModal();
+      try {
+        await fetchUserData();
+      } finally {
+        closeModal();
+      }
     },
   });
 
