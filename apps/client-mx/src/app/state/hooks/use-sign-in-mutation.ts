@@ -1,10 +1,10 @@
-import { useMutation } from '@tanstack/react-query';
 import { ApiAccessTokenExpiresIn, ApiAuthSignInParams } from '@demo-t3/models';
+import { useMutation } from '@tanstack/react-query';
 
-import { sighInRequest } from '../../repository';
-import { useInjection } from '../../bootstrap/ioc/use-injection';
-import { IModalManager, IUserManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
+import { useInjection } from '../../bootstrap/ioc/use-injection';
+import { sighInRequest } from '../../repository';
+import { IModalManager, IUserManager } from '../../store/interfaces';
 
 export const useSignInMutation = () => {
   const { fetchUserData } = useInjection<IUserManager>(
@@ -21,12 +21,9 @@ export const useSignInMutation = () => {
   >({
     mutationFn: sighInRequest,
     mutationKey: ['sign-in'],
-    onSuccess: async () => {
-      try {
-        await fetchUserData();
-      } finally {
-        closeModal();
-      }
+    onSuccess: () => {
+      closeModal();
+      fetchUserData();
     },
   });
 
