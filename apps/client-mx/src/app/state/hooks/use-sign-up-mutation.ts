@@ -1,9 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { signUpRequest } from '../../repository';
-import { useInjection } from '../../bootstrap/ioc/use-injection';
-import { IModalManager, IToastManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
+import { useInjection } from '../../bootstrap/ioc/use-injection';
+import { useMutationErrorHandler } from '../../common-hooks';
+import { signUpRequest } from '../../repository';
+import { IModalManager, IToastManager } from '../../store/interfaces';
 
 export const useSignUpMutation = () => {
   const { closeModal } = useInjection<IModalManager>(
@@ -12,6 +13,9 @@ export const useSignUpMutation = () => {
   const { showToast } = useInjection<IToastManager>(
     DependencyType.ToastManager
   );
+  const handleError = useMutationErrorHandler({
+    context: 'SignUpMutation',
+  });
 
   const { mutateAsync, isPending } = useMutation<
     void,
@@ -28,6 +32,7 @@ export const useSignUpMutation = () => {
         variant: 'success',
       });
     },
+    onError: handleError,
   });
 
   return {

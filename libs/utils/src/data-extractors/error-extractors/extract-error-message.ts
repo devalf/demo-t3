@@ -1,10 +1,11 @@
-import { get, isString } from 'lodash-es';
+import { get } from 'lodash-es';
 
 import { errorCodeKeyMap } from './error-code-key-map';
 
 /**
  * Extracts a human-readable error message from various error object formats.
  * Tries multiple potential paths where error messages might be located.
+ * Handles both string and array message formats.
  *
  * @param error - The error object to extract a message from
  * @returns A string containing the most relevant error message
@@ -24,10 +25,19 @@ export const extractErrorMessage = (error: unknown): string => {
   ];
 
   for (const path of errorPaths) {
-    const errorValue = get(error, path, null);
+    const errorValue: unknown = get(error, path, null);
 
-    if (errorValue && isString(errorValue)) {
-      const trimmedErrorValue = (errorValue as string).trim();
+    // Handle array of error messages (e.g., ["password is not strong enough"])
+    if (Array.isArray(errorValue) && errorValue.length > 0) {
+      const firstMessage = errorValue[0];
+
+      if (typeof firstMessage === 'string') {
+        return firstMessage.trim();
+      }
+    }
+
+    if (typeof errorValue === 'string') {
+      const trimmedErrorValue = errorValue.trim();
       const status = get(error, 'status', '') || get(error, 'cause.status', '');
 
       if (
@@ -49,11 +59,11 @@ export const extractErrorMessage = (error: unknown): string => {
 
   const configData = get(error, 'config.data');
 
-  if (configData && isString(configData)) {
+  if (configData && typeof configData === 'string') {
     try {
       const parsedData = JSON.parse(configData);
 
-      if (parsedData.message && isString(parsedData.message)) {
+      if (parsedData.message && typeof parsedData.message === 'string') {
         return parsedData.message.trim();
       }
     } catch {

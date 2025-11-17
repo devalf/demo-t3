@@ -115,6 +115,7 @@ _Note_: Execute all commands from the root directory - no need to navigate to sp
 - `yarn nx e2e [application-name] --ui` to run e2e tests for client application in UI mode (with Browser) (
   e.g. `client-mx-e2e`)
 - `yarn nx run client-mx-e2e:e2e -g '<title>'` to run e2e for specific test by title
+- ` cd apps/client-mx-e2e && yarn playwright test src/e2e/login-flow.spec.ts --ui` to run tests in UI mode
 
 ### Auth Service Setup and DB managing (section under construction)
 

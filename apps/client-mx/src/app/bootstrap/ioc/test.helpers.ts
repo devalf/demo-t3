@@ -4,11 +4,13 @@ import {
   ICartManager,
   IStoreExampleOne,
   IStoreExampleTwo,
+  IToastManager,
 } from '../../store/interfaces';
 import {
   createCartManagerMock,
   createStoreExampleOneMock,
   createStoreExampleTwoMock,
+  createToastManagerMock,
 } from '../../store/__dummy__';
 
 import { DependencyType } from './dependency-type';
@@ -27,6 +29,10 @@ export function createTestContainer(): Container {
   inversifyContainer
     .bind<ICartManager>(DependencyType.CartManager)
     .toConstantValue(createCartManagerMock());
+
+  inversifyContainer
+    .bind<IToastManager>(DependencyType.ToastManager)
+    .toConstantValue(createToastManagerMock());
 
   return inversifyContainer;
 }

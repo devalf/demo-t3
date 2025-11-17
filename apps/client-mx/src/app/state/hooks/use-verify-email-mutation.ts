@@ -6,6 +6,7 @@ import { routes } from '../../constants';
 import { useInjection } from '../../bootstrap/ioc/use-injection';
 import { IToastManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
+import { useMutationErrorHandler } from '../../common-hooks';
 
 export const useVerifyEmailMutation = () => {
   const navigate = useNavigate();
@@ -13,6 +14,9 @@ export const useVerifyEmailMutation = () => {
   const { showToast } = useInjection<IToastManager>(
     DependencyType.ToastManager
   );
+  const handleError = useMutationErrorHandler({
+    context: 'VerifyEmailMutation',
+  });
 
   const { mutateAsync, isPending, isError, isSuccess } = useMutation<
     void,
@@ -29,6 +33,7 @@ export const useVerifyEmailMutation = () => {
         variant: 'success',
       });
     },
+    onError: handleError,
   });
 
   return {

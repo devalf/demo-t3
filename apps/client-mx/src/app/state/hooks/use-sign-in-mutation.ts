@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 import { useInjection } from '../../bootstrap/ioc/use-injection';
+import { useMutationErrorHandler } from '../../common-hooks';
 import { sighInRequest } from '../../repository';
 import { IModalManager, IUserManager } from '../../store/interfaces';
 
@@ -13,6 +14,9 @@ export const useSignInMutation = () => {
   const { closeModal } = useInjection<IModalManager>(
     DependencyType.ModalManager
   );
+  const handleError = useMutationErrorHandler({
+    context: 'SignInMutation',
+  });
 
   const { mutateAsync, isPending } = useMutation<
     ApiAccessTokenExpiresIn,
@@ -25,6 +29,7 @@ export const useSignInMutation = () => {
       closeModal();
       fetchUserData();
     },
+    onError: handleError,
   });
 
   return {
