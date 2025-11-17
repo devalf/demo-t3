@@ -1,10 +1,9 @@
 import { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { Container, inject, injectable } from 'inversify';
+import { injectable } from 'inversify';
 
 import { refreshTokenRequest } from '../../repository';
 import { axiosClient } from '../../http';
-import { IRefreshTokenManager, IUserManager } from '../interfaces';
-import { DependencyType } from '../../bootstrap/ioc/dependency-type';
+import { IRefreshTokenManager } from '../interfaces';
 
 type QueuedRequest = {
   resolve: (value: unknown) => void;
@@ -20,11 +19,6 @@ export class RefreshTokenManager implements IRefreshTokenManager {
   private lastRefreshError: AxiosError | null = null;
   private proactiveRefreshInterval: NodeJS.Timeout | null = null;
   private readonly REFRESH_BUFFER_MS = 10 * 1000; // 10 seconds
-
-  constructor(
-    @inject('Container')
-    private readonly container: Container
-  ) {}
 
   async handleTokenRefresh(
     originalRequest: InternalAxiosRequestConfig
@@ -116,19 +110,6 @@ export class RefreshTokenManager implements IRefreshTokenManager {
   private handleRefreshFailure(error: AxiosError): void {
     this.hasRefreshFailed = true;
     this.lastRefreshError = error;
-
-    try {
-      const userManager = this.container.get<IUserManager>(
-        DependencyType.UserManager
-      );
-
-      userManager.handleTokenRefreshFailure();
-    } catch (diError) {
-      console.error(
-        '[RefreshTokenManager] Failed to update user manager state:',
-        diError
-      );
-    }
   }
 
   private processQueue(error: AxiosError | null) {
