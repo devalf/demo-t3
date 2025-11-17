@@ -23,7 +23,8 @@ test('Should show error notification on wrong login credentials', async ({
 
   await page.getByTestId('login_submit_button').click();
 
-  const errorMessage = page.getByText(/request failed|status code 400/i);
+  const errorMessage = page.getByText(/password is not strong enough/i);
+
   await expect(errorMessage).toBeVisible();
 
   await expect(loginModal).toBeVisible();
