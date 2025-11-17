@@ -25,9 +25,9 @@ export const useSignInMutation = () => {
   >({
     mutationFn: sighInRequest,
     mutationKey: ['sign-in'],
-    onSuccess: () => {
+    onSuccess: async () => {
       closeModal();
-      fetchUserData();
+      void fetchUserData();
     },
     onError: handleError,
   });

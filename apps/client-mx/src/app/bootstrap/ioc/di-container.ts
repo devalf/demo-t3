@@ -1,19 +1,19 @@
 import { Container } from 'inversify';
 
 import {
+  AuthInterceptorService,
+  type IAuthInterceptorService,
+} from '../../http';
+import {
   CartManager,
   ModalManager,
   RefreshTokenManager,
-  StoreExampleOne,
-  StoreExampleTwo,
   ToastManager,
 } from '../../store';
 import type {
   ICartManager,
   IModalManager,
   IRefreshTokenManager,
-  IStoreExampleOne,
-  IStoreExampleTwo,
   IToastManager,
   IUserManager,
 } from '../../store/interfaces';
@@ -26,19 +26,6 @@ export class DiContainer {
 
   public constructor() {
     this.inversifyContainer = new Container({ defaultScope: 'Singleton' });
-
-    // Bind the container itself for circular dependency resolution
-    this.inversifyContainer
-      .bind<Container>('Container')
-      .toConstantValue(this.inversifyContainer);
-
-    this.inversifyContainer
-      .bind<IStoreExampleOne>(DependencyType.StoreExampleOne)
-      .to(StoreExampleOne);
-
-    this.inversifyContainer
-      .bind<IStoreExampleTwo>(DependencyType.StoreExampleTwo)
-      .to(StoreExampleTwo);
 
     this.inversifyContainer
       .bind<ICartManager>(DependencyType.CartManager)
@@ -59,12 +46,10 @@ export class DiContainer {
     this.inversifyContainer
       .bind<IRefreshTokenManager>(DependencyType.RefreshTokenManager)
       .to(RefreshTokenManager);
-  }
 
-  public get storeExampleOne(): IStoreExampleOne {
-    return this.inversifyContainer.get<IStoreExampleOne>(
-      DependencyType.StoreExampleOne
-    );
+    this.inversifyContainer
+      .bind<IAuthInterceptorService>(DependencyType.AuthInterceptorService)
+      .to(AuthInterceptorService);
   }
 
   public get refreshTokenManager(): IRefreshTokenManager {
@@ -76,6 +61,12 @@ export class DiContainer {
   public get userManager(): IUserManager {
     return this.inversifyContainer.get<IUserManager>(
       DependencyType.UserManager
+    );
+  }
+
+  public get authInterceptorService(): IAuthInterceptorService {
+    return this.inversifyContainer.get<IAuthInterceptorService>(
+      DependencyType.AuthInterceptorService
     );
   }
 }
