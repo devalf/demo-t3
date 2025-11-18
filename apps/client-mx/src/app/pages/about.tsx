@@ -1,0 +1,140 @@
+import { FC } from 'react';
+import { Box, Container, Divider, Paper, Typography } from '@mui/material';
+
+const About: FC = () => {
+  return (
+    <Container maxWidth={'md'}>
+      <Box sx={{ mt: 4, mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          About Project
+        </Typography>
+
+        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+          <Typography variant="body1">
+            This demo project showcases a monorepo architecture built with NX,
+            containing multiple applications and shared libraries.
+          </Typography>
+
+          <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+            Applications
+          </Typography>
+          <Typography variant="body1" component="div">
+            <ul>
+              <li>
+                <strong>client-mx</strong> - A React-based client application
+              </li>
+              <li>
+                <strong>server-nest</strong> - A NestJS server application
+              </li>
+              <li>
+                <strong>auth-service</strong> - A dedicated NestJS microservice
+                handling user authentication and authorization
+              </li>
+              <li>
+                <strong>email-service</strong> - An event-driven NestJS
+                microservice for email delivery, utilizing RabbitMQ message
+                queue for asynchronous communication
+              </li>
+            </ul>
+          </Typography>
+        </Paper>
+
+        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Infrastructure & Services
+          </Typography>
+          <Typography variant="body1" component="div">
+            <ul>
+              <li>
+                <strong>PostgreSQL Database</strong> - Primary relational
+                database for the auth-service, handling user authentication
+                data, session management, and authorization records
+              </li>
+              <li>
+                <strong>Redis Cache</strong> - In-memory data store providing
+                shared caching capabilities across all applications for session
+                management and performance optimization
+              </li>
+              <li>
+                <strong>RabbitMQ Message Broker</strong> - Event-driven
+                messaging system enabling asynchronous communication between
+                microservices with proper message persistence and retry
+                mechanisms
+              </li>
+              <li>
+                <strong>NGINX</strong> - High-performance web server serving the
+                React SPA with gzip compression, API proxying with caching, and
+                security headers enforcement
+              </li>
+              <li>
+                <strong>HAProxy Load Balancer</strong> - Production-grade load
+                balancer enabling zero-downtime blue-green deployments with
+                SSL/TLS termination and live traffic shifting
+              </li>
+            </ul>
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            All infrastructure services are containerized and orchestrated
+            through Docker Compose.
+          </Typography>
+        </Paper>
+
+        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Technical Stack
+          </Typography>
+
+          <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+            Server API
+          </Typography>
+          <Typography variant="body2" paragraph>
+            NestJS, RXDB, Jest, Swagger, class-validator, class-transformer
+          </Typography>
+
+          <Typography variant="subtitle2" gutterBottom>
+            Auth Service
+          </Typography>
+          <Typography variant="body2" paragraph>
+            NestJS, PostgreSQL, Prisma, Jest, Swagger, class-validator,
+            class-transformer
+          </Typography>
+
+          <Typography variant="subtitle2" gutterBottom>
+            Email Service
+          </Typography>
+          <Typography variant="body2" paragraph>
+            NestJS, RabbitMQ, MJML templates for responsive email design
+          </Typography>
+
+          <Typography variant="subtitle2" gutterBottom>
+            Client Application
+          </Typography>
+          <Typography variant="body2" paragraph>
+            React, React Router, MobX, React Query, Material-UI, Inversify,
+            Jest, React Testing Library
+          </Typography>
+
+          <Divider sx={{ my: 2 }} />
+
+          <Typography variant="body2" color="text.secondary">
+            All applications are developed in TypeScript and include exemplary
+            test coverage with unit tests, integration tests, and end-to-end
+            tests. The server APIs are fully documented through Swagger
+            documentation.
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            This project includes production-grade monitoring with Prometheus
+            for metrics collection and Grafana for dashboards and visualization.
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            For the technical details see the original repository
+          </Typography>
+        </Paper>
+      </Box>
+    </Container>
+  );
+};
+
+export default About;

@@ -73,6 +73,10 @@ fi
 log "Removing Docker build cache..."
 docker builder prune -a -f || warn "Failed to clean build cache"
 
+# Clean buildx cache (separate from builder cache)
+log "Removing Docker buildx cache..."
+docker buildx prune -a -f || warn "Failed to clean buildx cache"
+
 # Image cleanup strategy
 if [[ "$AGGRESSIVE" == "true" ]]; then
   log "AGGRESSIVE: Removing ALL unused images..."

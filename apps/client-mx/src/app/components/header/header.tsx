@@ -18,6 +18,7 @@ import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 
 import { AuthSection } from './auth-section';
 import { Drawer } from './drawer';
+import { MoreMenu } from './more-menu';
 
 export const Header: FC = observer(() => {
   const { getTotalProductsInCart } = useInjection<ICartManager>(
@@ -55,35 +56,33 @@ export const Header: FC = observer(() => {
           <Box
             sx={{
               display: isSmall ? 'block' : 'flex',
-              flexDirection: 'row-reverse',
               gap: 1,
             }}
           >
-            <Link
-              component={ReactRouterLink}
-              to={routes.cart}
-              sx={(theme) => ({
-                color: theme.palette.common.white,
-              })}
-              data-testid={'link_to_cart'}
-            >
-              <IconButton
-                size="large"
-                aria-label="show cart items"
-                color="inherit"
-              >
-                <Badge
-                  badgeContent={getTotalProductsInCart()}
-                  color="error"
-                  data-testid={'cart_icon_container'}
-                >
-                  <ShoppingCartIcon />
-                </Badge>
-              </IconButton>
-            </Link>
-
             {isSmall ? (
               <>
+                <Link
+                  component={ReactRouterLink}
+                  to={routes.cart}
+                  sx={(theme) => ({
+                    color: theme.palette.common.white,
+                  })}
+                  data-testid={'link_to_cart'}
+                >
+                  <IconButton
+                    size="large"
+                    aria-label="show cart items"
+                    color="inherit"
+                  >
+                    <Badge
+                      badgeContent={getTotalProductsInCart()}
+                      color="error"
+                      data-testid={'cart_icon_container'}
+                    >
+                      <ShoppingCartIcon />
+                    </Badge>
+                  </IconButton>
+                </Link>
                 <IconButton
                   color="inherit"
                   aria-label="open drawer"
@@ -97,9 +96,37 @@ export const Header: FC = observer(() => {
                 <Drawer open={drawerOpen} onClose={handleDrawerToggle} />
               </>
             ) : (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <AuthSection />
-              </Box>
+              <>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 1 }}
+                >
+                  <AuthSection />
+                </Box>
+
+                <Link
+                  component={ReactRouterLink}
+                  to={routes.cart}
+                  sx={(theme) => ({
+                    color: theme.palette.common.white,
+                  })}
+                  data-testid={'link_to_cart_desktop'}
+                >
+                  <IconButton
+                    size="large"
+                    aria-label="show cart items"
+                    color="inherit"
+                  >
+                    <Badge
+                      badgeContent={getTotalProductsInCart()}
+                      color="error"
+                      data-testid={'cart_icon_container_desktop'}
+                    >
+                      <ShoppingCartIcon />
+                    </Badge>
+                  </IconButton>
+                </Link>
+                <MoreMenu />
+              </>
             )}
           </Box>
         </Toolbar>

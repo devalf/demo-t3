@@ -17,6 +17,7 @@ const Cart = lazy(() => import('../../pages/cart'));
 const OrderSuccess = lazy(() => import('../../pages/order-success'));
 const VerifyEmail = lazy(() => import('../../pages/verify-email'));
 const Profile = lazy(() => import('../../pages/profile'));
+const About = lazy(() => import('../../pages/about'));
 
 export const Layout: FC = observer(() => {
   const { userData, isLoading } = useInjection<IUserManager>(
@@ -67,6 +68,14 @@ export const Layout: FC = observer(() => {
               <ProtectedRoute isAllowed={!!userData} isLoading={isLoading}>
                 <Profile />
               </ProtectedRoute>
+            </Suspense>
+          }
+        />
+        <Route
+          path={routes.about}
+          element={
+            <Suspense fallback={<LoadingBox />}>
+              <About />
             </Suspense>
           }
         />
