@@ -5,4 +5,5 @@ export const routes = {
   cart: '/cart',
   orderSuccess: '/order-success',
   verifyEmail: '/verify-email',
+  profile: '/profile',
 };

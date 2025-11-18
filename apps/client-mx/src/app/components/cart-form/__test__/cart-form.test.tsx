@@ -8,8 +8,10 @@ import { generatePath } from 'react-router-dom';
 import { fireEvent, waitFor } from '@testing-library/react';
 
 import { CartForm } from '../cart-form';
-import { createTestContainer } from '../../../bootstrap/ioc/test.helpers';
-import { Provider } from '../../../bootstrap/ioc/inversify-context';
+import {
+  createTestContainer,
+  createInversifyProviderMock,
+} from '../../../bootstrap/ioc/test.helpers';
 import { DependencyType } from '../../../bootstrap/ioc/dependency-type';
 import { routes } from '../../../constants';
 import { createOrder } from '../../../repository';
@@ -22,10 +24,7 @@ describe('Testing CartFrom', () => {
 
   beforeEach(() => {
     inversifyContainer = createTestContainer();
-
-    InversifyProviderMock = ({ children }) => (
-      <Provider container={inversifyContainer}>{children}</Provider>
-    );
+    InversifyProviderMock = createInversifyProviderMock(inversifyContainer);
   });
 
   it('Should render `empty` cart list', () => {

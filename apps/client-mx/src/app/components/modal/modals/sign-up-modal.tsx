@@ -13,6 +13,7 @@ export const SignUpModal: FC = () => {
       buttonText="Sign Up"
       onSubmit={signUp}
       testIdPrefix="sign_up"
+      showNameField
     />
   );
 };

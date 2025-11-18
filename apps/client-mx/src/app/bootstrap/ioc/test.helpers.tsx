@@ -1,4 +1,5 @@
 import { Container } from 'inversify';
+import { FC, PropsWithChildren } from 'react';
 
 import { ICartManager, IToastManager } from '../../store/interfaces';
 import {
@@ -7,6 +8,7 @@ import {
 } from '../../store/__dummy__';
 
 import { DependencyType } from './dependency-type';
+import { Provider } from './inversify-context';
 
 export function createTestContainer(): Container {
   const inversifyContainer = new Container({ defaultScope: 'Singleton' });
@@ -20,4 +22,12 @@ export function createTestContainer(): Container {
     .toConstantValue(createToastManagerMock());
 
   return inversifyContainer;
+}
+
+export function createInversifyProviderMock(
+  container: Container
+): FC<PropsWithChildren> {
+  return ({ children }) => (
+    <Provider container={container}>{children}</Provider>
+  );
 }

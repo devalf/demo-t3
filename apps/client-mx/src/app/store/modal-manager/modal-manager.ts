@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { injectable } from 'inversify';
 
 import { IModalManager, ModalOptions } from '../interfaces';
@@ -42,8 +42,10 @@ export class ModalManager implements IModalManager {
     this._isOpen = false;
 
     setTimeout(() => {
-      this._modalTemplate = null;
-      this._modalProps = {};
+      runInAction(() => {
+        this._modalTemplate = null;
+        this._modalProps = {};
+      });
     }, 300);
   };
 

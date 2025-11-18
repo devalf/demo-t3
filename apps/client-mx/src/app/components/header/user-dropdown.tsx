@@ -2,10 +2,12 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Box, IconButton, Menu, MenuItem, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import React, { FC } from 'react';
+import { Link } from 'react-router-dom';
 
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 import { useInjection } from '../../bootstrap/ioc/use-injection';
 import { useViewSize } from '../../common-hooks';
+import { routes } from '../../constants';
 import { IUserManager } from '../../store/interfaces';
 
 export const UserDropdown: FC = observer(() => {
@@ -58,6 +60,9 @@ export const UserDropdown: FC = observer(() => {
           sx: { p: 0 },
         }}
       >
+        <MenuItem component={Link} to={routes.profile} onClick={handleClose}>
+          Profile
+        </MenuItem>
         <MenuItem onClick={handleLogout}>Log out</MenuItem>
       </Menu>
     </>
