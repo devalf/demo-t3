@@ -1,10 +1,12 @@
 import { FC } from 'react';
-import { Link } from 'react-router-dom';
+import { Link as ReactRouterLink } from 'react-router-dom';
 import {
   Box,
   Button,
+  Divider,
   Drawer as MuiDrawer,
   IconButton,
+  Link,
   Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -61,7 +63,7 @@ export const Drawer: FC<DrawerProps> = observer(({ open, onClose }) => {
         {userData ? (
           <>
             <Box
-              component={Link}
+              component={ReactRouterLink}
               to={routes.profile}
               onClick={onClose}
               sx={{
@@ -93,6 +95,24 @@ export const Drawer: FC<DrawerProps> = observer(({ open, onClose }) => {
         ) : (
           <AuthSection onCLick={onClose} />
         )}
+
+        <Divider sx={{ my: 1 }} />
+
+        <Typography variant="caption" color="text.secondary" sx={{ px: 1 }}>
+          Links
+        </Typography>
+
+        <Link
+          component={ReactRouterLink}
+          to={routes.about}
+          onClick={onClose}
+          underline="hover"
+          color="inherit"
+          sx={{ p: 1 }}
+          data-testid={'drawer_about_link'}
+        >
+          About
+        </Link>
       </Box>
     </MuiDrawer>
   );

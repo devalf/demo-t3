@@ -26,6 +26,10 @@ This project utilizes a robust infrastructure layer:
 
 **RabbitMQ Message Broker** - Event-driven messaging system enabling asynchronous communication between microservices. The email-service consumes messages from queues to handle email delivery operations independently, ensuring reliable and scalable inter-service communication with proper message persistence and retry mechanisms.
 
+**NGINX** - High-performance web server embedded within the client-mx application container. Serves the React SPA with optimized gzip compression, handles client-side routing (SPA fallback), proxies API requests to backend services with caching for product endpoints, and enforces security headers (CSP, X-Frame-Options, etc.).
+
+**HAProxy Load Balancer** - Production-grade load balancer enabling zero-downtime blue-green deployments. Manages SSL/TLS termination, routes traffic between blue and green environments using weighted round-robin, performs health checks on backend services, and allows live traffic shifting without service interruption.
+
 All infrastructure services are containerized and orchestrated through Docker Compose, ensuring consistent development and production environments with proper service dependencies and health checks.
 
 ## Technical Stack

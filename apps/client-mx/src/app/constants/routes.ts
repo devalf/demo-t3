@@ -6,4 +6,5 @@ export const routes = {
   orderSuccess: '/order-success',
   verifyEmail: '/verify-email',
   profile: '/profile',
+  about: '/about',
 };
