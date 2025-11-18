@@ -1,4 +1,8 @@
-import { ApiJwtPayload, ApiRefreshTokenPayload } from '@demo-t3/models';
+import {
+  ApiJwtPayload,
+  ApiRefreshTokenPayload,
+  ApiUser,
+} from '@demo-t3/models';
 
 export const generateApiJwtPayload = (
   options?: Partial<ApiJwtPayload>
@@ -47,5 +51,15 @@ export const generateOrmUser = (
   email_verified: true,
   created_at: new Date('2025-01-01T00:00:00Z'),
   updated_at: new Date('2025-01-01T00:00:00Z'),
+  ...options,
+});
+
+export const generateApiUserData = (options?: Partial<ApiUser>): ApiUser => ({
+  id: 1,
+  name: 'Test User',
+  email: 'test@example.com',
+  role: 'CLIENT',
+  settings: {},
+  email_verified: true,
   ...options,
 });

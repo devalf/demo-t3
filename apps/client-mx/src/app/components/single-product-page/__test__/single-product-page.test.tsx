@@ -5,9 +5,11 @@ import { renderApp } from '@demo-t3/utils-ui';
 import { FC, PropsWithChildren } from 'react';
 
 import { SingleProductPage } from '../single-product-page';
-import { createTestContainer } from '../../../bootstrap/ioc/test.helpers';
+import {
+  createTestContainer,
+  createInversifyProviderMock,
+} from '../../../bootstrap/ioc/test.helpers';
 import { fetchProduct } from '../../../repository';
-import { Provider } from '../../../bootstrap/ioc/inversify-context';
 
 jest.mock('../../../repository');
 
@@ -17,10 +19,7 @@ describe('SingleProductPage', () => {
 
   beforeEach(() => {
     inversifyContainer = createTestContainer();
-
-    InversifyProviderMock = ({ children }) => (
-      <Provider container={inversifyContainer}>{children}</Provider>
-    );
+    InversifyProviderMock = createInversifyProviderMock(inversifyContainer);
 
     (fetchProduct as jest.Mock).mockResolvedValue(mockProduct());
   });

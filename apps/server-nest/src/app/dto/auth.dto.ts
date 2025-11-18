@@ -2,8 +2,10 @@ import {
   IsEmail,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   IsStrongPassword,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import {
@@ -22,6 +24,12 @@ export class CreateUserDto implements ApiCreateUserParams {
   @ApiProperty()
   @IsStrongPassword()
   password: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  name?: string;
 }
 
 export class AuthSignInDto implements ApiAuthSignInParams {

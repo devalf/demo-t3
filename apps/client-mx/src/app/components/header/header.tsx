@@ -5,9 +5,8 @@ import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import { Badge, Drawer, IconButton, Link } from '@mui/material';
+import { Badge, IconButton, Link } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { observer } from 'mobx-react-lite';
 
@@ -18,6 +17,7 @@ import { ICartManager } from '../../store/interfaces';
 import { DependencyType } from '../../bootstrap/ioc/dependency-type';
 
 import { AuthSection } from './auth-section';
+import { Drawer } from './drawer';
 
 export const Header: FC = observer(() => {
   const { getTotalProductsInCart } = useInjection<ICartManager>(
@@ -94,33 +94,7 @@ export const Header: FC = observer(() => {
                 >
                   <MenuIcon />
                 </IconButton>
-                <Drawer
-                  anchor="right"
-                  open={drawerOpen}
-                  onClose={handleDrawerToggle}
-                  data-testid={'mobile_drawer'}
-                >
-                  <Box
-                    sx={{
-                      width: 280,
-                      p: 2,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1,
-                    }}
-                    role="presentation"
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <IconButton
-                        onClick={handleDrawerToggle}
-                        data-testid={'mobile_drawer_close_button'}
-                      >
-                        <CloseIcon />
-                      </IconButton>
-                    </Box>
-                    <AuthSection onCLick={() => setDrawerOpen(false)} />
-                  </Box>
-                </Drawer>
+                <Drawer open={drawerOpen} onClose={handleDrawerToggle} />
               </>
             ) : (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

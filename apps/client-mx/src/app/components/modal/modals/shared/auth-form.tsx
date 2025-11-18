@@ -20,8 +20,13 @@ const AuthSchema = Yup.object().shape({
 type AuthFormProps = {
   title: string;
   buttonText: string;
-  onSubmit: (values: { email: string; password: string }) => Promise<void>;
+  onSubmit: (values: {
+    email: string;
+    password: string;
+    name?: string;
+  }) => Promise<void>;
   testIdPrefix: string;
+  showNameField?: boolean;
 };
 
 export const AuthForm: FC<AuthFormProps> = ({
@@ -29,6 +34,7 @@ export const AuthForm: FC<AuthFormProps> = ({
   buttonText,
   onSubmit,
   testIdPrefix,
+  showNameField = false,
 }) => {
   const { showToast } = useInjection<IToastManager>(
     DependencyType.ToastManager
@@ -38,12 +44,18 @@ export const AuthForm: FC<AuthFormProps> = ({
     initialValues: {
       email: '',
       password: '',
+      name: '',
     },
     enableReinitialize: true,
     validationSchema: AuthSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        await onSubmit(values);
+        const { email, password, name } = values;
+        await onSubmit({
+          email,
+          password,
+          ...(showNameField && name ? { name } : {}),
+        });
       } catch (error) {
         const errorMessage = extractErrorMessage(error);
 
@@ -87,6 +99,20 @@ export const AuthForm: FC<AuthFormProps> = ({
           autoFocus
           data-testid={`${testIdPrefix}_email_input`}
         />
+
+        {showNameField && (
+          <TextField
+            id="name"
+            name="name"
+            label="Name"
+            type="text"
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            fullWidth
+            data-testid={`${testIdPrefix}_name_input`}
+          />
+        )}
 
         <TextField
           id="password"
