@@ -109,7 +109,7 @@ export const Header: FC = observer(() => {
                   sx={(theme) => ({
                     color: theme.palette.common.white,
                   })}
-                  data-testid={'link_to_cart_desktop'}
+                  data-testid={'link_to_cart'}
                 >
                   <IconButton
                     size="large"
@@ -119,7 +119,7 @@ export const Header: FC = observer(() => {
                     <Badge
                       badgeContent={getTotalProductsInCart()}
                       color="error"
-                      data-testid={'cart_icon_container_desktop'}
+                      data-testid={'cart_icon_container'}
                     >
                       <ShoppingCartIcon />
                     </Badge>
