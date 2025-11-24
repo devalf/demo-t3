@@ -98,3 +98,10 @@ jobs:
       force_deploy: ${{ github.event.inputs.force_deploy || false }}
       affected_apps: ${{ needs.setup.outputs.affected_apps }}
     secrets: inherit
+
+  cleanup:
+    name: Docker Cleanup
+    needs: [deploy]
+    if: success()
+    uses: ./.github/workflows/cleanup.yml
+    secrets: inherit

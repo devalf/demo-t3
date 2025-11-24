@@ -345,6 +345,7 @@ fi
 log "Running basic Docker cleanup..."
 docker container prune -f || warn "Failed to remove stopped containers"
 docker image prune -f || warn "Failed to remove dangling images"
+docker buildx prune -a -f || warn "Failed to clean buildx cache"
 
 # Note: Aggressive cleanup runs automatically via GitHub Actions cleanup workflow
 

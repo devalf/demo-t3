@@ -41,6 +41,129 @@ const About: FC = () => {
 
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom>
+            Key Features & Implementation Highlights
+          </Typography>
+
+          <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+            User Experience
+          </Typography>
+          <Typography variant="body2" component="div">
+            <ul>
+              <li>
+                <strong>Product Catalog</strong> - Home page with sample product
+                cards featuring infinite scroll with optimized performance
+              </li>
+              <li>
+                <strong>Product Details</strong> - Individual product pages with
+                comprehensive descriptions and specifications
+              </li>
+              <li>
+                <strong>Shopping Cart</strong> - Full cart management system
+                with add, remove, and quantity updates
+              </li>
+              <li>
+                <strong>Order Processing</strong> - Complete order simulation
+                flow from cart to checkout
+              </li>
+            </ul>
+          </Typography>
+
+          <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+            Authentication & Security
+          </Typography>
+          <Typography variant="body2" component="div">
+            <ul>
+              <li>
+                <strong>Custom User Management</strong> - Registration with
+                email confirmation and login functionality built from scratch
+              </li>
+              <li>
+                <strong>JWT-Based Authentication</strong> - Industry best
+                practices for access control using JSON Web Tokens
+              </li>
+              <li>
+                <strong>Token Rotation System</strong> - Automatic access and
+                refresh token management with rotation on each refresh
+              </li>
+              <li>
+                <strong>Smart Token Refresh</strong> - Proactive token renewal
+                based on expiration time to ensure seamless user experience
+              </li>
+              <li>
+                <strong>Session Management</strong> - Configurable limits on
+                concurrent active sessions per user
+              </li>
+              <li>
+                <strong>CSRF Protection</strong> - Implementation of Cross-Site
+                Request Forgery protection mechanisms
+              </li>
+              <li>
+                <strong>DoS Prevention</strong> - API request throttling with
+                endpoint-specific rate limits
+              </li>
+            </ul>
+          </Typography>
+
+          <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+            State Management & Data Layer
+          </Typography>
+          <Typography variant="body2" component="div">
+            <ul>
+              <li>
+                <strong>Hybrid State Management</strong> - Optimized combination
+                of MobX for local state and TanStack Query (React Query) for
+                server state
+              </li>
+              <li>
+                <strong>Dual Database Architecture</strong> - RxDB for in-memory
+                product data and PostgreSQL for user management
+              </li>
+              <li>
+                <strong>Unified Error Handling</strong> - Centralized approach
+                to network and application errors across all services
+              </li>
+              <li>
+                <strong>Shared Contracts</strong> - Type-safe models and DTOs
+                shared across client and server applications
+              </li>
+            </ul>
+          </Typography>
+
+          <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+            DevOps & Quality Assurance
+          </Typography>
+          <Typography variant="body2" component="div">
+            <ul>
+              <li>
+                <strong>Comprehensive Testing</strong> - Extensive coverage with
+                unit tests, integration tests, and end-to-end tests
+              </li>
+              <li>
+                <strong>CI/CD Pipeline</strong> - Automated workflows with
+                proper build optimization and zero-downtime deployment strategy
+              </li>
+              <li>
+                <strong>Infrastructure Monitoring</strong> - Production-grade
+                observability with metrics, alerts, and health checks
+              </li>
+              <li>
+                <strong>Database Backups</strong> - Automated backup strategy
+                following industry best practices
+              </li>
+              <li>
+                <strong>Email Infrastructure</strong> - Integration with
+                third-party email services using MJML for responsive layouts
+              </li>
+              <li>
+                <strong>Developer Tools</strong> - Custom tooling to streamline
+                development workflows and project maintenance
+              </li>
+            </ul>
+          </Typography>
+        </Paper>
+
+        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
             Infrastructure & Services
           </Typography>
           <Typography variant="body1" component="div">

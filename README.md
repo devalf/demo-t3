@@ -176,3 +176,55 @@ Mark failed migration as rolled back
 
 yarn prisma migrate resolve --rolled-back "migration_name" --schema=./apps/auth-service/src/prisma-setup/schema.prisma
 ```
+
+## Key Features & Implementation Highlights
+
+### User Experience
+
+**Product Catalog** - Home page with sample product cards featuring infinite scroll with optimized performance
+
+**Product Details** - Individual product pages with comprehensive descriptions and specifications
+
+**Shopping Cart** - Full cart management system with add, remove, and quantity updates
+
+**Order Processing** - Complete order simulation flow from cart to checkout
+
+### Authentication & Security
+
+**Custom User Management** - Registration with email confirmation and login functionality built from scratch
+
+**JWT-Based Authentication** - Industry best practices for access control using JSON Web Tokens
+
+**Token Rotation System** - Automatic access and refresh token management with rotation on each refresh
+
+**Smart Token Refresh** - Proactive token renewal based on expiration time to ensure seamless user experience
+
+**Session Management** - Configurable limits on concurrent active sessions per user
+
+**CSRF Protection** - Implementation of Cross-Site Request Forgery protection mechanisms
+
+**DoS Prevention** - API request throttling with endpoint-specific rate limits
+
+### State Management & Data Layer
+
+**Hybrid State Management** - Optimized combination of MobX for local state and TanStack Query (React Query) for server state
+
+**Dual Database Architecture** - RxDB for in-memory product data and PostgreSQL for user management
+
+**Unified Error Handling** - Centralized approach to network and application errors across all services
+
+**Shared Contracts** - Type-safe models and DTOs shared across client and server applications
+
+### DevOps & Quality Assurance
+
+**Comprehensive Testing** - Extensive coverage with unit tests, integration tests, and end-to-end tests
+
+**CI/CD Pipeline** - Automated workflows with proper build optimization and zero-downtime deployment strategy
+
+**Infrastructure Monitoring** - Production-grade observability with metrics, alerts, and health checks
+
+**Database Backups** - Automated backup strategy following industry best practices
+
+**Email Infrastructure** - Integration with third-party email services using MJML for responsive layouts
+
+**Developer Tools** - Custom tooling to streamline development workflows and project maintenance

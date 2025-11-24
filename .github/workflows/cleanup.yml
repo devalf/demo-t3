@@ -1,11 +1,13 @@
 name: Docker Cleanup
 
 on:
-  workflow_run:
-    workflows: ['Deploy to VPS']
-    types:
-      - completed
-    branches: [master, dev]
+  workflow_call:
+    inputs:
+      aggressive:
+        description: 'Aggressive cleanup (remove all unused images)'
+        required: false
+        type: boolean
+        default: true
 
   workflow_dispatch:
     inputs:
@@ -20,8 +22,6 @@ jobs:
     name: Cleanup Docker Resources
     runs-on: ubuntu-latest
     environment: production
-
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Setup SSH
