@@ -119,6 +119,11 @@ const About: FC = () => {
                 product data and PostgreSQL for user management
               </li>
               <li>
+                <strong>Multi-Layer Caching</strong> - Strategic caching
+                implementation with NGINX for static assets and API responses,
+                and Redis for session and application data
+              </li>
+              <li>
                 <strong>Unified Error Handling</strong> - Centralized approach
                 to network and application errors across all services
               </li>

@@ -37,8 +37,9 @@ test.describe('Mobile Drawer', () => {
 
     await expect(drawer).toBeVisible();
 
-    // Click on the backdrop using force to bypass the drawer intercepting
-    await page.locator('.MuiBackdrop-root').click({ force: true });
+    // Press Escape to close the drawer (standard MUI Drawer behavior)
+    await page.keyboard.press('Escape');
+
     await expect(drawer).toBeHidden();
   });
 

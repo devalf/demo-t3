@@ -211,6 +211,8 @@ yarn prisma migrate resolve --rolled-back "migration_name" --schema=./apps/auth-
 
 **Dual Database Architecture** - RxDB for in-memory product data and PostgreSQL for user management
 
+**Multi-Layer Caching** - Strategic caching implementation with NGINX for static assets and API responses, and Redis for session and application data
+
 **Unified Error Handling** - Centralized approach to network and application errors across all services
 
 **Shared Contracts** - Type-safe models and DTOs shared across client and server applications
