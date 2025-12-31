@@ -11,6 +11,7 @@ source "${SCRIPT_DIR}/common.sh"
 
 TARGET_COLOR="${1:-}"
 HAPROXY_CONTAINER="demo-t3-haproxy"
+HAPROXY_CONFIG="/opt/demo-t3/config/deploy/haproxy/haproxy.cfg"
 
 if [[ "$TARGET_COLOR" != "blue" && "$TARGET_COLOR" != "green" ]]; then
   error "Usage: $0 <blue|green>"
@@ -75,6 +76,24 @@ for step in "${SHIFT_STEPS[@]}"; do
 done
 
 success "Traffic shift complete! All traffic now on: $TARGET_COLOR"
+
+# Persist weight changes to config file so they survive HAProxy restarts
+log "Persisting weight changes to config file..."
+if [[ -f "$HAPROXY_CONFIG" ]]; then
+  # Update weights in config: target gets 100, source gets 0
+  # Match lines like: server blue  blue-client-mx-1:80  check weight 100
+  if [[ "$TARGET_COLOR" == "blue" ]]; then
+    sed -i 's/\(server blue.*weight \)[0-9]*/\1100/' "$HAPROXY_CONFIG"
+    sed -i 's/\(server green.*weight \)[0-9]*/\10/' "$HAPROXY_CONFIG"
+  else
+    sed -i 's/\(server blue.*weight \)[0-9]*/\10/' "$HAPROXY_CONFIG"
+    sed -i 's/\(server green.*weight \)[0-9]*/\1100/' "$HAPROXY_CONFIG"
+  fi
+  success "Config file updated: $HAPROXY_CONFIG"
+else
+  warn "Config file not found at $HAPROXY_CONFIG - weights not persisted!"
+  warn "HAProxy weights will reset to defaults on next restart."
+fi
 
 # Show final status
 log "Current backend status:"
